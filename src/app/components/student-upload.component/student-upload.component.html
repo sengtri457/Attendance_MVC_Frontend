@@ -1,0 +1,222 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <!-- Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Upload Students from Excel
+                    </h4>
+                </div>
+                <div class="card-body">
+
+                    <!-- Instructions -->
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i>
+                            Instructions
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Download the template file to see the required format</li>
+                            <li>Fill in student data in the Excel file</li>
+                            <li>Upload the completed file below</li>
+                            <li>Maximum file size: 10MB</li>
+                            <li>Supported formats: .xlsx, .xls</li>
+                        </ul>
+                    </div>
+
+                    <!-- Download Template Button -->
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-success" (click)="downloadTemplate()">
+                            <i class="bi bi-download"></i>
+                            Download Excel Template
+                        </button>
+                    </div>
+
+                    <!-- Upload Mode Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Upload Mode:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="uploadMode" id="modeDetailed"
+                                value="detailed" [(ngModel)]="uploadMode" [disabled]="uploading">
+                            <label class="form-check-label" for="modeDetailed">
+                                <strong>Detailed</strong> - Shows success/failure for each row (slower)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="uploadMode" id="modeBulk" value="bulk"
+                                [(ngModel)]="uploadMode" [disabled]="uploading">
+                            <label class="form-check-label" for="modeBulk">
+                                <strong>Bulk</strong> - Faster upload, all or nothing (recommended for large files)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Form -->
+                    <div class="card">
+                        <div class="card-body">
+
+                            <!-- File Input -->
+                            <div class="mb-3">
+                                <label for="fileInput" class="form-label fw-bold">
+                                    Select Excel File:
+                                </label>
+                                <input type="file" class="form-control" id="fileInput" accept=".xlsx,.xls"
+                                    (change)="onFileSelected($event)" [disabled]="uploading">
+                            </div>
+
+                            <!-- Selected File Display -->
+                            <div *ngIf="fileName" class="alert alert-secondary" role="alert">
+                                <i class="bi bi-file-earmark-excel-fill"></i>
+                                Selected file: <strong>{{ fileName }}</strong>
+                                <button type="button" class="btn-close float-end" aria-label="Close"
+                                    (click)="clearFile()" [disabled]="uploading">
+                                </button>
+                            </div>
+
+                            <!-- Upload Button -->
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary" (click)="uploadFile()"
+                                    [disabled]="!selectedFile || uploading">
+                                    <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2" role="status">
+                                    </span>
+                                    <i *ngIf="!uploading" class="bi bi-upload"></i>
+                                    {{ uploading ? 'Uploading...' : 'Upload File' }}
+                                </button>
+
+                                <button type="button" class="btn btn-secondary" (click)="resetForm()"
+                                    [disabled]="uploading">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    Reset
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Upload Result Alert -->
+                    <div *ngIf="uploadResult" class="mt-4">
+                        <div class="alert alert-dismissible fade show" [ngClass]="{
+                'alert-success': uploadResult.type === 'success',
+                'alert-warning': uploadResult.type === 'warning',
+                'alert-danger': uploadResult.type === 'error'
+              }" role="alert">
+                            <i class="bi" [ngClass]="{
+                  'bi-check-circle': uploadResult.type === 'success',
+                  'bi-exclamation-triangle': uploadResult.type === 'warning',
+                  'bi-x-circle': uploadResult.type === 'error'
+                }">
+                            </i>
+                            <strong>{{ uploadResult.message }}</strong>
+                            <button type="button" class="btn-close" (click)="uploadResult = null">
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Detailed Results (Only for Detailed Mode) -->
+            <div *ngIf="showResults && uploadMode === 'detailed'" class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-data"></i>
+                        Upload Results
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    <!-- Summary -->
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h3 class="text-primary">{{ totalCount }}</h3>
+                                    <p class="mb-0">Total Rows</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h3 class="text-success">{{ successCount }}</h3>
+                                    <p class="mb-0">Successful</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <h3 class="text-danger">{{ failedCount }}</h3>
+                                    <p class="mb-0">Failed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Success Records -->
+                    <div *ngIf="successRecords.length > 0" class="mb-4">
+                        <h6 class="text-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Successfully Uploaded ({{ successCount }})
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Row #</th>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (record of successRecords; track $index) {
+                                    <tr>
+                                        <td>{{ $index +1 }}</td>
+                                        <td>{{ record.student_id }}</td>
+                                        <td>{{ record.student.student_name_eng }}</td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Failed Records -->
+                    <div *ngIf="failedRecords.length > 0">
+                        <h6 class="text-danger">
+                            <i class="bi bi-x-circle-fill"></i>
+                            Failed Uploads ({{ failedCount }})
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-danger">
+                                    <tr>
+                                        <th>Row #</th>
+                                        <th>Error</th>
+                                        <th>Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let record of failedRecords">
+                                        <td>{{ record.row_number }}</td>
+                                        <td>
+                                            <span class="badge bg-danger">{{ record.error }}</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ record.row_data | json }}</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

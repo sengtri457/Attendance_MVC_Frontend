@@ -1,0 +1,627 @@
+/* weeklyattendance.component.css */
+
+/* ========================
+   CONTAINER & LAYOUT
+   ======================== */
+.attendance-container {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.attendance-header {
+  margin-bottom: 20px;
+}
+
+.grid-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+/* ========================
+   TABLE STRUCTURE
+   ======================== */
+.attendance-table {
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
+  padding: 4px;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.table tbody td {
+  padding: 4px;
+  border: 1px solid #dee2e6;
+}
+
+/* Sticky columns for student info */
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background-color: #fff;
+  z-index: 5;
+  border-right: 2px solid #dee2e6;
+}
+
+.table-light .sticky-col {
+  background-color: #f8f9fa;
+}
+
+/* ========================
+   COLUMN SIZING (TIGHT)
+   ======================== */
+.col-no {
+  width: 40px;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  padding: 4px 2px;
+}
+
+.col-name-kh {
+  min-width: 120px;
+  max-width: 150px;
+  left: 40px !important;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+}
+
+.col-name-eng {
+  min-width: 120px;
+  max-width: 150px;
+  left: 160px !important;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+}
+
+.col-gender {
+  width: 60px;
+  min-width: 60px;
+  text-align: center;
+  left: 280px !important;
+  padding: 4px 2px;
+  font-size: 0.85rem;
+}
+
+.col-date {
+  min-width: 120px;
+  width: 120px;
+  background-color: #f8f9fa;
+  vertical-align: top;
+  padding: 4px;
+}
+
+.col-date-empty {
+  min-width: 120px;
+  width: 120px;
+  padding: 0;
+  border: none;
+}
+
+.col-stat {
+  text-align: center;
+  font-size: 0.85rem;
+  min-width: 45px;
+  width: 45px;
+  padding: 4px 2px;
+}
+
+.col-stats {
+  background-color: #e7f3ff;
+  font-weight: 600;
+  text-align: center;
+}
+
+.col-stat-label {
+  background-color: #e7f3ff;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 4px 2px;
+  min-width: 45px;
+}
+
+/* ========================
+   DATE HEADER & SUBJECTS
+   ======================== */
+.date-header {
+  min-width: 120px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.date-display {
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: pre-line;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.subject-selector {
+  width: 100%;
+  max-width: 110px;
+  margin-top: 4px;
+}
+
+.subject-dropdown {
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  height: auto;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.subject-dropdown:hover:not(:disabled) {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+.subject-dropdown:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.subject-dropdown option {
+  padding: 4px;
+}
+
+/* ========================
+   ATTENDANCE CELLS
+   ======================== */
+.attendance-cell {
+  cursor: pointer;
+  min-width: 50px;
+  height: 40px;
+  vertical-align: middle;
+  transition: background-color 0.2s;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 2px;
+  position: relative;
+}
+
+.attendance-cell.clickable:hover {
+  opacity: 0.8;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-cell.pending-change {
+  background-color: #fff3cd !important;
+  border: 2px solid #ffc107;
+  box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+}
+
+.attendance-cell.pending-change:hover {
+  background-color: #ffe69c !important;
+}
+
+.attendance-select {
+  width: 100%;
+  padding: 2px;
+  font-size: 0.8rem;
+  border: 2px solid #0d6efd;
+}
+
+/* Status display within cells */
+.status-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  min-height: 36px;
+}
+
+.status-symbol {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Detail badge for multiple subjects */
+.detail-badge {
+  cursor: pointer;
+  font-size: 0.65rem;
+  margin-left: 2px;
+  padding: 1px 3px;
+}
+
+.detail-badge:hover {
+  opacity: 0.8;
+}
+
+/* ========================
+   STATUS COLORS
+   ======================== */
+.status-present {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-absent {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-late {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-excused {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-empty {
+  background-color: #ffffff;
+  color: #6c757d;
+}
+
+/* ========================
+   EDIT MODE
+   ======================== */
+.edit-mode {
+  padding: 2px;
+  position: relative;
+  z-index: 10;
+}
+
+.edit-mode .btn-group-vertical {
+  width: 100%;
+}
+
+.edit-mode button {
+  font-size: 0.65rem;
+  padding: 2px 4px;
+  margin-bottom: 1px;
+  cursor: pointer;
+  border: 1px solid #dee2e6;
+}
+
+.edit-mode button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.edit-mode button:active {
+  transform: scale(0.98);
+}
+
+.edit-mode .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  font-weight: 500;
+  font-size: 0.65rem;
+}
+
+.edit-mode .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Status option buttons in edit mode */
+.btn-outline-secondary.status-present:hover {
+  background-color: #d4edda;
+  border-color: #155724;
+  color: #155724;
+}
+
+.btn-outline-secondary.status-absent:hover {
+  background-color: #f8d7da;
+  border-color: #721c24;
+  color: #721c24;
+}
+
+.btn-outline-secondary.status-late:hover {
+  background-color: #fff3cd;
+  border-color: #856404;
+  color: #856404;
+}
+
+.btn-outline-secondary.status-excused:hover {
+  background-color: #d1ecf1;
+  border-color: #0c5460;
+  color: #0c5460;
+}
+
+/* ========================
+   STATISTICS & FOOTER
+   ======================== */
+.text-success {
+  color: #28a745 !important;
+  font-weight: bold;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+.totals-row {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  border-top: 2px solid #dee2e6;
+}
+
+.daily-total {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.overall-stats {
+  font-size: 0.95rem;
+}
+
+/* ========================
+   LEGEND
+   ======================== */
+.legend-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.legend-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* ========================
+   SUMMARY CARDS
+   ======================== */
+.summary-card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card .card-title {
+  margin-bottom: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* ========================
+   BADGES & BUTTONS
+   ======================== */
+.badge-sm {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+}
+
+.badge.bg-secondary:hover,
+.badge.bg-info:hover {
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.alert-warning {
+  border-left: 4px solid #ffc107;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* ========================
+   MODAL
+   ======================== */
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.modal.show {
+  display: block;
+}
+
+.student-info h6 {
+  margin-bottom: 0.5rem;
+}
+
+/* ========================
+   LOADING & CONTROLS
+   ======================== */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+  position: relative;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+/* ========================
+   GENDER ICONS
+   ======================== */
+.bi-gender-male {
+  color: #007bff;
+}
+
+.bi-gender-female {
+  color: #dc3545;
+}
+
+/* ========================
+   TABLE ROWS
+   ======================== */
+.student-row.table-active {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.header-row th {
+  border-bottom: 2px solid #dee2e6;
+  padding: 4px !important;
+}
+
+.sub-header-row th {
+  font-size: 0.8rem;
+  padding: 4px 2px !important;
+}
+
+/* ========================
+   ANIMATIONS
+   ======================== */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.pending-change .badge-warning {
+  animation: pulse 1.5s infinite;
+}
+
+/* ========================
+   PRINT STYLES
+   ======================== */
+@media print {
+  .controls,
+  .btn,
+  button,
+  .subject-selector,
+  .legend-container {
+    display: none !important;
+  }
+
+  .attendance-select {
+    display: none;
+  }
+
+  .attendance-table {
+    font-size: 0.75rem;
+  }
+
+  .date-header {
+    min-width: 80px;
+  }
+
+  .pending-change {
+    background-color: #fff !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .attendance-container {
+    padding: 0;
+  }
+}
+
+/* ========================
+   RESPONSIVE
+   ======================== */
+@media (max-width: 768px) {
+  .attendance-table {
+    font-size: 0.75rem;
+  }
+
+  .status-symbol {
+    font-size: 1rem;
+  }
+
+  .attendance-cell {
+    padding: 2px;
+    min-height: 35px;
+  }
+
+  .sticky-col {
+    position: static;
+  }
+
+  .col-name-kh,
+  .col-name-eng {
+    min-width: 120px;
+  }
+}

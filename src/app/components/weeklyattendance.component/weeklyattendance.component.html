@@ -1,0 +1,534 @@
+<!-- weeklyattendance.component.html -->
+
+<!-- Header Section -->
+<div class="attendance-container">
+  <div class="attendance-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-1">Weekly Attendance Grid</h2>
+        <p class="text-muted mb-0" *ngIf="gridData">
+          <strong>{{ gridData.class.class_name }}</strong> |
+          {{ gridData.period.start_date }} to {{ gridData.period.end_date }}
+          <span class="badge bg-secondary ms-2">
+            {{ gridData.students.length }} Students
+          </span>
+        </p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Submit and Cancel buttons -->
+        <div class="btn-group me-2" *ngIf="hasUnsavedChanges">
+          <button
+            class="btn btn-success"
+            (click)="submitAllChanges()"
+            [disabled]="submitting">
+            <i class="bi bi-check-circle"></i>
+            Submit Changes ({{ pendingUpdates.size }})
+          </button>
+          <button
+            class="btn btn-danger"
+            (click)="cancelAllChanges()"
+            [disabled]="submitting">
+            <i class="bi bi-x-circle"></i>
+            Cancel
+          </button>
+        </div>
+
+        <!-- Action buttons -->
+        <button
+          class="btn btn-outline-success"
+          (click)="refresh()"
+          [disabled]="loading || submitting"
+          title="Refresh data">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          (click)="exportToCSV()"
+          [disabled]="!gridData"
+          title="Export to CSV">
+          <i class="bi bi-download"></i> Export CSV
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          (click)="print()"
+          [disabled]="!gridData"
+          title="Print grid">
+          <i class="bi bi-printer"></i> Print
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Class</label>
+        <select
+          class="form-select"
+          [(ngModel)]="selectedClassId"
+          [disabled]="loading || submitting">
+          <option value="1">Sv23</option>
+          <option value="2">Sv13</option>
+          <!-- Add more classes dynamically -->
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Start Date</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="startDate"
+          [disabled]="loading || submitting"
+          [max]="endDate">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">End Date</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="endDate"
+          [disabled]="loading || submitting"
+          [min]="startDate">
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button
+          class="btn btn-primary flex-grow-1"
+          (click)="loadWeeklyGrid()"
+          [disabled]="loading || submitting || !startDate || !endDate">
+          <i class="bi bi-search"></i> Load
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          (click)="previousWeek()"
+          [disabled]="loading || submitting"
+          title="Previous week">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          (click)="nextWeek()"
+          [disabled]="loading || submitting"
+          title="Next week">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+        <button
+          class="btn btn-outline-info"
+          (click)="resetToCurrentWeek()"
+          [disabled]="loading || submitting"
+          title="Reset to current week">
+          <i class="bi bi-calendar-today"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Warning banner for unsaved changes -->
+    <div class="alert alert-warning d-flex align-items-center" role="alert" *ngIf="hasUnsavedChanges">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div>
+        You have <strong>{{ pendingUpdates.size }}</strong> unsaved change(s).
+        Click <strong>Submit Changes</strong> to save or <strong>Cancel</strong> to discard.
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-container mb-3 p-3 bg-light rounded">
+      <div class="d-flex flex-wrap gap-3 align-items-center">
+        <span class="fw-semibold text-muted me-2">Legend:</span>
+        <span class="legend-item">
+          <span class="legend-badge status-present">✓</span>
+          <span class="ms-1">Present (P)</span>
+        </span>
+        <span class="legend-item">
+          <span class="legend-badge status-absent">A</span>
+          <span class="ms-1">Absent (A)</span>
+        </span>
+        <span class="legend-item">
+          <span class="legend-badge status-late">L</span>
+          <span class="ms-1">Late (L)</span>
+        </span>
+        <span class="legend-item">
+          <span class="legend-badge status-excused">E</span>
+          <span class="ms-1">Excused (E)</span>
+        </span>
+        <span class="legend-item ms-3">
+          <span class="badge bg-info text-white"><i class="bi bi-info-circle"></i></span>
+          <span class="ms-1">= View subject details</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading attendance data...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Attendance Grid -->
+  <div *ngIf="!loading && gridData" class="grid-wrapper">
+    <div class="table-responsive">
+      <table class="table table-bordered attendance-table">
+        <thead class="table-light">
+          <!-- Main Header Row -->
+          <tr class="header-row">
+            <th class="col-no sticky-col">#</th>
+            <th class="col-name-kh sticky-col">ឈ្មោះ (Khmer)</th>
+            <th class="col-name-eng sticky-col">Name (English)</th>
+            <th class="col-gender sticky-col">Gender</th>
+
+            <!-- Date Columns with Subject Selectors -->
+            <th class="col-date text-center" *ngFor="let dateString of gridData.period.dates">
+              <div class="date-header">
+                <!-- Date Display -->
+                <div class="date-display fw-bold" [innerHTML]="getDateDisplay(dateString)"></div>
+
+                <!-- Subject Dropdown -->
+                <div class="subject-selector mt-2">
+                  <select
+                    class="form-select form-select-sm subject-dropdown"
+                    [value]="getSelectedSubjectId(dateString)"
+                    (change)="onSubjectChange(dateString, +$any($event.target).value)"
+                    [disabled]="loadingSubjects || submitting || getSubjectsForDate(dateString).length === 0"
+                    [title]="'Select subject for ' + dateString">
+                    <option value="" disabled>
+                      {{ loadingSubjects ? 'Loading...' : 'Select Subject' }}
+                    </option>
+                    <option
+                      *ngFor="let subject of getSubjectsForDate(dateString)"
+                      [value]="subject.subject_id"
+                      [title]="subject.subject_code ? subject.subject_code + ' - ' + subject.subject_name : subject.subject_name">
+                      {{ subject.subject_name }}
+                    </option>
+                  </select>
+
+                  <!-- Loading indicator -->
+                  <div *ngIf="loadingSubjects" class="text-center mt-1">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading subjects...</span>
+                    </div>
+                  </div>
+
+                  <!-- No subjects message -->
+                  <div *ngIf="!loadingSubjects && getSubjectsForDate(dateString).length === 0"
+                       class="text-warning small mt-1 text-center">
+                    <i class="bi bi-exclamation-circle"></i> No subjects
+                  </div>
+
+                  <!-- Selected subject indicator -->
+                  <div *ngIf="!loadingSubjects && getSelectedSubjectId(dateString)" class="text-success small mt-1 text-center">
+                    <i class="bi bi-check-circle"></i> Subject selected
+                  </div>
+                </div>
+              </div>
+            </th>
+
+            <!-- Statistics Header -->
+            <th class="col-stats text-center bg-secondary text-white" colspan="5">
+              <i class="bi bi-bar-chart-fill me-1"></i> Statistics
+            </th>
+          </tr>
+
+          <!-- Sub Header Row -->
+          <tr class="sub-header-row">
+            <th colspan="4" class="sticky-col"></th>
+            <th class="col-date-empty" *ngFor="let dateString of gridData.period.dates"></th>
+            <th class="col-stat-label text-center">
+              <i class="bi bi-check-circle text-success"></i> P
+            </th>
+            <th class="col-stat-label text-center">
+              <i class="bi bi-x-circle text-danger"></i> A
+            </th>
+            <th class="col-stat-label text-center">
+              <i class="bi bi-clock text-warning"></i> L
+            </th>
+            <th class="col-stat-label text-center">
+              <i class="bi bi-shield-check text-info"></i> E
+            </th>
+            <th class="col-stat-label text-center">
+              <i class="bi bi-percent"></i> Rate
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let student of gridData.students; let i = index"
+              class="student-row"
+              [class.table-active]="i % 2 === 0">
+            <td class="col-no sticky-col">{{ student.row_number }}</td>
+            <td class="col-name-kh sticky-col">{{ student.student_name_kh }}</td>
+            <td class="col-name-eng sticky-col">{{ student.student_name_eng }}</td>
+            <td class="col-gender text-center sticky-col">
+              <i [ngClass]="getGenderIconClass(student.gender)"></i>
+              {{ student.gender }}
+            </td>
+
+            <!-- Attendance Cells - NOW SHOWS DAILY STATUS -->
+            <td *ngFor="let dateString of gridData.period.dates"
+                class="attendance-cell text-center"
+                [ngClass]="{
+                  'pending-change': hasPendingChanges(student.student_id, dateString),
+                  'clickable': !isEditMode(student.student_id, dateString)
+                }"
+                [class]="getStatusClass(getDailyStatus(student, dateString))"
+                (click)="!isEditMode(student.student_id, dateString) && onCellClick(student.student_id, dateString)"
+                [title]="getCellTitle(dateString, student)">
+
+              <!-- Display Mode -->
+              <ng-container *ngIf="!isEditMode(student.student_id, dateString)">
+                <div class="status-display">
+                  <span class="status-symbol">
+                    {{ getStatusSymbol(getDailyStatus(student, dateString)) }}
+                  </span>
+
+                  <!-- Show info badge if multiple subjects exist -->
+                  <span *ngIf="hasMultipleSubjectRecords(student, dateString)"
+                        class="badge bg-info text-white ms-1 detail-badge"
+                        (click)="showAttendanceDetail(student, dateString); $event.stopPropagation()"
+                        title="Click to see subject details">
+                    <i class="bi bi-info-circle"></i>
+                    <ng-container *ngIf="getAbsentSubjectCount(student, dateString) > 0">
+                      {{ getAbsentSubjectCount(student, dateString) }}
+                    </ng-container>
+                  </span>
+
+                  <!-- Pending change indicator -->
+                  <span *ngIf="hasPendingChanges(student.student_id, dateString)"
+                        class="badge bg-warning text-dark ms-1">
+                    <i class="bi bi-clock"></i>
+                  </span>
+                </div>
+              </ng-container>
+
+              <!-- Edit Mode -->
+              <div *ngIf="isEditMode(student.student_id, dateString)" class="edit-mode" (click)="$event.stopPropagation()">
+                <div class="btn-group-vertical btn-group-sm">
+                  <button
+                    *ngFor="let option of statusOptions"
+                    class="btn btn-outline-secondary"
+                    [ngClass]="getStatusClass(option.value)"
+                    (click)="stageAttendanceUpdate(student.student_id, dateString, option.value); $event.stopPropagation()">
+                    {{ option.symbol }} {{ option.label }}
+                  </button>
+                </div>
+                <button
+                  class="btn btn-sm btn-secondary mt-1 w-100"
+                  (click)="closeEditMode(student.student_id, dateString); $event.stopPropagation()">
+                  Cancel
+                </button>
+              </div>
+            </td>
+
+            <!-- Statistics Cells - NOW SHOWS DAILY COUNTS -->
+            <td class="col-stat text-center">{{ student.statistics.present }}</td>
+            <td class="col-stat text-center">{{ student.statistics.absent }}</td>
+            <td class="col-stat text-center">{{ student.statistics.late }}</td>
+            <td class="col-stat text-center">{{ student.statistics.excused }}</td>
+            <td class="col-stat text-center"
+                [ngClass]="getAttendanceRateColor(student.statistics.attendance_rate)">
+              <strong>{{ student.statistics.attendance_rate }}</strong>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- Footer with Daily Totals -->
+        <tfoot class="table-secondary">
+          <tr class="totals-row">
+            <td colspan="4" class="text-end sticky-col">
+              <strong>Daily Totals:</strong>
+            </td>
+            <td *ngFor="let dateString of gridData.period.dates" class="col-stat text-center">
+              <div class="daily-total">
+                <small>P: {{ gridData.daily_statistics[dateString]?.present || 0 }}</small><br>
+                <small>A: {{ gridData.daily_statistics[dateString]?.absent || 0 }}</small>
+              </div>
+            </td>
+            <td colspan="5" class="col-stat text-center">
+              <div class="overall-stats">
+                <strong>Overall: {{ gridData.overall_statistics?.attendance_rate || '0%' }}</strong>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div *ngIf="!loading && gridData" class="row mt-4">
+    <div class="col-md-3">
+      <div class="card summary-card">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Students</h6>
+          <h3 class="card-title">{{ gridData.overall_statistics?.total_students || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Present Days</h6>
+          <h3 class="card-title text-success">{{ gridData.overall_statistics?.present || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Total Absent Days</h6>
+          <h3 class="card-title text-danger">{{ gridData.overall_statistics?.absent || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card summary-card">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">Attendance Rate</h6>
+          <h3 class="card-title"
+              [ngClass]="getAttendanceRateColor(gridData.overall_statistics?.attendance_rate)">
+            {{ gridData.overall_statistics?.attendance_rate || '0%' }}
+          </h3>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- NEW: Detail Modal for Subject-Level Attendance -->
+  <div class="modal fade"
+       [class.show]="showDetailModal"
+       [style.display]="showDetailModal ? 'block' : 'none'"
+       tabindex="-1"
+       role="dialog"
+       *ngIf="showDetailModal">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-calendar-check me-2"></i>
+            Attendance Details
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailModal()"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Student Info -->
+          <div class="student-info mb-3">
+            <h6>
+              <i [ngClass]="getGenderIconClass(detailModalData.student?.gender || '')"></i>
+              {{ detailModalData.student?.student_name_eng }}
+              <small class="text-muted">({{ detailModalData.student?.student_name_kh }})</small>
+            </h6>
+            <p class="mb-1">
+              <strong>Date:</strong> {{ detailModalData.date }}
+            </p>
+            <p class="mb-0">
+              <strong>Daily Status:</strong>
+              <span class="badge ms-2"
+                    [ngClass]="{
+                      'bg-success': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'P',
+                      'bg-danger': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'A',
+                      'bg-warning': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'L',
+                      'bg-info': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'E'
+                    }">
+                {{ getDailyStatus(detailModalData.student!, detailModalData.date!) || 'Not Recorded' }}
+              </span>
+            </p>
+          </div>
+
+          <hr>
+
+          <!-- Subject-level breakdown -->
+          <h6 class="mb-3">
+            <i class="bi bi-book me-2"></i>
+            Subject-Level Attendance
+          </h6>
+
+          <div *ngIf="detailModalData.subjects && detailModalData.subjects.length > 0; else noSubjects">
+            <table class="table table-sm table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th width="50">#</th>
+                  <th>Subject Name</th>
+                  <th width="100" class="text-center">Status</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let subject of detailModalData.subjects; let idx = index"
+                    [ngClass]="{
+                      'table-danger': subject.status === 'A',
+                      'table-warning': subject.status === 'L',
+                      'table-info': subject.status === 'E',
+                      'table-success': subject.status === 'P'
+                    }">
+                  <td>{{ idx + 1 }}</td>
+                  <td>
+                    <strong>{{ subject.subject_name }}</strong>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge"
+                          [ngClass]="{
+                            'bg-success': subject.status === 'P',
+                            'bg-danger': subject.status === 'A',
+                            'bg-warning text-dark': subject.status === 'L',
+                            'bg-info': subject.status === 'E'
+                          }">
+                      {{ getStatusSymbol(subject.status) }}
+                      {{
+                        subject.status === 'P' ? 'Present' :
+                        subject.status === 'A' ? 'Absent' :
+                        subject.status === 'L' ? 'Late' :
+                        subject.status === 'E' ? 'Excused' : 'Unknown'
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <small>{{ subject.notes || '-' }}</small>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Summary -->
+            <div class="alert alert-info mt-3">
+              <strong><i class="bi bi-info-circle me-1"></i> Summary:</strong>
+              <ng-container *ngIf="getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) > 0">
+                Student was absent in <strong>{{ getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) }}</strong>
+                out of <strong>{{ detailModalData.subjects.length }}</strong> subjects on this day.
+                This counts as <strong>1 absent day</strong> in the overall statistics.
+              </ng-container>
+              <ng-container *ngIf="getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) === 0">
+                Student attended all {{ detailModalData.subjects.length }} subjects on this day.
+              </ng-container>
+            </div>
+          </div>
+
+          <ng-template #noSubjects>
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              No subject attendance records found for this date.
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+            <i class="bi bi-x-circle me-1"></i>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal backdrop -->
+  <div class="modal-backdrop fade"
+       [class.show]="showDetailModal"
+       *ngIf="showDetailModal"
+       (click)="closeDetailModal()">
+  </div>
+</div>
