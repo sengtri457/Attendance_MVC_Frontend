@@ -8,7 +8,7 @@ import {
   Subject,
   SubjectService,
 } from "../../services/subjectservice/subject.service";
-
+import Swal from "sweetalert2";
 interface AttendanceData {
   subjects?: {
     [subjectId: string]: Array<{
@@ -112,6 +112,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   selectedClassId: number = 1;
   startDate: string = "";
   endDate: string = "";
+  searchQuery: string = "";
 
   // Subject management
   dateSubjects: Map<string, Subject[]> = new Map();
@@ -162,6 +163,104 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Get filtered students based on search query
+   */
+  getFilteredStudents(): StudentRow[] {
+    if (!this.gridData || !this.gridData.students) {
+      return [];
+    }
+
+    if (!this.searchQuery || this.searchQuery.trim() === "") {
+      return this.gridData.students;
+    }
+
+    const query = this.searchQuery.toLowerCase().trim();
+
+    return this.gridData.students.filter((student) => {
+      const nameKh = student.student_name_kh?.toLowerCase() || "";
+      const nameEng = student.student_name_eng?.toLowerCase() || "";
+      const rowNum = student.row_number?.toString() || "";
+
+      return (
+        nameKh.includes(query) ||
+        nameEng.includes(query) ||
+        rowNum.includes(query)
+      );
+    });
+  }
+
+  /**
+   * Clear search filter
+   */
+  clearSearch(): void {
+    this.searchQuery = "";
+  }
+
+  /**
+   * Get search result count
+   */
+  getSearchResultCount(): number {
+    return this.getFilteredStudents().length;
+  }
+
+  /**
+   * Highlight search query in text
+   */
+  highlightSearch(text: string): string {
+    if (!this.searchQuery || !text) {
+      return text;
+    }
+
+    const query = this.searchQuery.trim();
+    if (!query) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${query})`, "gi");
+    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+  }
+
+  /**
+   * Handle class selection change - auto load grid
+   */
+  onClassChange(): void {
+    if (this.hasUnsavedChanges) {
+      if (
+        !confirm("You have unsaved changes. Discard them and load new data?")
+      ) {
+        // Revert selection - need to store previous value
+        return;
+      }
+      this.pendingUpdates.clear();
+      this.hasUnsavedChanges = false;
+    }
+
+    if (this.startDate && this.endDate) {
+      this.loadWeeklyGrid();
+    }
+  }
+
+  /**
+   * Handle date change - auto load grid when both dates are set
+   */
+  onDateChange(): void {
+    if (this.hasUnsavedChanges) {
+      if (
+        !confirm("You have unsaved changes. Discard them and load new data?")
+      ) {
+        return;
+      }
+      this.pendingUpdates.clear();
+      this.hasUnsavedChanges = false;
+    }
+
+    // Only auto-load if both dates are set
+    if (this.startDate && this.endDate) {
+      this.loadWeeklyGrid();
+    }
   }
 
   /**
@@ -224,8 +323,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Process attendance data to implement daily absence logic
-   * If a student is absent in ANY subject on a day, count it as 1 absent day
-   * But keep track of which subjects they missed for detailed view
    */
   processAttendanceData(): void {
     if (!this.gridData) return;
@@ -703,8 +800,33 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     if (!confirm(`Submit ${this.pendingUpdates.size} attendance update(s)?`)) {
       return;
     }
-
+    // if (this.pendingUpdates.size !== 0) {
+    //   Swal.fire({
+    //     title: "Submit",
+    //     text: `Submit ${this.pendingUpdates.size} attendance update(s)?`,
+    //     icon: "warning",
+    //     showCancelButton: true,
+    //     confirmButtonColor: "#3085d6",
+    //     cancelButtonColor: "#d33",
+    //     confirmButtonText: "Yes Submit",
+    //   }).then((result) => {
+    //     if (result.isConfirmed) {
+    //       Swal.fire({
+    //         title: "Submitted!",
+    //         text: "Student Has Submitted",
+    //         icon: "success",
+    //       });
+    //     } else {
+    //       Swal.fire({
+    //         title: "Cancelled",
+    //         text: "Student Has Cancelled",
+    //         icon: "error",
+    //       });
+    //     }
+    //   });
+    // }
     this.submitting = true;
+
     const updates: any[] = [];
 
     this.pendingUpdates.forEach((update) => {
@@ -737,14 +859,22 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
           // Reload grid to show updated data
           this.loadWeeklyGrid();
 
-          alert("Attendance updated successfully!");
+          Swal.fire({
+            title: "Attendance updated successfully!",
+            icon: "success",
+            draggable: true,
+          });
         },
         error: (err) => {
           console.error("Failed to update attendance:", err);
-          alert(
-            err.error?.message ||
+          Swal.fire({
+            title: "Failed to update attendance!",
+            text:
+              err.error?.message ||
               "Failed to update attendance. Please try again.",
-          );
+            icon: "error",
+            draggable: true,
+          });
         },
       });
   }

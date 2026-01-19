@@ -1,9 +1,9 @@
 // attendance-dashboard.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AttendanceService } from '../../services/attendnaceservice/attendance.service';
+import { Component, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { AttendanceService } from "../../services/attendnaceservice/attendance.service";
 
 interface DashboardData {
   today: any;
@@ -14,10 +14,10 @@ interface DashboardData {
   generated_at: string;
 }
 @Component({
-  selector: 'app-attendance-dashboard.component',
+  selector: "app-attendance-dashboard.component",
   imports: [CommonModule, FormsModule],
-  templateUrl: './attendance-dashboard.component.html',
-  styleUrl: './attendance-dashboard.component.css',
+  templateUrl: "./attendance-dashboard.component.html",
+  styleUrl: "./attendance-dashboard.component.css",
 })
 export class AttendanceDashboardComponent implements OnInit {
   dashboardData: DashboardData | null = null;
@@ -25,7 +25,7 @@ export class AttendanceDashboardComponent implements OnInit {
   error: string | null = null;
 
   selectedClassId: number = 1;
-  selectedDate: string = '';
+  selectedDate: string = "";
 
   // Chart data
   weeklyChartData: any[] = [];
@@ -33,7 +33,7 @@ export class AttendanceDashboardComponent implements OnInit {
 
   constructor(
     private attendanceService: AttendanceService,
-    private router: Router
+    private router: Router,
   ) {
     this.selectedDate = this.formatDate(new Date());
   }
@@ -43,7 +43,7 @@ export class AttendanceDashboardComponent implements OnInit {
   }
 
   formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   }
 
   loadDashboard(): void {
@@ -59,7 +59,7 @@ export class AttendanceDashboardComponent implements OnInit {
           this.loading = false;
         },
         error: (err) => {
-          this.error = 'Failed to load dashboard data';
+          this.error = "Failed to load dashboard data";
           this.loading = false;
           console.error(err);
         },
@@ -72,17 +72,17 @@ export class AttendanceDashboardComponent implements OnInit {
     // Prepare weekly trend data for charts
     this.weeklyChartData = [
       {
-        name: 'Today',
+        name: "Today",
         present: this.dashboardData.today.P,
         absent: this.dashboardData.today.A,
       },
       {
-        name: 'This Week',
+        name: "This Week",
         present: this.dashboardData.this_week.P,
         absent: this.dashboardData.this_week.A,
       },
       {
-        name: 'This Month',
+        name: "This Month",
         present: this.dashboardData.this_month.P,
         absent: this.dashboardData.this_month.A,
       },
@@ -90,40 +90,40 @@ export class AttendanceDashboardComponent implements OnInit {
 
     // Status distribution for pie chart
     this.statusDistribution = [
-      { name: 'Present', value: this.dashboardData.today.P, color: '#28a745' },
-      { name: 'Absent', value: this.dashboardData.today.A, color: '#dc3545' },
-      { name: 'Late', value: this.dashboardData.today.L, color: '#ffc107' },
-      { name: 'Excused', value: this.dashboardData.today.E, color: '#17a2b8' },
+      { name: "Present", value: this.dashboardData.today.P, color: "#28a745" },
+      { name: "Absent", value: this.dashboardData.today.A, color: "#dc3545" },
+      { name: "Late", value: this.dashboardData.today.L, color: "#ffc107" },
+      { name: "Excused", value: this.dashboardData.today.E, color: "#17a2b8" },
     ];
   }
 
   navigateToWeeklyGrid(): void {
-    this.router.navigate(['/attendance/weekly-grid']);
+    this.router.navigate(["/attendance"]);
   }
 
   navigateToStudentDetail(studentId: number): void {
-    this.router.navigate(['/students', studentId, 'attendance']);
+    this.router.navigate(["/students", studentId, "attendance"]);
   }
 
   getStatusColor(rate: string): string {
     const rateNum = parseFloat(rate);
-    if (rateNum >= 90) return 'success';
-    if (rateNum >= 75) return 'warning';
-    return 'danger';
+    if (rateNum >= 90) return "success";
+    if (rateNum >= 75) return "warning";
+    return "danger";
   }
 
   getRiskLevel(rate: string): string {
     const rateNum = parseFloat(rate);
-    if (rateNum < 50) return 'Critical';
-    if (rateNum < 75) return 'At Risk';
-    return 'Monitor';
+    if (rateNum < 50) return "Critical";
+    if (rateNum < 75) return "At Risk";
+    return "Monitor";
   }
 
   getRiskBadgeClass(rate: string): string {
     const rateNum = parseFloat(rate);
-    if (rateNum < 50) return 'badge-danger';
-    if (rateNum < 75) return 'badge-warning';
-    return 'badge-info';
+    if (rateNum < 50) return "badge-danger";
+    if (rateNum < 75) return "badge-warning";
+    return "badge-info";
   }
 
   formatDateTime(dateString: string): string {

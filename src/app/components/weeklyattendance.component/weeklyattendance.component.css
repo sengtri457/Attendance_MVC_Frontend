@@ -495,6 +495,32 @@
 }
 
 /* ========================
+   CONTROLS & SEARCH
+   ======================== */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+/* Search highlight */
+.search-highlight {
+  background-color: #fff3cd;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* Search input group */
+.input-group .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* ========================
    LOADING & CONTROLS
    ======================== */
 .spinner-border {
@@ -506,15 +532,6 @@
   overflow-x: auto;
   max-width: 100%;
   position: relative;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
 }
 
 /* ========================

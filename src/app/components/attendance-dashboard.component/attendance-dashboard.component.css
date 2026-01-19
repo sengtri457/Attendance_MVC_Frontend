@@ -1,19 +1,19 @@
-/* attendance-dashboard.component.css */
+/* attendance-dashboard.component.css - Clean Minimal Theme */
 
 .dashboard-container {
   padding: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f7fa;
   min-height: 100vh;
 }
 
 .dashboard-header h1 {
-  color: white;
+  color: #1a202c;
   font-weight: 700;
   font-size: 2rem;
 }
 
 .dashboard-header p {
-  color: rgba(255, 255, 255, 0.8);
+  color: #718096;
 }
 
 /* Stat Cards */
@@ -21,7 +21,8 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -32,8 +33,8 @@
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
 }
 
 .stat-icon {
@@ -47,23 +48,23 @@
 }
 
 .present-card .stat-icon {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
+  background: #f0fdf4;
+  color: #16a34a;
 }
 
 .absent-card .stat-icon {
-  background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-  color: white;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .late-card .stat-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  background: #fffbeb;
+  color: #f59e0b;
 }
 
 .excused-card .stat-icon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 
 .stat-content {
@@ -72,7 +73,7 @@
 
 .stat-label {
   font-size: 0.875rem;
-  color: #6c757d;
+  color: #64748b;
   margin-bottom: 5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -82,7 +83,7 @@
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: #0f172a;
   margin: 0;
   line-height: 1;
 }
@@ -90,38 +91,42 @@
 .stat-info {
   margin-top: 5px;
   font-size: 0.875rem;
+  color: #64748b;
 }
 
 /* Cards */
 .card {
-  border: none;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   height: 100%;
+  background: white;
 }
 
 .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #ffffff;
+  color: #0f172a;
   border-radius: 12px 12px 0 0 !important;
   padding: 15px 20px;
-  border: none;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .card-title {
   font-weight: 600;
   font-size: 1.1rem;
+  color: #0f172a;
 }
 
 /* Trend Items */
 .trend-item {
   padding: 15px;
   border-radius: 8px;
-  background: #f8f9fa;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .trend-item h3 {
-  color: #2c3e50;
+  color: #0f172a;
   font-weight: 700;
 }
 
@@ -141,7 +146,7 @@
 .progress {
   height: 10px;
   border-radius: 5px;
-  background-color: #e9ecef;
+  background-color: #f1f5f9;
 }
 
 .progress-bar {
@@ -156,10 +161,10 @@
   margin: 0 auto;
   border-radius: 50%;
   background: conic-gradient(
-    #28a745 0deg 216deg,
-    #dc3545 216deg 252deg,
-    #ffc107 252deg 288deg,
-    #17a2b8 288deg 360deg
+    #16a34a 0deg 216deg,
+    #dc2626 216deg 252deg,
+    #f59e0b 252deg 288deg,
+    #3b82f6 288deg 360deg
   );
   display: flex;
   align-items: center;
@@ -180,7 +185,7 @@
 .donut-center h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: #0f172a;
   margin: 0;
 }
 
@@ -197,7 +202,8 @@
   gap: 10px;
   padding: 8px;
   border-radius: 6px;
-  background: #f8f9fa;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .legend-color {
@@ -209,12 +215,12 @@
 .legend-label {
   flex: 1;
   font-size: 0.875rem;
-  color: #6c757d;
+  color: #64748b;
 }
 
 .legend-value {
   font-weight: 600;
-  color: #2c3e50;
+  color: #0f172a;
 }
 
 /* Risk List */
@@ -228,12 +234,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s;
 }
 
 .risk-item:hover {
-  background-color: #f8f9fa;
+  background-color: #f8fafc;
 }
 
 .risk-item:last-child {
@@ -250,12 +256,13 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #475569;
   font-size: 20px;
+  font-weight: 600;
 }
 
 .risk-stats {
@@ -263,16 +270,16 @@
 }
 
 .badge-danger {
-  background-color: #dc3545;
+  background-color: #dc2626;
 }
 
 .badge-warning {
-  background-color: #ffc107;
+  background-color: #f59e0b;
   color: #000;
 }
 
 .badge-info {
-  background-color: #17a2b8;
+  background-color: #3b82f6;
 }
 
 /* Absence List */
@@ -285,12 +292,12 @@
   display: flex;
   gap: 15px;
   padding: 15px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s;
 }
 
 .absence-item:hover {
-  background-color: #f8f9fa;
+  background-color: #f8fafc;
 }
 
 .absence-item:last-child {
@@ -301,7 +308,7 @@
   width: 50px;
   height: 50px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+  background: #0f172a;
   color: white;
   display: flex;
   flex-direction: column;
@@ -321,7 +328,7 @@
 }
 
 .absence-info h6 {
-  color: #2c3e50;
+  color: #0f172a;
   margin-bottom: 2px;
 }
 
@@ -333,19 +340,19 @@
 
 .risk-list::-webkit-scrollbar-track,
 .absence-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f1f5f9;
   border-radius: 3px;
 }
 
 .risk-list::-webkit-scrollbar-thumb,
 .absence-list::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
 .risk-list::-webkit-scrollbar-thumb:hover,
 .absence-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #94a3b8;
 }
 
 /* Responsive */
@@ -385,7 +392,7 @@
 .spinner-border {
   width: 3rem;
   height: 3rem;
-  color: white !important;
+  color: #64748b !important;
 }
 
 /* Animations */

@@ -59,12 +59,13 @@
     </div>
 
     <!-- Controls -->
-    <div class="row mb-4">
+    <div class="row mb-3">
       <div class="col-md-3">
         <label class="form-label fw-semibold">Class</label>
         <select
           class="form-select"
           [(ngModel)]="selectedClassId"
+          (change)="onClassChange()"
           [disabled]="loading || submitting">
           <option value="1">Sv23</option>
           <option value="2">Sv13</option>
@@ -77,6 +78,7 @@
           type="date"
           class="form-control"
           [(ngModel)]="startDate"
+          (change)="onDateChange()"
           [disabled]="loading || submitting"
           [max]="endDate">
       </div>
@@ -86,6 +88,7 @@
           type="date"
           class="form-control"
           [(ngModel)]="endDate"
+          (change)="onDateChange()"
           [disabled]="loading || submitting"
           [min]="startDate">
       </div>
@@ -117,6 +120,34 @@
           title="Reset to current week">
           <i class="bi bi-calendar-today"></i>
         </button>
+      </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="row mb-3" *ngIf="gridData && gridData.students.length > 0">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">
+          <i class="bi bi-search"></i> Search Students
+        </label>
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchQuery"
+            placeholder="Search by name (Khmer/English) or number..."
+            [disabled]="loading || submitting">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            (click)="clearSearch()"
+            [disabled]="!searchQuery"
+            title="Clear search">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <small class="text-muted" *ngIf="searchQuery">
+          Found {{ getSearchResultCount() }} of {{ gridData.students.length }} students
+        </small>
       </div>
     </div>
 
@@ -257,12 +288,32 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let student of gridData.students; let i = index"
+          <!-- No search results message -->
+          <tr *ngIf="searchQuery && getFilteredStudents().length === 0">
+            <td colspan="100" class="text-center py-4">
+              <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+              <p class="text-muted mb-0 mt-2">
+                No students found matching "<strong>{{ searchQuery }}</strong>"
+              </p>
+              <button class="btn btn-sm btn-link" (click)="clearSearch()">
+                Clear search
+              </button>
+            </td>
+          </tr>
+
+          <!-- Student rows -->
+          <tr *ngFor="let student of getFilteredStudents(); let i = index"
               class="student-row"
               [class.table-active]="i % 2 === 0">
-            <td class="col-no sticky-col">{{ student.row_number }}</td>
-            <td class="col-name-kh sticky-col">{{ student.student_name_kh }}</td>
-            <td class="col-name-eng sticky-col">{{ student.student_name_eng }}</td>
+            <td class="col-no sticky-col">
+              <span [innerHTML]="highlightSearch(student.row_number.toString())"></span>
+            </td>
+            <td class="col-name-kh sticky-col">
+              <span [innerHTML]="highlightSearch(student.student_name_kh)"></span>
+            </td>
+            <td class="col-name-eng sticky-col">
+              <span [innerHTML]="highlightSearch(student.student_name_eng)"></span>
+            </td>
             <td class="col-gender text-center sticky-col">
               <i [ngClass]="getGenderIconClass(student.gender)"></i>
               {{ student.gender }}
