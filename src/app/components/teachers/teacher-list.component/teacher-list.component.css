@@ -1,0 +1,494 @@
+/* teacher-list.component.css - Clean Minimal UI */
+
+.teacher-list-container {
+    padding: 24px;
+    background: #fafafa;
+    min-height: 100vh;
+}
+
+.header-section {
+    background: #ffffff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.header-section:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.header-section h2 {
+    color: #111827;
+    font-weight: 700;
+    font-size: 28px;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Teacher Avatar */
+.teacher-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+}
+
+.teacher-avatar:hover {
+    transform: scale(1.05);
+}
+
+.teacher-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 18px;
+    color: #ffffff;
+    transition: all 0.2s ease;
+    background: #374151;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-placeholder:hover {
+    transform: scale(1.05);
+}
+
+/* Table Styles */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.table-hover tbody tr:hover {
+    background: #f9fafb;
+    cursor: pointer;
+    transform: translateX(2px);
+    box-shadow: -3px 0 0 0 #374151;
+}
+
+.table thead {
+    background: #111827;
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 16px 12px;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: #111827;
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 18px 24px;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-group-sm .btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.btn i {
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #111827;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #1f2937;
+}
+
+.btn-outline-secondary {
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.btn-outline-secondary:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 12px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+}
+
+/* Pagination */
+.pagination {
+    margin: 0;
+    gap: 6px;
+}
+
+.page-item {
+    margin: 0 2px;
+}
+
+.page-link {
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    background: #111827;
+    color: white;
+    border-color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.page-item.active .page-link {
+    background: #111827;
+    border-color: #111827;
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    background: #f9fafb;
+    color: #d1d5db;
+    border-color: #e5e7eb;
+}
+
+/* Modal Styles */
+.modal.show {
+    display: block;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    background: #111827;
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 20px 24px;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+}
+
+.modal-title i {
+    margin-right: 10px;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    background: #f9fafb;
+}
+
+/* Loading State */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: #374151;
+}
+
+/* Empty State */
+.bi-inbox {
+    color: #d1d5db;
+    font-size: 64px;
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px 16px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #374151;
+    box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.1);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+}
+
+/* Search and Filter Section */
+.input-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-list-container {
+        padding: 16px;
+    }
+
+    .header-section {
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .header-section h2 {
+        font-size: 22px;
+    }
+
+    .btn-group-sm {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .pagination {
+        font-size: 12px;
+    }
+
+    .table {
+        font-size: 13px;
+    }
+
+    .table tbody td {
+        padding: 12px 8px;
+    }
+
+    .teacher-avatar,
+    .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+    }
+
+    .avatar-placeholder {
+        font-size: 16px;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+}
+
+/* Print Styles */
+@media print {
+
+    .header-section button,
+    .btn-group,
+    .pagination,
+    .card-footer {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+    }
+
+    .table-hover tbody tr:hover {
+        background: white;
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    animation: fadeIn 0.25s ease;
+}
+
+.table tbody tr {
+    animation: slideIn 0.25s ease;
+}
+
+/* Filter Section */
+.card-body .row {
+    align-items: end;
+    gap: 12px;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 10px;
+    border: 1px solid;
+    padding: 16px 20px;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.alert-success {
+    background: #f0fdf4;
+    color: #065f46;
+    border-color: #bbf7d0;
+}
+
+.alert-info {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+/* Smooth Scrolling */
+* {
+    scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}

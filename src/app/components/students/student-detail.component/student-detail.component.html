@@ -1,0 +1,311 @@
+<!-- student-detail.component.html -->
+<div class="student-detail-container">
+    <!-- Header -->
+    <div class="detail-header mb-4">
+        <button class="btn btn-outline-secondary" (click)="goBack()">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading student details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+
+    <!-- Student Detail -->
+    <div *ngIf="!loading && !error && student" class="row">
+        <!-- Left Column - Profile Card -->
+        <div class="col-md-4">
+            <div class="card profile-card">
+                <div class="card-body text-center">
+                    <!-- Profile Picture -->
+                    <div class="profile-picture-container mb-3">
+                        <img *ngIf="student.profile_picture" [src]="student.profile_picture"
+                            [alt]="student.student_name_eng" class="profile-picture" />
+                        <div *ngIf="!student.profile_picture" class="profile-picture-placeholder"
+                            [class.male]="student.gender === 'M'" [class.female]="student.gender === 'F'">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    </div>
+
+                    <!-- Student Name -->
+                    <h3 class="student-name mb-1">{{ student.student_name_eng }}</h3>
+                    <h5 class="student-name-kh  mb-3">
+                        {{ student.student_name_kh }}
+                    </h5>
+
+                    <!-- Quick Info -->
+                    <div class="quick-info mb-3">
+                        <span class="badge bg-primary me-2">
+                            <i class="bi bi-hash"></i> ID: {{ student.student_id }}
+                        </span>
+                        <span class="badge" [class.bg-info]="student.gender === 'M'"
+                            [class.bg-danger]="student.gender === 'F'">
+                            {{ getGenderIcon() }} {{ getGenderDisplay() }}
+                        </span>
+                    </div>
+
+                    <!-- Class Badge -->
+                    <div class="class-badge mb-4">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        {{ student.class?.class_code || 'No Class Assigned' }}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" (click)="editStudent()">
+                            <i class="bi bi-pencil"></i> Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="printProfile()">
+                            <i class="bi bi-printer"></i> Print Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Summary Card -->
+            <div class="card mt-3" *ngIf="student.attendance_summary">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> Attendance Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Attendance Rate Circle -->
+                    <div class="attendance-rate-circle mb-3">
+                        <div class="circle" [ngClass]="getAttendanceRateClass()">
+                            <span class="rate">{{
+                student.attendance_summary.attendance_rate
+              }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="attendance-stats">
+                        <div class="stat-item">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span class="stat-label">Present:</span>
+                            <span class="stat-value">{{
+                student.attendance_summary.present
+              }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                            <span class="stat-label">Absent:</span>
+                            <span class="stat-value">{{
+                student.attendance_summary.absent
+              }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="bi bi-clock-fill text-warning"></i>
+                            <span class="stat-label">Late:</span>
+                            <span class="stat-value">{{
+                student.attendance_summary.late
+              }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="bi bi-info-circle-fill text-info"></i>
+                            <span class="stat-label">Excused:</span>
+                            <span class="stat-value">{{
+                student.attendance_summary.excused
+              }}</span>
+                        </div>
+                        <div class="stat-item total">
+                            <i class="bi bi-calendar3"></i>
+                            <span class="stat-label">Total Days:</span>
+                            <span class="stat-value">{{
+                student.attendance_summary.total_days
+              }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Detailed Info -->
+        <div class="col-md-8">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                    <a class="nav-link" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" [class.active]="activeTab === 'attendance'"
+                        (click)="setActiveTab('attendance')">
+                        <i class="bi bi-calendar-check"></i> Attendance History
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" [class.active]="activeTab === 'performance'"
+                        (click)="setActiveTab('performance')">
+                        <i class="bi bi-graph-up"></i> Performance
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Profile Tab -->
+            <div class="card" *ngIf="activeTab === 'profile'">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-lines-fill"></i> Personal Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row info-row">
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Student ID:</label>
+                            <p class="info-value">{{ student.student_id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Gender:</label>
+                            <p class="info-value">
+                                {{ getGenderIcon() }} {{ getGenderDisplay() }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row info-row">
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Date of Birth:</label>
+                            <p class="info-value">
+                                {{
+                  student.date_of_birth
+                    ? formatDate(student.date_of_birth)
+                    : 'Not specified'
+                }}
+                                <span *ngIf="getAge()" class="text-muted ms-2">({{ getAge() }} years old)</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Class:</label>
+                            <p class="info-value">
+                                <span class="badge bg-primary">{{
+                  student.class?.class_code || 'Not assigned'
+                }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row info-row">
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Phone Number:</label>
+                            <p class="info-value">
+                                <i class="bi bi-telephone"></i>
+                                {{ student.phone_number || 'Not provided' }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Address:</label>
+                            <p class="info-value">
+                                <i class="bi bi-geo-alt"></i>
+                                {{ student.address || 'Not provided' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row info-row">
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Enrolled Date:</label>
+                            <p class="info-value">
+                                {{
+                  student.created_at
+                    ? formatDate(student.created_at)
+                    : 'Unknown'
+                }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="info-label">Last Updated:</label>
+                            <p class="info-value">
+                                {{
+                  student.updated_at
+                    ? formatDate(student.updated_at)
+                    : 'Unknown'
+                }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div class="card" *ngIf="activeTab === 'attendance'">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> Recent Attendance Records
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="
+              !student.recent_attendance ||
+              student.recent_attendance.length === 0
+            " class="text-center py-5">
+                        <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc"></i>
+                        <p class="text-muted mt-3">No recent attendance records</p>
+                    </div>
+
+                    <div class="table-responsive"
+                        *ngIf="student.recent_attendance && student.recent_attendance.length > 0">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let record of student.recent_attendance">
+                                    <td>{{ formatDate(record.attendance_date) }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{
+                      record.subject?.subject_name || 'N/A'
+                    }}</span>
+                                    </td>
+                                    <td>
+                                        <span [ngClass]="getStatusBadgeClass(record.status)">
+                                            {{ getStatusText(record.status) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{
+                      record.notes || '-'
+                    }}</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Tab -->
+            <div class="card" *ngIf="activeTab === 'performance'">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Academic Performance
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5">
+                        <i class="bi bi-graph-up-arrow" style="font-size: 3rem; color: #ccc"></i>
+                        <p class="text-muted mt-3">
+                            Performance tracking coming soon...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

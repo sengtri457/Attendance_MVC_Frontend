@@ -4,6 +4,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "lib": [
+      "ES2022",
+      "dom"
+    ],
     "types": [
       "node"
     ]

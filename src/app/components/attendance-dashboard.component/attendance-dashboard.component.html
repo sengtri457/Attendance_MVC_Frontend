@@ -11,208 +11,254 @@
                 <button class="btn btn-outline-primary" (click)="refreshDashboard()">
                     <i class="bi bi-arrow-clockwise"></i> Refresh
                 </button>
+                <button class="btn btn-outline-primary" (click)="navigateToStudents()">
+                    <i class="bi bi-people"></i> Students
+                </button>
+                <button class="btn btn-outline-primary" (click)="navigateToTeachers()">
+                    <i class="bi bi-person-video3"></i> Teachers
+                </button>
                 <button class="btn btn-primary" (click)="navigateToWeeklyGrid()">
                     <i class="bi bi-grid-3x3"></i> Weekly Grid
                 </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+<!-- Loading State -->
+<div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading dashboard...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+
+<!-- Dashboard Content -->
+<div *ngIf="!loading && dashboardData" class="mt-4 container-fluid">
+    <!-- Summary Cards Row -->
+    <div class="row  mb-4">
+        <!-- Today's Stats -->
+        <div class="col-md-3">
+            <div class="stat-card present-card">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Present Today</h6>
+                    <h2 class="stat-value">{{ dashboardData.today.P }}</h2>
+                    <p class="stat-info mb-0">
+                        <span class="badge bg-success">{{ dashboardData.today.attendance_rate }}</span>
+                    </p>
+                </div>
+            </div>
         </div>
-        <p class="mt-2">Loading dashboard...</p>
+
+        <div class="col-md-3">
+            <div class="stat-card absent-card">
+                <div class="stat-icon">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Absent Today</h6>
+                    <h2 class="stat-value">{{ dashboardData.today.A }}</h2>
+                    <p class="stat-info mb-0">
+                        <span
+                            class="badge bg-danger">{{ ((dashboardData.today.A / dashboardData.today.total) * 100).toFixed(1) }}%</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card late-card">
+                <div class="stat-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Late Today</h6>
+                    <h2 class="stat-value">{{ dashboardData.today.L }}</h2>
+                    <p class="stat-info mb-0">
+                        <span class="badge bg-warning">Tardy Students</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card excused-card">
+                <div class="stat-icon">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="stat-content">
+                    <h6 class="stat-label">Excused Today</h6>
+                    <h2 class="stat-value">{{ dashboardData.today.E }}</h2>
+                    <p class="stat-info mb-0">
+                        <span class="badge bg-info">With Permission</span>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="error" class="alert alert-danger" role="alert">
-        {{ error }}
+    <!-- Main Content Row -->
+    <div class="row  mb-4">
+        <!-- Weekly Trend Chart -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i> Attendance Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Period Comparison -->
+                    <div class="row text-center mb-4">
+                        <div class="col-4">
+                            <div class="trend-item">
+                                <h6 class="text-muted">Today</h6>
+                                <h3 class="mb-1">{{ dashboardData.today.total }}</h3>
+                                <span [class]="'badge bg-' + getStatusColor(dashboardData.today.attendance_rate)">
+                                    {{ dashboardData.today.attendance_rate }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="trend-item">
+                                <h6 class="text-muted">This Week</h6>
+                                <h3 class="mb-1">{{ dashboardData.this_week.total }}</h3>
+                                <span [class]="'badge bg-' + getStatusColor(dashboardData.this_week.attendance_rate)">
+                                    {{ dashboardData.this_week.attendance_rate }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="trend-item">
+                                <h6 class="text-muted">This Month</h6>
+                                <h3 class="mb-1">{{ dashboardData.this_month.total }}</h3>
+                                <span [class]="'badge bg-' + getStatusColor(dashboardData.this_month.attendance_rate)">
+                                    {{ dashboardData.this_month.attendance_rate }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution Bars -->
+                    <div class="status-bars">
+                        <div class="status-bar-item">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Present</span>
+                                <span><strong>{{ dashboardData.today.P }}</strong></span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success"
+                                    [style.width.%]="(dashboardData.today.P / dashboardData.today.total) * 100">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-bar-item">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Absent</span>
+                                <span><strong>{{ dashboardData.today.A }}</strong></span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger"
+                                    [style.width.%]="(dashboardData.today.A / dashboardData.today.total) * 100">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-bar-item">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Late</span>
+                                <span><strong>{{ dashboardData.today.L }}</strong></span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning"
+                                    [style.width.%]="(dashboardData.today.L / dashboardData.today.total) * 100">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-bar-item">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Excused</span>
+                                <span><strong>{{ dashboardData.today.E }}</strong></span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info"
+                                    [style.width.%]="(dashboardData.today.E / dashboardData.today.total) * 100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pie-chart"></i> Today's Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="summary-donut">
+                        <div class="donut-center">
+                            <h2>{{ dashboardData.today.attendance_rate }}</h2>
+                            <p class="text-muted mb-0">Attendance Rate</p>
+                        </div>
+                    </div>
+                    <div class="summary-legend mt-4">
+                        <div class="legend-item" *ngFor="let item of statusDistribution">
+                            <span class="legend-color" [style.background-color]="item.color"></span>
+                            <span class="legend-label">{{ item.name }}</span>
+                            <span class="legend-value">{{ item.value }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Dashboard Content -->
-    <div *ngIf="!loading && dashboardData">
-        <!-- Summary Cards Row -->
-        <div class="row g-3 mb-4">
-            <!-- Today's Stats -->
-            <div class="col-md-3">
-                <div class="stat-card present-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h6 class="stat-label">Present Today</h6>
-                        <h2 class="stat-value">{{ dashboardData.today.P }}</h2>
-                        <p class="stat-info mb-0">
-                            <span class="badge bg-success">{{ dashboardData.today.attendance_rate }}</span>
-                        </p>
-                    </div>
+    <!-- Bottom Row -->
+    <div class="row ">
+        <!-- Students at Risk -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Students at Risk
+                        <span class="badge bg-danger ms-2">{{ dashboardData.students_at_risk.length }}</span>
+                    </h5>
                 </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="stat-card absent-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-x-circle"></i>
+                <div class="card-body">
+                    <div *ngIf="dashboardData.students_at_risk.length === 0" class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle display-4"></i>
+                        <p class="mt-2">No students at risk. Great job!</p>
                     </div>
-                    <div class="stat-content">
-                        <h6 class="stat-label">Absent Today</h6>
-                        <h2 class="stat-value">{{ dashboardData.today.A }}</h2>
-                        <p class="stat-info mb-0">
-                            <span
-                                class="badge bg-danger">{{ ((dashboardData.today.A / dashboardData.today.total) * 100).toFixed(1) }}%</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="stat-card late-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h6 class="stat-label">Late Today</h6>
-                        <h2 class="stat-value">{{ dashboardData.today.L }}</h2>
-                        <p class="stat-info mb-0">
-                            <span class="badge bg-warning">Tardy Students</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="stat-card excused-card">
-                    <div class="stat-icon">
-                        <i class="bi bi-file-text"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h6 class="stat-label">Excused Today</h6>
-                        <h2 class="stat-value">{{ dashboardData.today.E }}</h2>
-                        <p class="stat-info mb-0">
-                            <span class="badge bg-info">With Permission</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content Row -->
-        <div class="row g-3 mb-4">
-            <!-- Weekly Trend Chart -->
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-graph-up"></i> Attendance Trends
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Period Comparison -->
-                        <div class="row text-center mb-4">
-                            <div class="col-4">
-                                <div class="trend-item">
-                                    <h6 class="text-muted">Today</h6>
-                                    <h3 class="mb-1">{{ dashboardData.today.total }}</h3>
-                                    <span [class]="'badge bg-' + getStatusColor(dashboardData.today.attendance_rate)">
-                                        {{ dashboardData.today.attendance_rate }}
-                                    </span>
+                    <div class="risk-list" *ngIf="dashboardData.students_at_risk.length > 0">
+                        <div class="risk-item" *ngFor="let student of dashboardData.students_at_risk.slice(0, 5)">
+                            <div class="risk-student-info">
+                                <div class="risk-avatar">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ student.student_name_eng }}</h6>
+                                    <small class="text-muted">{{ student.student_name_kh }}</small>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="trend-item">
-                                    <h6 class="text-muted">This Week</h6>
-                                    <h3 class="mb-1">{{ dashboardData.this_week.total }}</h3>
-                                    <span
-                                        [class]="'badge bg-' + getStatusColor(dashboardData.this_week.attendance_rate)">
-                                        {{ dashboardData.this_week.attendance_rate }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="trend-item">
-                                    <h6 class="text-muted">This Month</h6>
-                                    <h3 class="mb-1">{{ dashboardData.this_month.total }}</h3>
-                                    <span
-                                        [class]="'badge bg-' + getStatusColor(dashboardData.this_month.attendance_rate)">
-                                        {{ dashboardData.this_month.attendance_rate }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Status Distribution Bars -->
-                        <div class="status-bars">
-                            <div class="status-bar-item">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Present</span>
-                                    <span><strong>{{ dashboardData.today.P }}</strong></span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-success"
-                                        [style.width.%]="(dashboardData.today.P / dashboardData.today.total) * 100">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="status-bar-item">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Absent</span>
-                                    <span><strong>{{ dashboardData.today.A }}</strong></span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-danger"
-                                        [style.width.%]="(dashboardData.today.A / dashboardData.today.total) * 100">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="status-bar-item">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Late</span>
-                                    <span><strong>{{ dashboardData.today.L }}</strong></span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning"
-                                        [style.width.%]="(dashboardData.today.L / dashboardData.today.total) * 100">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="status-bar-item">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Excused</span>
-                                    <span><strong>{{ dashboardData.today.E }}</strong></span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-info"
-                                        [style.width.%]="(dashboardData.today.E / dashboardData.today.total) * 100">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-pie-chart"></i> Today's Summary
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="summary-donut">
-                            <div class="donut-center">
-                                <h2>{{ dashboardData.today.attendance_rate }}</h2>
-                                <p class="text-muted mb-0">Attendance Rate</p>
-                            </div>
-                        </div>
-                        <div class="summary-legend mt-4">
-                            <div class="legend-item" *ngFor="let item of statusDistribution">
-                                <span class="legend-color" [style.background-color]="item.color"></span>
-                                <span class="legend-label">{{ item.name }}</span>
-                                <span class="legend-value">{{ item.value }}</span>
+                            <div class="risk-stats">
+                                <span [class]="'badge ' + getRiskBadgeClass(student.attendance_rate)">
+                                    {{ student.attendance_rate }}
+                                </span>
+                                <small class="text-muted d-block mt-1">
+                                    {{ student.days_present }}/{{ student.total_days }} days
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -220,75 +266,33 @@
             </div>
         </div>
 
-        <!-- Bottom Row -->
-        <div class="row g-3">
-            <!-- Students at Risk -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-exclamation-triangle"></i> Students at Risk
-                            <span class="badge bg-danger ms-2">{{ dashboardData.students_at_risk.length }}</span>
-                        </h5>
+        <!-- Recent Absences -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-x"></i> Recent Absences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="dashboardData.recent_absences.length === 0" class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle display-4"></i>
+                        <p class="mt-2">No recent absences</p>
                     </div>
-                    <div class="card-body">
-                        <div *ngIf="dashboardData.students_at_risk.length === 0" class="text-center py-4 text-muted">
-                            <i class="bi bi-check-circle display-4"></i>
-                            <p class="mt-2">No students at risk. Great job!</p>
-                        </div>
-                        <div class="risk-list" *ngIf="dashboardData.students_at_risk.length > 0">
-                            <div class="risk-item" *ngFor="let student of dashboardData.students_at_risk.slice(0, 5)">
-                                <div class="risk-student-info">
-                                    <div class="risk-avatar">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0">{{ student.student_name_eng }}</h6>
-                                        <small class="text-muted">{{ student.student_name_kh }}</small>
-                                    </div>
-                                </div>
-                                <div class="risk-stats">
-                                    <span [class]="'badge ' + getRiskBadgeClass(student.attendance_rate)">
-                                        {{ student.attendance_rate }}
-                                    </span>
-                                    <small class="text-muted d-block mt-1">
-                                        {{ student.days_present }}/{{ student.total_days }} days
-                                    </small>
+                    <div class="absence-list" *ngIf="dashboardData.recent_absences.length > 0">
+                        <div class="absence-item" *ngFor="let absence of dashboardData.recent_absences.slice(0, 5)">
+                            <div class="absence-date">
+                                <div class="date-badge">
+                                    {{ absence.attendance_date | date:'dd' }}
+                                    <small>{{ absence.attendance_date | date:'MMM' }}</small>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Absences -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-calendar-x"></i> Recent Absences
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div *ngIf="dashboardData.recent_absences.length === 0" class="text-center py-4 text-muted">
-                            <i class="bi bi-check-circle display-4"></i>
-                            <p class="mt-2">No recent absences</p>
-                        </div>
-                        <div class="absence-list" *ngIf="dashboardData.recent_absences.length > 0">
-                            <div class="absence-item" *ngFor="let absence of dashboardData.recent_absences.slice(0, 5)">
-                                <div class="absence-date">
-                                    <div class="date-badge">
-                                        {{ absence.attendance_date | date:'dd' }}
-                                        <small>{{ absence.attendance_date | date:'MMM' }}</small>
-                                    </div>
-                                </div>
-                                <div class="absence-info">
-                                    <h6 class="mb-0">{{ absence.student.student_name_eng }}</h6>
-                                    <small class="text-muted">{{ absence.student.student_name_kh }}</small>
-                                    <p class="mb-0 mt-1" *ngIf="absence.notes">
-                                        <small><i class="bi bi-chat-left-text"></i> {{ absence.notes }}</small>
-                                    </p>
-                                </div>
+                            <div class="absence-info">
+                                <h6 class="mb-0">{{ absence.student.student_name_eng }}</h6>
+                                <small class="text-muted">{{ absence.student.student_name_kh }}</small>
+                                <p class="mb-0 mt-1" *ngIf="absence.notes">
+                                    <small><i class="bi bi-chat-left-text"></i> {{ absence.notes }}</small>
+                                </p>
                             </div>
                         </div>
                     </div>

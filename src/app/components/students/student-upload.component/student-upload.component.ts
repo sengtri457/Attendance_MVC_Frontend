@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { StudentService, UploadResponse } from '../../services/student.service';
+import { StudentService, UploadResponse } from '../../../services/student.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 interface UploadResult {
@@ -111,7 +111,7 @@ export class StudentUploadComponent {
         console.log(response);
         console.log(this.successRecords);
       },
-      error: (error) => {
+      error: (error:any) => {
         this.uploading = false;
         this.handleUploadError(error);
       },
@@ -181,7 +181,7 @@ export class StudentUploadComponent {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (error) => {
+      error: (error:any) => {
         console.error('Download error:', error);
         this.uploadResult = {
           type: 'error',
