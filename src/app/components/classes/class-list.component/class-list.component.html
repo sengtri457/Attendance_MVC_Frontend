@@ -1,0 +1,255 @@
+<div class="class-list-container">
+    <!-- Header -->
+    <div class="header-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">
+                    <i class="bi bi-collection"></i> Class Management
+                </h2>
+                <p class="text-muted">Manage all classes in the system</p>
+            </div>
+            <button class="btn btn-primary" (click)="openAddModal()">
+                <i class="bi bi-plus-circle"></i> Add New Class
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" [(ngModel)]="searchYear"
+                            placeholder="Search by Class Year (e.g. 2024-2025)..." (keyup.enter)="applyFilters()" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Page Size</label>
+                        <select class="form-select" [(ngModel)]="pageSize" (change)="applyFilters()">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary" (click)="applyFilters()">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="clearFilters()">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading classes...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+
+    <!-- Class Table -->
+    <div *ngIf="!loading && !error" class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                Classes List
+                <span class="badge bg-primary ms-2">{{ totalClasses }}</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px">#</th>
+                            <th>Code</th>
+                            <th>Year</th>
+                            <th>Subject</th>
+                            <th>Teacher</th>
+                            <th>Students</th>
+                            <th>Schedule</th>
+                            <th style="width: 150px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let classItem of classes; let i = index">
+                            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                            <td><strong>{{ classItem.class_code }}</strong></td>
+                            <td><span class="badge bg-info text-dark">{{ classItem.class_year }}</span></td>
+                            <td>{{ classItem.subject?.subject_name || 'N/A' }}</td>
+                            <td>{{ classItem.teacher?.teacher_name_eng || 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ classItem.students?.length || 0 }}</span>
+                            </td>
+                            <td>{{ classItem.schedule || 'N/A' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-outline-secondary mx-1" (click)="openEditModal(classItem)"
+                                        title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger mx-1" (click)="deleteClass(classItem)"
+                                        title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="classes.length === 0">
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc"></i>
+                                <p class="text-muted mt-3">No classes found</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer" *ngIf="totalPages > 1">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    Showing {{ (currentPage - 1) * pageSize + 1 }} to
+                    {{ Math.min(currentPage * pageSize, totalClasses) }} of
+                    {{ totalClasses }} classes
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item" [class.disabled]="currentPage === 1">
+                            <a class="page-link" (click)="previousPage()">Previous</a>
+                        </li>
+                        <li class="page-item" *ngFor="let page of [].constructor(totalPages); let i = index"
+                            [class.active]="i + 1 === currentPage">
+                            <a class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</a>
+                        </li>
+                        <li class="page-item" [class.disabled]="currentPage === totalPages">
+                            <a class="page-link" (click)="nextPage()">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Class Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle"></i> Add New Class
+                </h5>
+                <button type="button" class="btn-close" (click)="closeAddModal()"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Class Code *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
+                            required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class Year *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.class_year" name="class_year"
+                            placeholder="e.g. 2024-2025" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject *</label>
+                        <select class="form-select" [(ngModel)]="classForm.subject_id" name="subject_id" required>
+                            <option [ngValue]="0" disabled>Select Subject</option>
+                            <option *ngFor="let subject of subjects" [ngValue]="subject.subject_id">
+                                {{ subject.subject_name }} ({{ subject.subject_code }})
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teacher *</label>
+                        <select class="form-select" [(ngModel)]="classForm.teacher_id" name="teacher_id" required>
+                            <option [ngValue]="0" disabled>Select Teacher</option>
+                            <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacher_id">
+                                {{ teacher.teacher_name_eng }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Schedule</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.schedule" name="schedule"
+                            placeholder="e.g. Mon, Wed 10:00-11:30" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="saveClass()">Save Class</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showAddModal" *ngIf="showAddModal"></div>
+
+<!-- Edit Class Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil"></i> Edit Class
+                </h5>
+                <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Class Code *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
+                            required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class Year *</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.class_year" name="class_year"
+                            required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject *</label>
+                        <select class="form-select" [(ngModel)]="classForm.subject_id" name="subject_id" required>
+                            <option [ngValue]="0" disabled>Select Subject</option>
+                            <option *ngFor="let subject of subjects" [ngValue]="subject.subject_id">
+                                {{ subject.subject_name }} ({{ subject.subject_code }})
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teacher *</label>
+                        <select class="form-select" [(ngModel)]="classForm.teacher_id" name="teacher_id" required>
+                            <option [ngValue]="0" disabled>Select Teacher</option>
+                            <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacher_id">
+                                {{ teacher.teacher_name_eng }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Schedule</label>
+                        <input type="text" class="form-control" [(ngModel)]="classForm.schedule" name="schedule" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="updateClass()">Update Class</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showEditModal" *ngIf="showEditModal"></div>

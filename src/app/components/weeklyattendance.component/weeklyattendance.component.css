@@ -569,9 +569,11 @@
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
+
   100% {
     opacity: 1;
   }
@@ -585,6 +587,7 @@
    PRINT STYLES
    ======================== */
 @media print {
+
   .controls,
   .btn,
   button,
@@ -641,4 +644,55 @@
   .col-name-eng {
     min-width: 100px;
   }
+}
+
+/* ========================
+   PAGINATION STYLING
+   ======================== */
+.pagination {
+  gap: 4px;
+}
+
+.page-link {
+  border: none;
+  border-radius: 4px !important;
+  color: #64748b;
+  font-weight: 500;
+  padding: 6px 12px;
+  transition: all 0.2s;
+  background-color: transparent;
+}
+
+.page-link:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.page-link:focus {
+  box-shadow: none;
+}
+
+.page-item.disabled .page-link {
+  background-color: transparent;
+  color: #94a3b8;
+}
+
+/* Custom styling for the "Page X of Y" text */
+.page-item.disabled span.page-link {
+  font-weight: 600;
+  color: #475569;
+  padding: 6px 16px;
+}
+
+/* Navigation Buttons (Prev/Next) */
+.page-item:not(.disabled) .page-link {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.page-item:not(.disabled) .page-link:hover {
+  border-color: #cbd5e1;
+  background-color: white;
 }

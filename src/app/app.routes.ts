@@ -37,4 +37,8 @@ export const routes: Routes = [
     path: 'subjects',
     loadComponent: () => import('./components/subjects/subject-list.component/subject-list.component').then(m => m.SubjectListComponent)
   },
+  {
+    path: 'classes',
+    loadComponent: () => import('./components/classes/class-list.component/class-list.component').then(m => m.ClassListComponent)
+  },
 ];

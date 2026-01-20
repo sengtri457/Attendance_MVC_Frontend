@@ -25,11 +25,20 @@ export class AttendanceService {
     startDate: string,
     endDate: string,
     classId: number,
+    page: number = 1,
+    limit: number = 20,
+    search: string = "",
   ): Observable<ApiResponse<any>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set("start_date", startDate)
       .set("end_date", endDate)
-      .set("class_id", classId.toString());
+      .set("class_id", classId.toString())
+      .set("page", page.toString())
+      .set("limit", limit.toString());
+
+    if (search) {
+      params = params.set("search", search);
+    }
 
     return this.http.get<ApiResponse<any>>(
       `${this.apiUrl}/reports/weekly-grid`,

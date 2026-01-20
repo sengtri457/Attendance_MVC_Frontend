@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { AttendanceService } from "../../services/attendnaceservice/attendance.service";
 import { forkJoin, Subject as RxSubject } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
+import { environment } from '../../../env/enviroment';
 import {
   SubjectService,
 } from "../../services/subjectservice/subject.service";
@@ -86,6 +87,12 @@ interface WeeklyGridData {
     attendance_rate?: string;
     recorded_days?: number;
   };
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 interface PendingUpdate {
@@ -113,6 +120,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   startDate: string = "";
   endDate: string = "";
   searchQuery: string = "";
+  
+  // Pagination
+  currentPage = 1;
+  pageSize = 20;
+  totalStudents = 0;
+  totalPages = 0;
+  Math = Math; // for template usage
 
   // Subject management
   dateSubjects: Map<string, Subject[]> = new Map();
@@ -172,31 +186,18 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     if (!this.gridData || !this.gridData.students) {
       return [];
     }
-
-    if (!this.searchQuery || this.searchQuery.trim() === "") {
-      return this.gridData.students;
-    }
-
-    const query = this.searchQuery.toLowerCase().trim();
-
-    return this.gridData.students.filter((student) => {
-      const nameKh = student.student_name_kh?.toLowerCase() || "";
-      const nameEng = student.student_name_eng?.toLowerCase() || "";
-      const rowNum = student.row_number?.toString() || "";
-
-      return (
-        nameKh.includes(query) ||
-        nameEng.includes(query) ||
-        rowNum.includes(query)
-      );
-    });
+    // Server-side filtering is now used
+    return this.gridData.students;
   }
 
-  /**
-   * Clear search filter
-   */
+  onSearch(): void {
+    this.currentPage = 1;
+    this.loadWeeklyGrid();
+  }
+
   clearSearch(): void {
     this.searchQuery = "";
+    this.onSearch();
   }
 
   /**
@@ -239,6 +240,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }
 
     if (this.startDate && this.endDate) {
+      this.currentPage = 1; // Reset to page 1 on class change
       this.loadWeeklyGrid();
     }
   }
@@ -259,6 +261,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
     // Only auto-load if both dates are set
     if (this.startDate && this.endDate) {
+      this.currentPage = 1; // Reset to page 1 on date change
       this.loadWeeklyGrid();
     }
   }
@@ -302,7 +305,14 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.attendanceService
-      .getWeeklyGrid(this.startDate, this.endDate, this.selectedClassId)
+      .getWeeklyGrid(
+        this.startDate, 
+        this.endDate, 
+        this.selectedClassId, 
+        this.currentPage, 
+        this.pageSize,
+        this.searchQuery // Pass search query
+      )
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => (this.loading = false)),
@@ -310,6 +320,18 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.gridData = response.data;
+          
+          // Handle pagination
+          if (response.data.pagination) {
+            this.totalStudents = response.data.pagination.total;
+            this.totalPages = response.data.pagination.totalPages;
+            this.currentPage = response.data.pagination.page;
+          } else {
+             // Fallback if backend doesn't return pagination yet
+             this.totalStudents = this.gridData?.students?.length || 0;
+             this.totalPages = 1;
+          }
+
           // Process the data to calculate daily attendance status
           this.processAttendanceData();
           this.loadSubjectsForDates();
@@ -800,31 +822,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     if (!confirm(`Submit ${this.pendingUpdates.size} attendance update(s)?`)) {
       return;
     }
-    // if (this.pendingUpdates.size !== 0) {
-    //   Swal.fire({
-    //     title: "Submit",
-    //     text: `Submit ${this.pendingUpdates.size} attendance update(s)?`,
-    //     icon: "warning",
-    //     showCancelButton: true,
-    //     confirmButtonColor: "#3085d6",
-    //     cancelButtonColor: "#d33",
-    //     confirmButtonText: "Yes Submit",
-    //   }).then((result) => {
-    //     if (result.isConfirmed) {
-    //       Swal.fire({
-    //         title: "Submitted!",
-    //         text: "Student Has Submitted",
-    //         icon: "success",
-    //       });
-    //     } else {
-    //       Swal.fire({
-    //         title: "Cancelled",
-    //         text: "Student Has Cancelled",
-    //         icon: "error",
-    //       });
-    //     }
-    //   });
-    // }
+
     this.submitting = true;
 
     const updates: any[] = [];
@@ -877,6 +875,31 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  // Pagination methods
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadWeeklyGrid();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadWeeklyGrid();
+    }
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.loadWeeklyGrid();
+  }
+  
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+    this.loadWeeklyGrid();
   }
 
   /**
@@ -958,11 +981,18 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Export attendance data to CSV
+   * Export attendance data to Excel
+   */
+  exportToExcel(): void {
+    const url = `${environment.apiUrl}/attendance/export/weekly-excel?start_date=${this.startDate}&end_date=${this.endDate}&class_id=${this.selectedClassId}`;
+    window.open(url, "_blank");
+  }
+
+  /**
+   * Legacy support for cached templates
    */
   exportToCSV(): void {
-    const url = `/api/attendance/export/weekly-csv?start_date=${this.startDate}&end_date=${this.endDate}&class_id=${this.selectedClassId}`;
-    window.open(url, "_blank");
+    this.exportToExcel();
   }
 
   /**
