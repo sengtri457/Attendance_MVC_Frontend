@@ -5,10 +5,10 @@ import { AttendanceService } from "../../services/attendnaceservice/attendance.s
 import { forkJoin, Subject as RxSubject } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
 import {
-  Subject,
   SubjectService,
 } from "../../services/subjectservice/subject.service";
 import Swal from "sweetalert2";
+import { Subject } from "../../models/Subject.model";
 interface AttendanceData {
   subjects?: {
     [subjectId: string]: Array<{

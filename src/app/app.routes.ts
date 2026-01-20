@@ -33,4 +33,8 @@ export const routes: Routes = [
     path: 'teachers/:id',
     loadComponent: () => import('./components/teachers/teacher-detail.component/teacher-detail.component').then(m => m.TeacherDetailComponent)
   },
+  {
+    path: 'subjects',
+    loadComponent: () => import('./components/subjects/subject-list.component/subject-list.component').then(m => m.SubjectListComponent)
+  },
 ];

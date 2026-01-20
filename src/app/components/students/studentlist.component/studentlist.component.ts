@@ -37,11 +37,10 @@ students: Student[] = [];
     student_name_kh: '',
     student_name_eng: '',
     gender: 'M',
-    date_of_birth: '',
     class_id: 1,
     address: ''
   };
-Math: any;
+  Math = Math;
 
   constructor(
     private studentService: StudentService,
@@ -69,10 +68,9 @@ Math: any;
       next: (response:any) => {
         if (response.success) {
           this.students = response.data.students || response.data;
-          console.log(this.students)
-          if (response.data.pagination) {
-            this.totalStudents = response.data.pagination.total;
-            this.totalPages = response.data.pagination.totalPages;
+          if (response.pagination) {
+            this.totalStudents = response.pagination.total;
+            this.totalPages = response.pagination.totalPages;
           }
         }
         this.loading = false;
@@ -94,7 +92,6 @@ Math: any;
       student_name_kh: '',
       student_name_eng: '',
       gender: 'M',
-      date_of_birth: '',
       class_id: 1,
       address: ''
     };
@@ -111,7 +108,6 @@ Math: any;
       student_name_kh: student.student_name_kh,
       student_name_eng: student.student_name_eng,
       gender: student.gender,
-      date_of_birth: student.date_of_birth || '',
       class_id: student.class_id,
       address: student.address || ''
     };

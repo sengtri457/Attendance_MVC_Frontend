@@ -25,17 +25,15 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Class</label>
-                        <select class="form-select" [(ngModel)]="selectedClassId">
+                        <select class="form-select" [(ngModel)]="selectedClassId" (change)="applyFilters()">
                             <option [value]="null">All Classes</option>
-                            <option value="1">Grade 10A</option>
-                            <option value="2">Grade 10B</option>
-                            <option value="3">Grade 11A</option>
-                            <option value="4">Grade 11B</option>
+                            <option [ngValue]="1">SV23</option>
+                            <option [ngValue]="2">SV13</option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Gender</label>
-                        <select class="form-select" [(ngModel)]="selectedGender">
+                        <select class="form-select" [(ngModel)]="selectedGender" (change)="applyFilters()">
                             <option [value]="null">All</option>
                             <option value="M">Male</option>
                             <option value="F">Female</option>
@@ -43,11 +41,11 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Page Size</label>
-                        <select class="form-select" [(ngModel)]="pageSize">
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
+                        <select class="form-select" [(ngModel)]="pageSize" (change)="applyFilters()">
+                            <option [ngValue]="10">10</option>
+                            <option [ngValue]="20">20</option>
+                            <option [ngValue]="50">50</option>
+                            <option [ngValue]="100">100</option>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-end gap-2">
@@ -155,14 +153,14 @@
         </div>
 
         <!-- Pagination -->
-        <div class="card-footer" *ngIf="totalPages > 1">
+        <div class="card-footer" *ngIf="totalStudents > 0">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-muted">
                     Showing {{ (currentPage - 1) * pageSize + 1 }} to
                     {{ Math.min(currentPage * pageSize, totalStudents) }} of
                     {{ totalStudents }} students
                 </div>
-                <nav>
+                <nav *ngIf="totalPages > 1">
                     <ul class="pagination mb-0">
                         <li class="page-item" [class.disabled]="currentPage === 1">
                             <a class="page-link" (click)="previousPage()">Previous</a>
@@ -215,17 +213,10 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" [(ngModel)]="studentForm.date_of_birth"
-                                name="date_of_birth" />
-                        </div>
-                        <div class="col-md-4 mb-3">
                             <label class="form-label">Class *</label>
                             <select class="form-select" [(ngModel)]="studentForm.class_id" name="class_id">
-                                <option value="1">Grade 10A</option>
-                                <option value="2">Grade 10B</option>
-                                <option value="3">Grade 11A</option>
-                                <option value="4">Grade 11B</option>
+                                <option value="1">SV23</option>
+                                <option value="2">SV13</option>
                             </select>
                         </div>
                     </div>
@@ -285,17 +276,10 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" [(ngModel)]="studentForm.date_of_birth"
-                                name="date_of_birth" />
-                        </div>
-                        <div class="col-md-4 mb-3">
                             <label class="form-label">Class *</label>
                             <select class="form-select" [(ngModel)]="studentForm.class_id" name="class_id">
-                                <option value="1">Grade 10A</option>
-                                <option value="2">Grade 10B</option>
-                                <option value="3">Grade 11A</option>
-                                <option value="4">Grade 11B</option>
+                                <option value="1">SV23</option>
+                                <option value="2">SV13</option>
                             </select>
                         </div>
                     </div>

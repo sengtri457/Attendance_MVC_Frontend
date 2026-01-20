@@ -109,6 +109,10 @@ export class AttendanceDashboardComponent implements OnInit {
     this.router.navigate(["/students"]);
   }
 
+  navigateToSubjects(): void {
+    this.router.navigate(["/subjects"]);
+  }
+
   navigateToStudentDetail(studentId: number): void {
     this.router.navigate(["/students", studentId, "attendance"]);
   }

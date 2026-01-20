@@ -26,10 +26,9 @@ export class StudentService {
     let httpParams = new HttpParams();
     if (params) {
       Object.keys(params).forEach((key) => {
-       async (params:any) => {
-         if (params[key] !== undefined && params[key] !== null) {
-           httpParams = httpParams.set(key, params[key].toString());
-       }
+        const value = (params as any)[key];
+        if (value !== undefined && value !== null && value !== '') {
+          httpParams = httpParams.set(key, value.toString());
         }
       });
     }

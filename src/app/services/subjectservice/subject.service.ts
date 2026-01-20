@@ -1,12 +1,8 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { environment } from "../../../env/enviroment";
-export interface Subject {
-  subject_id: number;
-  subject_name: string;
-  subject_code?: string;
-}
+import { Subject, SubjectFormData } from "../../models/Subject.model";
 
 export interface DaySchedule {
   day_of_week: number; // 0=Sunday, 1=Monday, etc.
@@ -19,19 +15,30 @@ export interface ClassSchedule {
   class_name: string;
   schedule: DaySchedule[];
 }
+
 @Injectable({
   providedIn: "root",
 })
 export class SubjectService {
-  private apiUrl = `${environment.apiUrl}/subject`; // Adjust based on your API
+  private apiUrl = `${environment.apiUrl}/subject`;
 
   constructor(private http: HttpClient) {}
 
   /**
-   * Get all subjects
+   * Get all subjects with pagination and search
    */
-  getAllSubjects(): Observable<{ data: Subject[] }> {
-    return this.http.get<{ data: Subject[] }>(`${this.apiUrl}`);
+  getAllSubjects(params?: any): Observable<any> {
+    let httpParams = new HttpParams();
+
+    if (params) {
+      Object.keys(params).forEach((key) => {
+        if (params[key] !== null && params[key] !== undefined) {
+          httpParams = httpParams.append(key, params[key]);
+        }
+      });
+    }
+
+    return this.http.get<any>(`${this.apiUrl}`, { params: httpParams });
   }
 
   /**
@@ -74,5 +81,26 @@ export class SubjectService {
     return this.http.get<{ data: Subject[] }>(
       `${this.apiUrl}/class/${classId}/date/${date}`,
     );
+  }
+
+  /**
+   * Create a new subject
+   */
+  createSubject(subjectData: SubjectFormData): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}`, subjectData);
+  }
+
+  /**
+   * Update a subject
+   */
+  updateSubject(id: number, subjectData: SubjectFormData): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, subjectData);
+  }
+
+  /**
+   * Delete a subject
+   */
+  deleteSubject(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 }
