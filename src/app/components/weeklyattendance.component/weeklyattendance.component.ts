@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { AttendanceService } from "../../services/attendnaceservice/attendance.service";
-import { forkJoin, Subject as RxSubject } from "rxjs";
+import { forkJoin, Subject as RxSubject, interval } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
 import { environment } from '../../../env/enviroment';
 import {
@@ -10,6 +10,7 @@ import {
 } from "../../services/subjectservice/subject.service";
 import Swal from "sweetalert2";
 import { Subject } from "../../models/Subject.model";
+
 interface AttendanceData {
   subjects?: {
     [subjectId: string]: Array<{
@@ -102,6 +103,13 @@ interface PendingUpdate {
   subjectId: number;
 }
 
+interface CountdownTime {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
+}
+
 @Component({
   selector: "app-weeklyattendance.component",
   imports: [CommonModule, FormsModule],
@@ -152,6 +160,17 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }>;
   } = {};
 
+  // Countdown timer modal
+  showCountdownModal = false;
+  countdown: CountdownTime = {
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    totalSeconds: 0
+  };
+  countdownMessage: string = "";
+  private countdownInterval: any;
+
   // Attendance status options
   readonly statusOptions = [
     { value: "P", label: "Present", symbol: "✓" },
@@ -163,11 +182,16 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   // Submission state
   submitting = false;
 
+  // Today's date for comparison (YYYY-MM-DD format)
+  private todayDate: string;
+
   constructor(
     private attendanceService: AttendanceService,
     private subjectService: SubjectService,
   ) {
     this.setCurrentWeek();
+    // Initialize today's date
+    this.todayDate = this.formatDate(new Date());
   }
 
   ngOnInit(): void {
@@ -177,6 +201,171 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.stopCountdown();
+  }
+
+  /**
+   * Check if a date is today
+   */
+  isToday(dateString: string): boolean {
+    return dateString === this.todayDate;
+  }
+
+  /**
+   * Check if a date is in the past (before today)
+   */
+  isPastDate(dateString: string): boolean {
+    return dateString < this.todayDate;
+  }
+
+  /**
+   * Check if a date is in the future (after today)
+   */
+  isFutureDate(dateString: string): boolean {
+    return dateString > this.todayDate;
+  }
+
+  /**
+   * Check if attendance editing is allowed for a specific date
+   * Only today's date is editable
+   */
+  isDateEditable(dateString: string): boolean {
+    return this.isToday(dateString);
+  }
+
+  /**
+   * Calculate time remaining until midnight (start of next day)
+   */
+  private calculateTimeUntilMidnight(): CountdownTime {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setHours(24, 0, 0, 0); // Set to midnight of next day
+    
+    const diff = tomorrow.getTime() - now.getTime();
+    const totalSeconds = Math.floor(diff / 1000);
+    
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return {
+      hours,
+      minutes,
+      seconds,
+      totalSeconds
+    };
+  }
+
+  /**
+   * Calculate time remaining until a specific future date
+   */
+  private calculateTimeUntilDate(targetDate: string): CountdownTime {
+    const now = new Date();
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0); // Set to start of target day
+    
+    const diff = target.getTime() - now.getTime();
+    const totalSeconds = Math.floor(diff / 1000);
+    
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return {
+      hours: days * 24 + hours, // Convert days to hours
+      minutes,
+      seconds,
+      totalSeconds
+    };
+  }
+
+  /**
+   * Start countdown timer
+   */
+  private startCountdown(targetDate?: string): void {
+    this.stopCountdown(); // Clear any existing interval
+    
+    // Update countdown immediately
+    this.updateCountdown(targetDate);
+    
+    // Then update every second
+    this.countdownInterval = interval(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateCountdown(targetDate);
+      });
+  }
+
+  /**
+   * Update countdown values
+   */
+  private updateCountdown(targetDate?: string): void {
+    if (targetDate) {
+      this.countdown = this.calculateTimeUntilDate(targetDate);
+    } else {
+      this.countdown = this.calculateTimeUntilMidnight();
+    }
+  }
+
+  /**
+   * Stop countdown timer
+   */
+  private stopCountdown(): void {
+    if (this.countdownInterval) {
+      this.countdownInterval.unsubscribe();
+      this.countdownInterval = null;
+    }
+  }
+
+  /**
+   * Show countdown modal with appropriate message
+   */
+  showCountdownTimerModal(date: string): void {
+    if (this.isPastDate(date)) {
+      this.countdownMessage = "This date has passed. You cannot edit past attendance records.";
+      this.showCountdownModal = true;
+      this.stopCountdown(); // No countdown for past dates
+    } else if (this.isFutureDate(date)) {
+      const targetDate = new Date(date);
+      const formattedDate = targetDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      this.countdownMessage = `You can edit attendance for ${formattedDate} in:`;
+      this.startCountdown(date);
+      this.showCountdownModal = true;
+    } else {
+      // Today - show time until midnight
+      this.countdownMessage = "Today's attendance can be edited until midnight. Time remaining:";
+      this.startCountdown();
+      this.showCountdownModal = true;
+    }
+  }
+
+  /**
+   * Close countdown modal
+   */
+  closeCountdownModal(): void {
+    this.showCountdownModal = false;
+    this.stopCountdown();
+  }
+
+  /**
+   * Format countdown time for display
+   */
+  getCountdownDisplay(): string {
+    const { hours, minutes, seconds } = this.countdown;
+    
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      const remainingHours = hours % 24;
+      return `${days}d ${remainingHours}h ${minutes}m ${seconds}s`;
+    }
+    
+    return `${hours}h ${minutes}m ${seconds}s`;
   }
 
   /**
@@ -713,15 +902,25 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   /**
    * Get CSS class for attendance status
    */
-  getStatusClass(status: string | null): string {
+  getStatusClass(status: string | null, date?: string): string {
     if (!status) return "status-empty";
+    
+    // Add disabled class for non-editable dates
+    let baseClass = "";
     const statusMap: Record<string, string> = {
       P: "status-present",
       A: "status-absent",
       L: "status-late",
       E: "status-excused",
     };
-    return statusMap[status] || "status-empty";
+    baseClass = statusMap[status] || "status-empty";
+    
+    // Add disabled class if date is provided and not editable
+    if (date && !this.isDateEditable(date)) {
+      baseClass += " status-disabled";
+    }
+    
+    return baseClass;
   }
 
   /**
@@ -748,8 +947,15 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Handle cell click to enable editing
+   * UPDATED: Show countdown modal for non-editable dates
    */
   onCellClick(studentId: number, date: string): void {
+    // Show countdown modal if date is not editable
+    if (!this.isDateEditable(date)) {
+      this.showCountdownTimerModal(date);
+      return;
+    }
+
     const key = this.getCellKey(studentId, date);
 
     // Close any other open cells
@@ -771,12 +977,25 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Stage attendance update (doesn't save immediately)
+   * UPDATED: Additional check to prevent updates for non-today dates
    */
   stageAttendanceUpdate(
     studentId: number,
     date: string,
     newStatus: string,
   ): void {
+    // Double-check date is editable
+    if (!this.isDateEditable(date)) {
+      Swal.fire({
+        title: "Invalid Date",
+        text: "You can only update attendance for today.",
+        icon: "error",
+        draggable: true,
+      });
+      this.closeEditMode(studentId, date);
+      return;
+    }
+
     // Validate status
     if (!newStatus || newStatus === "") {
       this.closeEditMode(studentId, date);
@@ -816,6 +1035,24 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   submitAllChanges(): void {
     if (this.pendingUpdates.size === 0) {
       alert("No changes to submit");
+      return;
+    }
+
+    // Verify all pending updates are for today
+    let hasInvalidDates = false;
+    this.pendingUpdates.forEach((update) => {
+      if (!this.isDateEditable(update.date)) {
+        hasInvalidDates = true;
+      }
+    });
+
+    if (hasInvalidDates) {
+      Swal.fire({
+        title: "Invalid Updates",
+        text: "Some updates are for dates other than today. Only today's attendance can be updated.",
+        icon: "error",
+        draggable: true,
+      });
       return;
     }
 
@@ -1059,8 +1296,18 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Get attendance cell title
+   * UPDATED: Show different messages for non-editable dates
    */
   getCellTitle(dateString: string, student: StudentRow): string {
+    // Check if date is editable first
+    if (!this.isDateEditable(dateString)) {
+      if (this.isPastDate(dateString)) {
+        return "Past date - Click to see time remaining";
+      } else if (this.isFutureDate(dateString)) {
+        return "Future date - Click to see countdown";
+      }
+    }
+
     const key = this.getCellKey(student.student_id, dateString);
 
     // Check for pending update first

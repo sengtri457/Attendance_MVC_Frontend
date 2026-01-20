@@ -76,7 +76,7 @@ students: Student[] = [];
         this.loading = false;
       },
       error: (err:any) => {
-        this.error = 'Failed to load students';
+        this.error = err.message;
         this.loading = false;
         console.error(err);
       }

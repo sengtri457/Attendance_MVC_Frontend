@@ -2,6 +2,103 @@
 
 <!-- Header Section -->
 <div class="attendance-container">
+  <!-- Modal Overlay -->
+  <div *ngIf="showCountdownModal" class="modal fade show d-block" tabindex="-1"
+    style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-clock-history me-2"></i>
+            Attendance Editing Timer
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeCountdownModal()">
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body text-center py-4">
+          <!-- Message -->
+          <p class="lead mb-4">{{ countdownMessage }}</p>
+
+          <!-- Countdown Display (only show if counting) -->
+          <div *ngIf="countdown.totalSeconds > 0" class="countdown-display mb-4">
+            <div class="row justify-content-center">
+              <div class="col-auto">
+                <div class="time-box">
+                  <div class="time-value">{{ countdown.hours }}</div>
+                  <div class="time-label">Hours</div>
+                </div>
+              </div>
+              <div class="col-auto d-flex align-items-center">
+                <h2 class="mb-0">:</h2>
+              </div>
+              <div class="col-auto">
+                <div class="time-box">
+                  <div class="time-value">{{ countdown.minutes.toString().padStart(2, '0') }}</div>
+                  <div class="time-label">Minutes</div>
+                </div>
+              </div>
+              <div class="col-auto d-flex align-items-center">
+                <h2 class="mb-0">:</h2>
+              </div>
+              <div class="col-auto">
+                <div class="time-box">
+                  <div class="time-value">{{ countdown.seconds.toString().padStart(2, '0') }}</div>
+                  <div class="time-label">Seconds</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alternative compact display -->
+            <div class="mt-3">
+              <div class="alert alert-info mb-0">
+                <i class="bi bi-hourglass-split me-2"></i>
+                <strong>{{ getCountdownDisplay() }}</strong> remaining
+              </div>
+            </div>
+          </div>
+
+          <!-- Past Date Message -->
+          <div *ngIf="countdown.totalSeconds === 0 && isPastDate(detailModalData.date || '')"
+            class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            This date has already passed and cannot be edited.
+          </div>
+
+          <!-- Additional Info -->
+          <div class="mt-4">
+            <small class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Attendance can only be edited on the same day it occurs.
+            </small>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCountdownModal()">
+            Close
+          </button>
+          <button type="button" class="btn btn-primary" (click)="closeCountdownModal(); resetToCurrentWeek()">
+            <i class="bi bi-calendar-check me-1"></i>
+            Go to Today
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alternative: Compact Inline Countdown (can be shown in table cells) -->
+  <ng-template #compactCountdown>
+    <div class="compact-countdown">
+      <i class="bi bi-lock text-muted me-1"></i>
+      <small class="text-muted">
+        Available in {{ getCountdownDisplay() }}
+      </small>
+    </div>
+  </ng-template>
   <div class="attendance-header">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
