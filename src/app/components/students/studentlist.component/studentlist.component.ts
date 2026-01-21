@@ -87,6 +87,12 @@ students: Student[] = [];
     this.router.navigate(['/students', studentId]);
   }
 
+
+  importExcell(){
+    this.router.navigateByUrl('students/uploard');
+  }
+
+
   openAddModal(): void {
     this.studentForm = {
       student_name_kh: '',

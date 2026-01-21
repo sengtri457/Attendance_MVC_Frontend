@@ -6,7 +6,7 @@ import { StudentlistComponent } from './components/students/studentlist.componen
 import { StudentDetailComponent } from './components/students/student-detail.component/student-detail.component';
 export const routes: Routes = [
   {
-    path: 'upload',
+    path: 'students/uploard',
     component: StudentUploadComponent,
   },
   {

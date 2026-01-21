@@ -9,9 +9,14 @@
                 </h2>
                 <p class="text-muted">Manage all students in the system</p>
             </div>
-            <button class="btn btn-primary" (click)="openAddModal()">
-                <i class="bi bi-plus-circle"></i> Add New Student
-            </button>
+            <div class="wrapper-btn">
+                <button class="btn btn-primary me-2" (click)="openAddModal()">
+                    <i class="bi bi-plus-circle"></i> Add New Student
+                </button>
+                <button class="btn btn-primary" (click)="importExcell()">
+                    <i class="bi bi-plus-circle"></i> Add Multiple
+                </button>
+            </div>
         </div>
 
         <!-- Filters -->

@@ -23,16 +23,16 @@
                             <li>Fill in student data in the Excel file</li>
                             <li>Upload the completed file below</li>
                             <li>Maximum file size: 10MB</li>
-                            <li>Supported formats: .xlsx, .xls</li>
+                            <li>Supported formats: .xlsx, .csv</li>
                         </ul>
                     </div>
 
                     <!-- Download Template Button -->
                     <div class="mb-4">
-                        <button type="button" class="btn btn-outline-success" (click)="downloadTemplate()">
+                        <!-- <button type="button" class="btn btn-outline-success" (click)="downloadTemplate()">
                             <i class="bi bi-download"></i>
                             Download Excel Template
-                        </button>
+                        </button> -->
                     </div>
 
                     <!-- Upload Mode Selection -->
@@ -168,7 +168,8 @@
                                     <tr>
                                         <th>Row #</th>
                                         <th>Student ID</th>
-                                        <th>Student Name</th>
+                                        <th>StudentName_Kh</th>
+                                        <th>StudentName_eng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -177,6 +178,7 @@
                                         <td>{{ $index +1 }}</td>
                                         <td>{{ record.student_id }}</td>
                                         <td>{{ record.student.student_name_eng }}</td>
+                                        <td>{{ record.student.student_name_kh }}</td>
                                     </tr>
                                     }
                                 </tbody>
