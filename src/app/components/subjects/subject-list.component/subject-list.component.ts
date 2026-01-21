@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubjectService } from '../../../services/subjectservice/subject.service';
 import { Subject, SubjectFormData } from '../../../models/Subject.model';
-
+import {RouterLink} from '@angular/router';
 @Component({
   selector: 'app-subject-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterLink],
   templateUrl: './subject-list.component.html',
   styleUrl: './subject-list.component.css',
 })

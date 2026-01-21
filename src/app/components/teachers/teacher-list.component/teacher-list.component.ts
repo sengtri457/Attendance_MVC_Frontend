@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TeacherService } from '../../../services/teacherservice/teacher.service';
 import { Teacher, TeacherFormData } from '../../../models/Teacher.model';
-
+import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterLink],
   templateUrl: './teacher-list.component.html',
   styleUrl: './teacher-list.component.css',
 })

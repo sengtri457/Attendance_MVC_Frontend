@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { StudentService } from '../../../services/studentservice/student.service';
 import { Student } from '../../../models/Student.model';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-studentlist.component',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './studentlist.component.html',
   styleUrl: './studentlist.component.css',
 })
@@ -169,16 +169,34 @@ students: Student[] = [];
   }
 
   deleteStudent(student: Student): void {
-    if (!confirm(`Are you sure you want to delete ${student.student_name_eng}?`)) {
-      return;
-    }
+    // if (!confirm(`Are you sure you want to delete ${student.student_name_eng}?`)) {
+    //   return;
+    // }
 
-    this.loading = true;
-
-    this.studentService.deleteStudent(student.student_id).subscribe({
+    
+const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: "btn btn-success",
+    cancelButton: "btn btn-danger"
+  },
+  buttonsStyling: false
+});
+swalWithBootstrapButtons.fire({
+  title: "Are you sure you want to delete?",
+  text: ` ${student.student_name_eng} will be deleted`,
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonText: "Yes, delete it!",
+  cancelButtonText: "No, cancel!",
+  reverseButtons: true
+}).then((result) => {
+  if (result.isConfirmed) {
+        this.studentService.deleteStudent(student.student_id).subscribe({
       next: (response:any) => {
         if (response.success) {
           this.loadStudents();
+    this.loading = true;
+
         }
         this.loading = false;
       },
@@ -188,6 +206,24 @@ students: Student[] = [];
         console.error(err);
       }
     });
+    swalWithBootstrapButtons.fire({
+      title: "Deleted!",
+      text: "Your file has been deleted.",
+      icon: "success"
+    });
+
+  } else if (
+    /* Read more about handling dismissals below */
+    result.dismiss === Swal.DismissReason.cancel
+  ) {
+    swalWithBootstrapButtons.fire({
+      title: "Cancelled",
+      text: "Your imaginary file is safe :)",
+      icon: "error"
+    });
+  }
+});
+    
   }
 
   applyFilters(): void {

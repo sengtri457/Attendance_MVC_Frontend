@@ -110,6 +110,14 @@ interface CountdownTime {
   totalSeconds: number;
 }
 
+// NEW: Interface for bulk selection state
+interface BulkSelectionState {
+  date: string;
+  selectedStatus: string;
+  selectedStudents: Set<number>;
+  isActive: boolean;
+}
+
 @Component({
   selector: "app-weeklyattendance.component",
   imports: [CommonModule, FormsModule],
@@ -146,6 +154,11 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   selectedCell: { studentId: number; date: string } | null = null;
   pendingUpdates: Map<string, PendingUpdate> = new Map();
   hasUnsavedChanges = false;
+
+  // NEW: Bulk selection state
+  bulkSelectionMode: Map<string, BulkSelectionState> = new Map();
+  showBulkSelectionPanel = false;
+  currentBulkDate: string | null = null;
 
   // Detail view for showing subject-level absences
   showDetailModal = false;
@@ -368,6 +381,266 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return `${hours}h ${minutes}m ${seconds}s`;
   }
 
+  // ============================================================
+  // NEW: BULK SELECTION METHODS
+  // ============================================================
+
+  /**
+   * Toggle bulk selection mode for a specific date
+   */
+  toggleBulkSelection(date: string): void {
+    if (!this.isDateEditable(date)) {
+      this.showCountdownTimerModal(date);
+      return;
+    }
+
+    const existingState = this.bulkSelectionMode.get(date);
+    
+    if (existingState?.isActive) {
+      // Deactivate bulk selection
+      this.bulkSelectionMode.delete(date);
+      this.currentBulkDate = null;
+      this.showBulkSelectionPanel = false;
+    } else {
+      // Clear any other active bulk selections
+      this.bulkSelectionMode.clear();
+      
+      // Activate bulk selection for this date
+      const subjectId = this.selectedSubjects.get(date);
+      if (!subjectId) {
+        Swal.fire({
+          title: "No Subject Selected",
+          text: "Please select a subject for this date first.",
+          icon: "warning",
+          draggable: true,
+        });
+        return;
+      }
+
+      this.bulkSelectionMode.set(date, {
+        date: date,
+        selectedStatus: 'P', // Default to Present
+        selectedStudents: new Set(),
+        isActive: true,
+      });
+      
+      this.currentBulkDate = date;
+      this.showBulkSelectionPanel = true;
+    }
+  }
+
+  /**
+   * Check if bulk selection is active for a date
+   */
+  isBulkSelectionActive(date: string): boolean {
+    return this.bulkSelectionMode.get(date)?.isActive || false;
+  }
+
+  /**
+   * Get bulk selection state for a date
+   */
+  getBulkSelectionState(date: string): BulkSelectionState | undefined {
+    return this.bulkSelectionMode.get(date);
+  }
+
+  /**
+   * Select all students for bulk attendance
+   */
+  selectAllStudents(date: string): void {
+    const state = this.bulkSelectionMode.get(date);
+    if (!state) return;
+
+    const students = this.getFilteredStudents();
+    students.forEach(student => {
+      state.selectedStudents.add(student.student_id);
+    });
+  }
+
+  /**
+   * Deselect all students
+   */
+  deselectAllStudents(date: string): void {
+    const state = this.bulkSelectionMode.get(date);
+    if (!state) return;
+    
+    state.selectedStudents.clear();
+  }
+
+  /**
+   * Toggle individual student selection in bulk mode
+   */
+  toggleStudentSelection(date: string, studentId: number): void {
+    const state = this.bulkSelectionMode.get(date);
+    if (!state) return;
+
+    if (state.selectedStudents.has(studentId)) {
+      state.selectedStudents.delete(studentId);
+    } else {
+      state.selectedStudents.add(studentId);
+    }
+  }
+
+  /**
+   * Check if a student is selected in bulk mode
+   */
+  isStudentSelected(date: string, studentId: number): boolean {
+    const state = this.bulkSelectionMode.get(date);
+    return state?.selectedStudents.has(studentId) || false;
+  }
+
+  /**
+   * Get count of selected students
+   */
+  getSelectedStudentCount(date: string): number {
+    const state = this.bulkSelectionMode.get(date);
+    return state?.selectedStudents.size || 0;
+  }
+
+  /**
+   * Apply bulk attendance update
+   */
+  applyBulkAttendance(date: string): void {
+    const state = this.bulkSelectionMode.get(date);
+    if (!state) return;
+
+    if (state.selectedStudents.size === 0) {
+      Swal.fire({
+        title: "No Students Selected",
+        text: "Please select at least one student.",
+        icon: "warning",
+        draggable: true,
+      });
+      return;
+    }
+
+    const subjectId = this.selectedSubjects.get(date);
+    if (!subjectId) {
+      Swal.fire({
+        title: "No Subject Selected",
+        text: "Please select a subject for this date.",
+        icon: "error",
+        draggable: true,
+      });
+      return;
+    }
+
+    // Add all selected students to pending updates
+    state.selectedStudents.forEach(studentId => {
+      const key = this.getCellKey(studentId, date);
+      this.pendingUpdates.set(key, {
+        studentId,
+        date,
+        status: state.selectedStatus,
+        subjectId,
+      });
+    });
+
+    this.hasUnsavedChanges = true;
+
+    // Show confirmation
+    Swal.fire({
+      title: "Bulk Update Staged",
+      text: `${state.selectedStudents.size} student(s) marked as ${this.getStatusLabel(state.selectedStatus)}. Click "Submit All" to save.`,
+      icon: "success",
+      draggable: true,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+
+    // Clear bulk selection
+    this.bulkSelectionMode.delete(date);
+    this.currentBulkDate = null;
+    this.showBulkSelectionPanel = false;
+  }
+
+  /**
+   * Cancel bulk selection
+   */
+  cancelBulkSelection(date: string): void {
+    this.bulkSelectionMode.delete(date);
+    this.currentBulkDate = null;
+    this.showBulkSelectionPanel = false;
+  }
+
+  /**
+   * Get status label from value
+   */
+  getStatusLabel(status: string): string {
+    const option = this.statusOptions.find(opt => opt.value === status);
+    return option?.label || status;
+  }
+
+  /**
+   * Quick select all as Present
+   */
+  quickSelectAllPresent(date: string): void {
+    if (!this.isDateEditable(date)) {
+      this.showCountdownTimerModal(date);
+      return;
+    }
+
+    const subjectId = this.selectedSubjects.get(date);
+    if (!subjectId) {
+      Swal.fire({
+        title: "No Subject Selected",
+        text: "Please select a subject for this date first.",
+        icon: "warning",
+        draggable: true,
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Mark All as Present?',
+      text: `This will mark all ${this.getFilteredStudents().length} students as Present for ${this.getFormattedDate(date)}.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Mark All',
+      cancelButtonText: 'Cancel',
+      draggable: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const students = this.getFilteredStudents();
+        students.forEach(student => {
+          const key = this.getCellKey(student.student_id, date);
+          this.pendingUpdates.set(key, {
+            studentId: student.student_id,
+            date,
+            status: 'P',
+            subjectId,
+          });
+        });
+
+        this.hasUnsavedChanges = true;
+
+        Swal.fire({
+          title: 'All Students Marked',
+          text: `${students.length} students marked as Present. Click "Submit All" to save.`,
+          icon: 'success',
+          draggable: true,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    });
+  }
+
+  /**
+   * Get formatted date for display
+   */
+  getFormattedDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+
+  // ============================================================
+  // END BULK SELECTION METHODS
+  // ============================================================
+
   /**
    * Get filtered students based on search query
    */
@@ -487,6 +760,11 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   loadWeeklyGrid(): void {
     if (!this.startDate || !this.endDate) {
       this.error = "Please select valid date range";
+      this.loading = true;
+  this.error = null;
+  
+  // ADD THIS LINE: Clear any pending updates that are no longer valid
+  this.clearInvalidPendingUpdates();
       return;
     }
 
@@ -624,11 +902,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
           });
         }
 
-        // Calculate daily status based on priority:
-        // 1. If ANY subject is Absent (A) -> Day is Absent
-        // 2. Else if ANY subject is Late (L) -> Day is Late
-        // 3. Else if ANY subject is Excused (E) -> Day is Excused
-        // 4. Else if ALL subjects are Present (P) -> Day is Present
         let dailyStatus = "";
 
         if (subjectRecords.length > 0) {
@@ -947,9 +1220,15 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Handle cell click to enable editing
-   * UPDATED: Show countdown modal for non-editable dates
+   * UPDATED: Disable in bulk selection mode
    */
   onCellClick(studentId: number, date: string): void {
+    // Don't allow individual editing in bulk selection mode
+    if (this.isBulkSelectionActive(date)) {
+      this.toggleStudentSelection(date, studentId);
+      return;
+    }
+
     // Show countdown modal if date is not editable
     if (!this.isDateEditable(date)) {
       this.showCountdownTimerModal(date);
@@ -977,7 +1256,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Stage attendance update (doesn't save immediately)
-   * UPDATED: Additional check to prevent updates for non-today dates
    */
   stageAttendanceUpdate(
     studentId: number,
@@ -1033,87 +1311,123 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
    * Submit all pending updates
    */
   submitAllChanges(): void {
-    if (this.pendingUpdates.size === 0) {
-      alert("No changes to submit");
-      return;
-    }
-
-    // Verify all pending updates are for today
-    let hasInvalidDates = false;
-    this.pendingUpdates.forEach((update) => {
-      if (!this.isDateEditable(update.date)) {
-        hasInvalidDates = true;
-      }
+  if (this.pendingUpdates.size === 0) {
+    Swal.fire({
+      title: "No Changes",
+      text: "No changes to submit",
+      icon: "info",
+      draggable: true,
     });
-
-    if (hasInvalidDates) {
-      Swal.fire({
-        title: "Invalid Updates",
-        text: "Some updates are for dates other than today. Only today's attendance can be updated.",
-        icon: "error",
-        draggable: true,
-      });
-      return;
-    }
-
-    if (!confirm(`Submit ${this.pendingUpdates.size} attendance update(s)?`)) {
-      return;
-    }
-
-    this.submitting = true;
-
-    const updates: any[] = [];
-
-    this.pendingUpdates.forEach((update) => {
-      updates.push({
-        student_id: update.studentId,
-        teacher_id: 1, // TODO: Get from auth service
-        subject_id: update.subjectId,
-        attendance_date: update.date,
-        status: update.status,
-      });
-    });
-
-    // Create array of observables for each update
-    const updateObservables = updates.map((data) =>
-      this.attendanceService.createOrUpdateAttendance(data),
-    );
-
-    // Execute all updates
-    forkJoin(updateObservables)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => (this.submitting = false)),
-      )
-      .subscribe({
-        next: () => {
-          // Clear pending updates
-          this.pendingUpdates.clear();
-          this.hasUnsavedChanges = false;
-
-          // Reload grid to show updated data
-          this.loadWeeklyGrid();
-
-          Swal.fire({
-            title: "Attendance updated successfully!",
-            icon: "success",
-            draggable: true,
-          });
-        },
-        error: (err) => {
-          console.error("Failed to update attendance:", err);
-          Swal.fire({
-            title: "Failed to update attendance!",
-            text:
-              err.error?.message ||
-              "Failed to update attendance. Please try again.",
-            icon: "error",
-            draggable: true,
-          });
-        },
-      });
+    return;
   }
 
+  // IMPORTANT: Verify all pending updates are for today only
+  let hasInvalidDates = false;
+  const invalidDates: string[] = [];
+  
+  this.pendingUpdates.forEach((update) => {
+    if (!this.isDateEditable(update.date)) {
+      hasInvalidDates = true;
+      if (!invalidDates.includes(update.date)) {
+        invalidDates.push(update.date);
+      }
+    }
+  });
+
+  if (hasInvalidDates) {
+    Swal.fire({
+      title: "Invalid Updates Detected",
+      html: `You can only submit attendance for <strong>today (${this.getFormattedDate(this.todayDate)})</strong>.<br><br>Found updates for: ${invalidDates.map(d => this.getFormattedDate(d)).join(', ')}`,
+      icon: "error",
+      draggable: true,
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Confirm Submission',
+    text: `Submit ${this.pendingUpdates.size} attendance update(s) for today?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, Submit',
+    cancelButtonText: 'Cancel',
+    draggable: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.performSubmission();
+    }
+  });
+}
+// ADD this helper method to actually perform the submission
+private performSubmission(): void {
+  this.submitting = true;
+
+  const updates: any[] = [];
+
+  this.pendingUpdates.forEach((update) => {
+    updates.push({
+      student_id: update.studentId,
+      teacher_id: 1,
+      subject_id: update.subjectId,
+      attendance_date: update.date,
+      status: update.status,
+      force_update: true, // Add this flag to force update
+    });
+  });
+
+  const updateObservables = updates.map((data) =>
+    this.attendanceService.createOrUpdateAttendance(data),
+  );
+
+  forkJoin(updateObservables)
+    .pipe(
+      takeUntil(this.destroy$),
+      finalize(() => (this.submitting = false)),
+    )
+    .subscribe({
+      next: () => {
+        this.pendingUpdates.clear();
+        this.hasUnsavedChanges = false;
+        this.loadWeeklyGrid();
+
+        Swal.fire({
+          title: "Success!",
+          text: "Attendance updated successfully!",
+          icon: "success",
+          draggable: true,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      },
+      error: (err) => {
+        console.error("Failed to update attendance:", err);
+        Swal.fire({
+          title: "Submission Failed",
+          text: err.error?.message || "Failed to update attendance. Please try again.",
+          icon: "error",
+          draggable: true,
+        });
+      },
+    });
+}
+
+// ADD this method to clear pending updates that are not for today
+// Call this when date range changes or on component init
+clearInvalidPendingUpdates(): void {
+  const keysToDelete: string[] = [];
+  
+  this.pendingUpdates.forEach((update, key) => {
+    if (!this.isDateEditable(update.date)) {
+      keysToDelete.push(key);
+    }
+  });
+  
+  keysToDelete.forEach(key => this.pendingUpdates.delete(key));
+  
+  if (this.pendingUpdates.size === 0) {
+    this.hasUnsavedChanges = false;
+  }
+}
   // Pagination methods
   previousPage(): void {
     if (this.currentPage > 1) {
@@ -1296,7 +1610,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Get attendance cell title
-   * UPDATED: Show different messages for non-editable dates
    */
   getCellTitle(dateString: string, student: StudentRow): string {
     // Check if date is editable first

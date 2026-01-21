@@ -32,12 +32,15 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
+                    <div class="col-md-5 d-flex align-items-end gap-2">
                         <button class="btn btn-primary" (click)="applyFilters()">
                             <i class="bi bi-search"></i> Search
                         </button>
                         <button class="btn btn-outline-secondary" (click)="clearFilters()">
                             <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                        <button class="btn btn-outline-secondary" routerLink="/">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
                         </button>
                     </div>
                 </div>

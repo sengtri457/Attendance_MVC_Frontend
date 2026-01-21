@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { StudentService, UploadResponse } from '../../../services/student.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 interface UploadResult {
   type: 'success' | 'warning' | 'error';
   message: string;
@@ -9,7 +10,7 @@ interface UploadResult {
 }
 @Component({
   selector: 'app-student-upload.component',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterLink],
   templateUrl: './student-upload.component.html',
   styleUrl: './student-upload.component.css',
 })

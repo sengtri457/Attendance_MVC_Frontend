@@ -3,90 +3,83 @@
 <!-- Header Section -->
 <div class="attendance-container">
   <!-- Modal Overlay -->
-  <div *ngIf="showCountdownModal" class="modal fade show d-block" tabindex="-1"
-    style="background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <!-- Modal Header -->
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">
-            <i class="bi bi-clock-history me-2"></i>
-            Attendance Editing Timer
-          </h5>
-          <button type="button" class="btn-close btn-close-white" (click)="closeCountdownModal()">
-          </button>
-        </div>
+  <div *ngIf="showCountdownModal" class="modal-overlay">
+    <div class="modal-container">
 
-        <!-- Modal Body -->
-        <div class="modal-body text-center py-4">
-          <!-- Message -->
-          <p class="lead mb-4">{{ countdownMessage }}</p>
+      <!-- Modal Header -->
+      <div class="modal-header-clean">
+        <h5 class="modal-title-clean">
+          <i class="bi bi-clock-history"></i>
+          <span>Attendance Editing Timer</span>
+        </h5>
+        <button type="button" class="modal-close-btn" (click)="closeCountdownModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
 
-          <!-- Countdown Display (only show if counting) -->
-          <div *ngIf="countdown.totalSeconds > 0" class="countdown-display mb-4">
-            <div class="row justify-content-center">
-              <div class="col-auto">
-                <div class="time-box">
-                  <div class="time-value">{{ countdown.hours }}</div>
-                  <div class="time-label">Hours</div>
-                </div>
-              </div>
-              <div class="col-auto d-flex align-items-center">
-                <h2 class="mb-0">:</h2>
-              </div>
-              <div class="col-auto">
-                <div class="time-box">
-                  <div class="time-value">{{ countdown.minutes.toString().padStart(2, '0') }}</div>
-                  <div class="time-label">Minutes</div>
-                </div>
-              </div>
-              <div class="col-auto d-flex align-items-center">
-                <h2 class="mb-0">:</h2>
-              </div>
-              <div class="col-auto">
-                <div class="time-box">
-                  <div class="time-value">{{ countdown.seconds.toString().padStart(2, '0') }}</div>
-                  <div class="time-label">Seconds</div>
-                </div>
-              </div>
+      <!-- Modal Body -->
+      <div class="modal-body-clean">
+
+        <!-- Message -->
+        <p class="modal-message">{{ countdownMessage }}</p>
+
+        <!-- Countdown Display (only show if counting) -->
+        <div *ngIf="countdown.totalSeconds > 0" class="countdown-container">
+
+          <!-- Time Boxes -->
+          <div class="countdown-boxes">
+            <div class="time-box">
+              <div class="time-value">{{ countdown.hours }}</div>
+              <div class="time-label">Hours</div>
             </div>
 
-            <!-- Alternative compact display -->
-            <div class="mt-3">
-              <div class="alert alert-info mb-0">
-                <i class="bi bi-hourglass-split me-2"></i>
-                <strong>{{ getCountdownDisplay() }}</strong> remaining
-              </div>
+            <span class="time-separator">:</span>
+
+            <div class="time-box">
+              <div class="time-value">{{ countdown.minutes.toString().padStart(2, '0') }}</div>
+              <div class="time-label">Minutes</div>
+            </div>
+
+            <span class="time-separator">:</span>
+
+            <div class="time-box">
+              <div class="time-value">{{ countdown.seconds.toString().padStart(2, '0') }}</div>
+              <div class="time-label">Seconds</div>
             </div>
           </div>
 
-          <!-- Past Date Message -->
-          <div *ngIf="countdown.totalSeconds === 0 && isPastDate(detailModalData.date || '')"
-            class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            This date has already passed and cannot be edited.
-          </div>
-
-          <!-- Additional Info -->
-          <div class="mt-4">
-            <small class="text-muted">
-              <i class="bi bi-info-circle me-1"></i>
-              Attendance can only be edited on the same day it occurs.
-            </small>
+          <!-- Compact Display -->
+          <div class="compact-display">
+            <i class="bi bi-hourglass-split"></i>
+            <strong>{{ getCountdownDisplay() }}</strong> remaining
           </div>
         </div>
 
-        <!-- Modal Footer -->
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeCountdownModal()">
-            Close
-          </button>
-          <button type="button" class="btn btn-primary" (click)="closeCountdownModal(); resetToCurrentWeek()">
-            <i class="bi bi-calendar-check me-1"></i>
-            Go to Today
-          </button>
+        <!-- Past Date Message -->
+        <div *ngIf="countdown.totalSeconds === 0 && isPastDate(detailModalData.date || '')"
+          class="alert-box alert-warning-clean">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>This date has already passed and cannot be edited.</span>
+        </div>
+
+        <!-- Info Note -->
+        <div class="info-note">
+          <i class="bi bi-info-circle"></i>
+          <span>Attendance can only be edited on the same day it occurs</span>
         </div>
       </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer-clean">
+        <button type="button" class="btn-clean btn-secondary-clean" (click)="closeCountdownModal()">
+          Close
+        </button>
+        <button type="button" class="btn-clean btn-primary-clean" (click)="closeCountdownModal(); resetToCurrentWeek()">
+          <i class="bi bi-calendar-check"></i>
+          Go to Today
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -99,7 +92,8 @@
       </small>
     </div>
   </ng-template>
-  <div class="attendance-header">
+
+  <div class="header-section">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-1">Weekly Attendance Grid</h2>
@@ -161,10 +155,6 @@
           [disabled]="loading || submitting" [min]="startDate">
       </div>
       <div class="col-md-3 d-flex align-items-end gap-2">
-        <button class="btn btn-primary flex-grow-1" (click)="loadWeeklyGrid()"
-          [disabled]="loading || submitting || !startDate || !endDate">
-          <i class="bi bi-search"></i> Load
-        </button>
         <button class="btn btn-outline-secondary" (click)="previousWeek()" [disabled]="loading || submitting"
           title="Previous week">
           <i class="bi bi-chevron-left"></i>
@@ -173,9 +163,9 @@
           title="Next week">
           <i class="bi bi-chevron-right"></i>
         </button>
-        <button class="btn btn-outline-info" (click)="resetToCurrentWeek()" [disabled]="loading || submitting"
+        <button class="btn-clean btn-primary-clean" (click)="resetToCurrentWeek()" [disabled]="loading || submitting"
           title="Reset to current week">
-          <i class="bi bi-x-circle"></i>
+          Reset Current<i class="bi bi-x-circle"></i>
         </button>
       </div>
     </div>
@@ -199,6 +189,72 @@
         </div>
         <small class="text-muted" *ngIf="searchQuery && !loading">
           Found {{ totalStudents }} students matching "{{ searchQuery }}"
+        </small>
+      </div>
+    </div>
+
+    <!-- NEW: Bulk Selection Panel -->
+    <div *ngIf="showBulkSelectionPanel && currentBulkDate" class="bulk-selection-panel alert alert-info mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">
+          <i class="bi bi-check-square me-2"></i>
+          Bulk Selection Mode - {{ getFormattedDate(currentBulkDate) }}
+        </h5>
+        <button type="button" class="btn-close" (click)="cancelBulkSelection(currentBulkDate)" aria-label="Close">
+        </button>
+      </div>
+
+      <div class="row g-3">
+        <!-- Status Selection -->
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Mark As:</label>
+          <select class="form-select" [(ngModel)]="getBulkSelectionState(currentBulkDate)!.selectedStatus">
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }} ({{ status.symbol }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Selection Actions -->
+        <div class="col-md-9">
+          <label class="form-label fw-bold">Students:</label>
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="selectAllStudents(currentBulkDate)">
+              <i class="bi bi-check-all me-1"></i>
+              Select All ({{ getFilteredStudents().length }})
+            </button>
+
+            <button type="button" class="btn btn-sm btn-outline-secondary"
+              (click)="deselectAllStudents(currentBulkDate)">
+              <i class="bi bi-x-square me-1"></i>
+              Deselect All
+            </button>
+
+            <div class="vr"></div>
+
+            <span class="badge bg-primary fs-6 d-flex align-items-center">
+              Selected: {{ getSelectedStudentCount(currentBulkDate) }}
+            </span>
+
+            <button type="button" class="btn btn-sm btn-success"
+              [disabled]="getSelectedStudentCount(currentBulkDate) === 0"
+              (click)="applyBulkAttendance(currentBulkDate)">
+              <i class="bi bi-save me-1"></i>
+              Apply to Selected
+            </button>
+
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="cancelBulkSelection(currentBulkDate)">
+              <i class="bi bi-x-circle me-1"></i>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <small class="text-muted">
+          <i class="bi bi-info-circle me-1"></i>
+          Click on student rows to select/deselect them. Changes will be staged and can be submitted together.
         </small>
       </div>
     </div>
@@ -265,8 +321,9 @@
             <th class="col-name-eng sticky-col">Name (English)</th>
             <th class="col-gender sticky-col">Gender</th>
 
-            <!-- Date Columns with Subject Selectors -->
-            <th class="col-date text-center" *ngFor="let dateString of gridData.period.dates">
+            <!-- Date Columns with Subject Selectors AND Bulk Selection -->
+            <th class="col-date text-center" *ngFor="let dateString of gridData.period.dates"
+              [ngClass]="{ 'today-column': isToday(dateString) }">
               <div class="date-header">
                 <!-- Date Display -->
                 <div class="date-display fw-bold" [innerHTML]="getDateDisplay(dateString)"></div>
@@ -275,7 +332,7 @@
                 <div class="subject-selector mt-2">
                   <select class="form-select form-select-sm subject-dropdown" [value]="getSelectedSubjectId(dateString)"
                     (change)="onSubjectChange(dateString, +$any($event.target).value)"
-                    [disabled]="loadingSubjects || submitting || getSubjectsForDate(dateString).length === 0"
+                    [disabled]="loadingSubjects || submitting || getSubjectsForDate(dateString).length === 0 || isBulkSelectionActive(dateString)"
                     [title]="'Select subject for ' + dateString">
                     <option value="" disabled>
                       {{ loadingSubjects ? 'Loading...' : 'Select Subject' }}
@@ -303,6 +360,28 @@
                   <div *ngIf="!loadingSubjects && getSelectedSubjectId(dateString)"
                     class="text-success small mt-1 text-center">
                     <i class="bi bi-check-circle"></i> Subject selected
+                  </div>
+                </div>
+
+                <!-- NEW: Bulk Selection Buttons -->
+                <div class="bulk-actions mt-2">
+                  <div class="btn-group btn-group-sm w-100" role="group">
+                    <!-- Quick Mark All Present -->
+                    <button type="button" class="btn btn-outline-success"
+                      [disabled]="!isDateEditable(dateString) || loadingSubjects || !getSelectedSubjectId(dateString)"
+                      (click)="quickSelectAllPresent(dateString)" title="Quick mark all as present">
+                      <i class="bi bi-check-all"></i>
+                    </button>
+
+                    <!-- Toggle Bulk Selection Mode -->
+                    <button type="button" class="btn" [class.btn-primary]="isBulkSelectionActive(dateString)"
+                      [class.btn-outline-primary]="!isBulkSelectionActive(dateString)"
+                      [disabled]="!isDateEditable(dateString) || loadingSubjects || !getSelectedSubjectId(dateString)"
+                      (click)="toggleBulkSelection(dateString)"
+                      [title]="isBulkSelectionActive(dateString) ? 'Exit bulk selection' : 'Enable bulk selection'">
+                      <i class="bi" [class.bi-ui-checks]="!isBulkSelectionActive(dateString)"
+                        [class.bi-x-square]="isBulkSelectionActive(dateString)"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -367,16 +446,23 @@
               {{ student.gender }}
             </td>
 
-            <!-- Attendance Cells - NOW SHOWS DAILY STATUS -->
+            <!-- Attendance Cells - NOW WITH BULK SELECTION SUPPORT -->
             <td *ngFor="let dateString of gridData.period.dates" class="attendance-cell text-center" [ngClass]="{
                   'pending-change': hasPendingChanges(student.student_id, dateString),
-                  'clickable': !isEditMode(student.student_id, dateString)
-                }" [class]="getStatusClass(getDailyStatus(student, dateString))"
-              (click)="!isEditMode(student.student_id, dateString) && onCellClick(student.student_id, dateString)"
-              [title]="getCellTitle(dateString, student)">
+                  'clickable': !isEditMode(student.student_id, dateString),
+                  'bulk-selection-active': isBulkSelectionActive(dateString),
+                  'student-selected': isStudentSelected(dateString, student.student_id)
+                }" [class]="getStatusClass(getDailyStatus(student, dateString), dateString)"
+              (click)="onCellClick(student.student_id, dateString)" [title]="getCellTitle(dateString, student)">
+
+              <!-- Bulk Selection Checkbox Overlay -->
+              <div *ngIf="isBulkSelectionActive(dateString)" class="bulk-checkbox-overlay">
+                <input type="checkbox" class="form-check-input"
+                  [checked]="isStudentSelected(dateString, student.student_id)" (click)="$event.stopPropagation()">
+              </div>
 
               <!-- Display Mode -->
-              <ng-container *ngIf="!isEditMode(student.student_id, dateString)">
+              <ng-container *ngIf="!isBulkSelectionActive(dateString) && !isEditMode(student.student_id, dateString)">
                 <div class="status-display">
                   <span class="status-symbol">
                     {{ getStatusSymbol(getDailyStatus(student, dateString)) }}
@@ -402,8 +488,8 @@
               </ng-container>
 
               <!-- Edit Mode -->
-              <div *ngIf="isEditMode(student.student_id, dateString)" class="edit-mode"
-                (click)="$event.stopPropagation()">
+              <div *ngIf="!isBulkSelectionActive(dateString) && isEditMode(student.student_id, dateString)"
+                class="edit-mode" (click)="$event.stopPropagation()">
                 <div class="btn-group-vertical btn-group-sm">
                   <button *ngFor="let option of statusOptions" class="btn btn-outline-secondary"
                     [ngClass]="getStatusClass(option.value)"
@@ -529,6 +615,7 @@
       </div>
     </div>
   </div>
+
   <!-- NEW: Detail Modal for Subject-Level Attendance -->
   <div class="modal fade" [class.show]="showDetailModal" [style.display]="showDetailModal ? 'block' : 'none'"
     tabindex="-1" role="dialog" *ngIf="showDetailModal">

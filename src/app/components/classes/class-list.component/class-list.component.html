@@ -32,12 +32,15 @@
                             <option value="100">100</option>
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
+                    <div class="col-md-5 d-flex align-items-end gap-2">
                         <button class="btn btn-primary" (click)="applyFilters()">
                             <i class="bi bi-search"></i> Search
                         </button>
                         <button class="btn btn-outline-secondary" (click)="clearFilters()">
                             <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                        <button class="btn btn-outline-secondary" routerLink="/">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
                         </button>
                     </div>
                 </div>
@@ -63,7 +66,7 @@
         <div class="card-header">
             <h5 class="mb-0">
                 Classes List
-                <span class="badge bg-primary ms-2">{{ totalClasses }}</span>
+                <span class="badge bg-primary ms-2">{{ classes.length }}</span>
             </h5>
         </div>
         <div class="card-body p-0">
@@ -117,7 +120,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="card-footer" *ngIf="totalPages > 1">
+        <!-- <div class="card-footer" *ngIf="totalPages > 1">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-muted">
                     Showing {{ (currentPage - 1) * pageSize + 1 }} to
@@ -139,7 +142,7 @@
                     </ul>
                 </nav>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>
 
