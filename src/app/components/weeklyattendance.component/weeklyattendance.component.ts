@@ -35,7 +35,6 @@ interface StudentRow {
   student_name_eng: string;
   gender: string;
   attendance: { [date: string]: AttendanceData };
-  // Store all subject-level attendance records for detailed view
   subject_attendance: {
     [date: string]: {
       subjects: Array<{
@@ -44,21 +43,20 @@ interface StudentRow {
         status: string;
         notes?: string;
       }>;
-      daily_status: string; // Overall status for the day (if ANY subject is A, this is A)
+      daily_status: string;
     };
   };
   statistics: {
-    present: number; // Days with ALL subjects present
-    absent: number; // Days with AT LEAST ONE subject absent
-    late: number; // Days with ANY late (but no absent)
-    excused: number; // Days with ANY excused (but no absent/late)
+    present: number;
+    absent: number;
+    late: number;
+    excused: number;
     total_days: number;
     recorded_days: number;
     attendance_rate: string;
-    // New detailed statistics
-    subject_absences: number; // Total subject-level absences
-    subject_lates: number; // Total subject-level lates
-    subject_excused: number; // Total subject-level excused
+    subject_absences: number;
+    subject_lates: number;
+    subject_excused: number;
   };
 }
 
@@ -101,6 +99,8 @@ interface PendingUpdate {
   date: string;
   status: string;
   subjectId: number;
+  previousStatus?: string;
+  isModification: boolean;
 }
 
 interface CountdownTime {
@@ -110,7 +110,7 @@ interface CountdownTime {
   totalSeconds: number;
 }
 
-// NEW: Interface for bulk selection state
+// FIXED: Better bulk selection state management
 interface BulkSelectionState {
   date: string;
   selectedStatus: string;
@@ -142,7 +142,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   pageSize = 20;
   totalStudents = 0;
   totalPages = 0;
-  Math = Math; // for template usage
+  Math = Math;
+  Array = Array; // For template usage
 
   // Subject management
   dateSubjects: Map<string, Subject[]> = new Map();
@@ -155,12 +156,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   pendingUpdates: Map<string, PendingUpdate> = new Map();
   hasUnsavedChanges = false;
 
-  // NEW: Bulk selection state
+  // FIXED: Bulk selection with proper state management
   bulkSelectionMode: Map<string, BulkSelectionState> = new Map();
   showBulkSelectionPanel = false;
   currentBulkDate: string | null = null;
 
-  // Detail view for showing subject-level absences
+  // Detail view
   showDetailModal = false;
   detailModalData: {
     student?: StudentRow;
@@ -195,7 +196,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   // Submission state
   submitting = false;
 
-  // Today's date for comparison (YYYY-MM-DD format)
+  // Today's date
   private todayDate: string;
 
   constructor(
@@ -203,7 +204,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     private subjectService: SubjectService,
   ) {
     this.setCurrentWeek();
-    // Initialize today's date
     this.todayDate = this.formatDate(new Date());
   }
 
@@ -225,14 +225,14 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if a date is in the past (before today)
+   * Check if a date is in the past
    */
   isPastDate(dateString: string): boolean {
     return dateString < this.todayDate;
   }
 
   /**
-   * Check if a date is in the future (after today)
+   * Check if a date is in the future
    */
   isFutureDate(dateString: string): boolean {
     return dateString > this.todayDate;
@@ -240,19 +240,47 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   /**
    * Check if attendance editing is allowed for a specific date
-   * Only today's date is editable
    */
   isDateEditable(dateString: string): boolean {
     return this.isToday(dateString);
   }
 
   /**
-   * Calculate time remaining until midnight (start of next day)
+   * Check if attendance already exists for a student on a date
+   */
+  hasExistingAttendance(student: StudentRow, date: string): boolean {
+    const subjectData = student.subject_attendance?.[date];
+    if (!subjectData || !subjectData.subjects || subjectData.subjects.length === 0) {
+      return false;
+    }
+    
+    const selectedSubjectId = this.selectedSubjects.get(date);
+    if (!selectedSubjectId) return false;
+    
+    return subjectData.subjects.some(s => s.subject_id === selectedSubjectId);
+  }
+
+  /**
+   * Get existing attendance status for a student
+   */
+  getExistingAttendanceStatus(student: StudentRow, date: string): string | null {
+    const subjectData = student.subject_attendance?.[date];
+    if (!subjectData || !subjectData.subjects) return null;
+    
+    const selectedSubjectId = this.selectedSubjects.get(date);
+    if (!selectedSubjectId) return null;
+    
+    const subjectRecord = subjectData.subjects.find(s => s.subject_id === selectedSubjectId);
+    return subjectRecord?.status || null;
+  }
+
+  /**
+   * Calculate time remaining until midnight
    */
   private calculateTimeUntilMidnight(): CountdownTime {
     const now = new Date();
     const tomorrow = new Date(now);
-    tomorrow.setHours(24, 0, 0, 0); // Set to midnight of next day
+    tomorrow.setHours(24, 0, 0, 0);
     
     const diff = tomorrow.getTime() - now.getTime();
     const totalSeconds = Math.floor(diff / 1000);
@@ -261,12 +289,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     
-    return {
-      hours,
-      minutes,
-      seconds,
-      totalSeconds
-    };
+    return { hours, minutes, seconds, totalSeconds };
   }
 
   /**
@@ -275,7 +298,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   private calculateTimeUntilDate(targetDate: string): CountdownTime {
     const now = new Date();
     const target = new Date(targetDate);
-    target.setHours(0, 0, 0, 0); // Set to start of target day
+    target.setHours(0, 0, 0, 0);
     
     const diff = target.getTime() - now.getTime();
     const totalSeconds = Math.floor(diff / 1000);
@@ -286,7 +309,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     const seconds = totalSeconds % 60;
     
     return {
-      hours: days * 24 + hours, // Convert days to hours
+      hours: days * 24 + hours,
       minutes,
       seconds,
       totalSeconds
@@ -297,12 +320,9 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
    * Start countdown timer
    */
   private startCountdown(targetDate?: string): void {
-    this.stopCountdown(); // Clear any existing interval
-    
-    // Update countdown immediately
+    this.stopCountdown();
     this.updateCountdown(targetDate);
     
-    // Then update every second
     this.countdownInterval = interval(1000)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -338,7 +358,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     if (this.isPastDate(date)) {
       this.countdownMessage = "This date has passed. You cannot edit past attendance records.";
       this.showCountdownModal = true;
-      this.stopCountdown(); // No countdown for past dates
+      this.stopCountdown();
     } else if (this.isFutureDate(date)) {
       const targetDate = new Date(date);
       const formattedDate = targetDate.toLocaleDateString('en-US', { 
@@ -351,7 +371,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       this.startCountdown(date);
       this.showCountdownModal = true;
     } else {
-      // Today - show time until midnight
       this.countdownMessage = "Today's attendance can be edited until midnight. Time remaining:";
       this.startCountdown();
       this.showCountdownModal = true;
@@ -382,11 +401,11 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // NEW: BULK SELECTION METHODS
+  // FIXED: BULK SELECTION METHODS WITH PROPER COUNTING
   // ============================================================
 
   /**
-   * Toggle bulk selection mode for a specific date
+   * FIXED: Toggle bulk selection mode for a specific date
    */
   toggleBulkSelection(date: string): void {
     if (!this.isDateEditable(date)) {
@@ -401,6 +420,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       this.bulkSelectionMode.delete(date);
       this.currentBulkDate = null;
       this.showBulkSelectionPanel = false;
+      console.log('Bulk selection deactivated for', date);
     } else {
       // Clear any other active bulk selections
       this.bulkSelectionMode.clear();
@@ -417,15 +437,19 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.bulkSelectionMode.set(date, {
+      // FIXED: Create new Set to ensure reactivity
+      const newState: BulkSelectionState = {
         date: date,
         selectedStatus: 'P', // Default to Present
-        selectedStudents: new Set(),
+        selectedStudents: new Set<number>(),
         isActive: true,
-      });
+      };
       
+      this.bulkSelectionMode.set(date, newState);
       this.currentBulkDate = date;
       this.showBulkSelectionPanel = true;
+      
+      console.log('Bulk selection activated for', date, 'State:', newState);
     }
   }
 
@@ -433,7 +457,10 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
    * Check if bulk selection is active for a date
    */
   isBulkSelectionActive(date: string): boolean {
-    return this.bulkSelectionMode.get(date)?.isActive || false;
+    const isActive = this.bulkSelectionMode.get(date)?.isActive || false;
+    // DEBUG: Uncomment to see which dates are active
+    // if (isActive) console.log('Bulk selection is active for', date);
+    return isActive;
   }
 
   /**
@@ -444,64 +471,109 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Select all students for bulk attendance
+   * FIXED: Select all students for bulk attendance
    */
   selectAllStudents(date: string): void {
     const state = this.bulkSelectionMode.get(date);
-    if (!state) return;
+    if (!state) {
+      console.error('No bulk selection state found for date:', date);
+      return;
+    }
 
     const students = this.getFilteredStudents();
+    console.log('Selecting all students:', students.length);
+    
+    // Clear and repopulate to ensure Set is updated
+    state.selectedStudents.clear();
     students.forEach(student => {
       state.selectedStudents.add(student.student_id);
     });
+    
+    // Force update
+    this.bulkSelectionMode.set(date, { ...state });
+    
+    console.log('Selected students count:', state.selectedStudents.size);
+    console.log('Selected student IDs:', Array.from(state.selectedStudents));
   }
 
   /**
-   * Deselect all students
+   * FIXED: Deselect all students
    */
   deselectAllStudents(date: string): void {
     const state = this.bulkSelectionMode.get(date);
-    if (!state) return;
+    if (!state) {
+      console.error('No bulk selection state found for date:', date);
+      return;
+    }
     
+    console.log('Deselecting all students');
     state.selectedStudents.clear();
+    
+    // Force update
+    this.bulkSelectionMode.set(date, { ...state });
+    
+    console.log('Selected students count after deselect:', state.selectedStudents.size);
   }
 
   /**
-   * Toggle individual student selection in bulk mode
+   * FIXED: Toggle individual student selection in bulk mode
    */
   toggleStudentSelection(date: string, studentId: number): void {
     const state = this.bulkSelectionMode.get(date);
-    if (!state) return;
+    if (!state) {
+      console.error('No bulk selection state found for date:', date);
+      return;
+    }
 
+    console.log('Toggling student:', studentId);
+    
     if (state.selectedStudents.has(studentId)) {
       state.selectedStudents.delete(studentId);
+      console.log('Student removed:', studentId);
     } else {
       state.selectedStudents.add(studentId);
+      console.log('Student added:', studentId);
     }
+    
+    // IMPORTANT: Force update to trigger change detection
+    this.bulkSelectionMode.set(date, { ...state });
+    
+    console.log('Current selection count:', state.selectedStudents.size);
+    console.log('Currently selected:', Array.from(state.selectedStudents));
   }
 
   /**
-   * Check if a student is selected in bulk mode
+   * FIXED: Check if a student is selected in bulk mode
    */
   isStudentSelected(date: string, studentId: number): boolean {
     const state = this.bulkSelectionMode.get(date);
-    return state?.selectedStudents.has(studentId) || false;
+    const isSelected = state?.selectedStudents.has(studentId) || false;
+    // DEBUG: Uncomment to trace selection
+    // console.log('isStudentSelected:', studentId, '=', isSelected);
+    return isSelected;
   }
 
   /**
-   * Get count of selected students
+   * FIXED: Get count of selected students with proper tracking
    */
   getSelectedStudentCount(date: string): number {
     const state = this.bulkSelectionMode.get(date);
-    return state?.selectedStudents.size || 0;
+    const count = state?.selectedStudents.size || 0;
+    console.log('getSelectedStudentCount for', date, ':', count);
+    return count;
   }
 
   /**
    * Apply bulk attendance update
    */
-  applyBulkAttendance(date: string): void {
+  async applyBulkAttendance(date: string): Promise<void> {
     const state = this.bulkSelectionMode.get(date);
-    if (!state) return;
+    if (!state) {
+      console.error('No bulk selection state found');
+      return;
+    }
+
+    console.log('Applying bulk attendance. Selected count:', state.selectedStudents.size);
 
     if (state.selectedStudents.size === 0) {
       Swal.fire({
@@ -524,26 +596,72 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Add all selected students to pending updates
+    // Count how many are new vs modifications
+    let newRecords = 0;
+    let modifications = 0;
+    const students = this.getFilteredStudents();
+    
     state.selectedStudents.forEach(studentId => {
+      const student = students.find(s => s.student_id === studentId);
+      if (student) {
+        const existingStatus = this.getExistingAttendanceStatus(student, date);
+        if (existingStatus) {
+          if (existingStatus !== state.selectedStatus) {
+            modifications++;
+          }
+        } else {
+          newRecords++;
+        }
+      }
+    });
+
+    console.log('Bulk update breakdown - New:', newRecords, 'Modifications:', modifications);
+
+    // Show confirmation with details
+    let confirmMessage = `You are about to update ${state.selectedStudents.size} student(s):\n\n`;
+    if (newRecords > 0) confirmMessage += `• ${newRecords} new record(s)\n`;
+    if (modifications > 0) confirmMessage += `• ${modifications} existing record(s) will be changed\n`;
+    confirmMessage += `\nAll will be marked as: ${this.getStatusLabel(state.selectedStatus)}`;
+
+    const result = await Swal.fire({
+      title: 'Confirm Bulk Update',
+      text: confirmMessage,
+      icon: modifications > 0 ? 'warning' : 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Update All',
+      cancelButtonText: 'Cancel',
+      draggable: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Add all selected students to pending updates
+    let updatedCount = 0;
+    state.selectedStudents.forEach(studentId => {
+      const student = students.find(s => s.student_id === studentId);
+      const existingStatus = student ? this.getExistingAttendanceStatus(student, date) : null;
+      
       const key = this.getCellKey(studentId, date);
       this.pendingUpdates.set(key, {
         studentId,
         date,
         status: state.selectedStatus,
         subjectId,
+        previousStatus: existingStatus || undefined,
+        isModification: !!existingStatus,
       });
+      updatedCount++;
     });
 
+    console.log('Added to pending updates:', updatedCount);
     this.hasUnsavedChanges = true;
 
-    // Show confirmation
     Swal.fire({
       title: "Bulk Update Staged",
-      text: `${state.selectedStudents.size} student(s) marked as ${this.getStatusLabel(state.selectedStatus)}. Click "Submit All" to save.`,
+      html: `<strong>${state.selectedStudents.size}</strong> student(s) marked as <strong>${this.getStatusLabel(state.selectedStatus)}</strong><br><br>Click "Submit All" to save changes.`,
       icon: "success",
       draggable: true,
-      timer: 2000,
+      timer: 2500,
       showConfirmButton: false,
     });
 
@@ -553,18 +671,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     this.showBulkSelectionPanel = false;
   }
 
-  /**
-   * Cancel bulk selection
-   */
   cancelBulkSelection(date: string): void {
+    console.log('Cancelling bulk selection for', date);
     this.bulkSelectionMode.delete(date);
     this.currentBulkDate = null;
     this.showBulkSelectionPanel = false;
   }
 
-  /**
-   * Get status label from value
-   */
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(opt => opt.value === status);
     return option?.label || status;
@@ -573,7 +686,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   /**
    * Quick select all as Present
    */
-  quickSelectAllPresent(date: string): void {
+  async quickSelectAllPresent(date: string): Promise<void> {
     if (!this.isDateEditable(date)) {
       this.showCountdownTimerModal(date);
       return;
@@ -590,44 +703,61 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    Swal.fire({
+    const students = this.getFilteredStudents();
+    
+    // Count modifications
+    let newRecords = 0;
+    let modifications = 0;
+    students.forEach(student => {
+      const existingStatus = this.getExistingAttendanceStatus(student, date);
+      if (existingStatus) {
+        if (existingStatus !== 'P') modifications++;
+      } else {
+        newRecords++;
+      }
+    });
+
+    let confirmMessage = `Mark all ${students.length} students as Present?\n\n`;
+    if (newRecords > 0) confirmMessage += `• ${newRecords} new record(s)\n`;
+    if (modifications > 0) confirmMessage += `• ${modifications} existing record(s) will be changed`;
+
+    const result = await Swal.fire({
       title: 'Mark All as Present?',
-      text: `This will mark all ${this.getFilteredStudents().length} students as Present for ${this.getFormattedDate(date)}.`,
-      icon: 'question',
+      text: confirmMessage,
+      icon: modifications > 0 ? 'warning' : 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes, Mark All',
       cancelButtonText: 'Cancel',
       draggable: true,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const students = this.getFilteredStudents();
-        students.forEach(student => {
-          const key = this.getCellKey(student.student_id, date);
-          this.pendingUpdates.set(key, {
-            studentId: student.student_id,
-            date,
-            status: 'P',
-            subjectId,
-          });
-        });
+    });
 
-        this.hasUnsavedChanges = true;
+    if (!result.isConfirmed) return;
 
-        Swal.fire({
-          title: 'All Students Marked',
-          text: `${students.length} students marked as Present. Click "Submit All" to save.`,
-          icon: 'success',
-          draggable: true,
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
+    students.forEach(student => {
+      const existingStatus = this.getExistingAttendanceStatus(student, date);
+      const key = this.getCellKey(student.student_id, date);
+      this.pendingUpdates.set(key, {
+        studentId: student.student_id,
+        date,
+        status: 'P',
+        subjectId,
+        previousStatus: existingStatus || undefined,
+        isModification: !!existingStatus,
+      });
+    });
+
+    this.hasUnsavedChanges = true;
+
+    Swal.fire({
+      title: 'All Students Marked',
+      html: `<strong>${students.length}</strong> students marked as Present<br><br>Click "Submit All" to save.`,
+      icon: 'success',
+      draggable: true,
+      timer: 2000,
+      showConfirmButton: false,
     });
   }
 
-  /**
-   * Get formatted date for display
-   */
   getFormattedDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -638,17 +768,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // END BULK SELECTION METHODS
+  // STUDENT FILTERING AND SEARCH
   // ============================================================
 
-  /**
-   * Get filtered students based on search query
-   */
   getFilteredStudents(): StudentRow[] {
     if (!this.gridData || !this.gridData.students) {
       return [];
     }
-    // Server-side filtering is now used
     return this.gridData.students;
   }
 
@@ -662,16 +788,10 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     this.onSearch();
   }
 
-  /**
-   * Get search result count
-   */
   getSearchResultCount(): number {
     return this.getFilteredStudents().length;
   }
 
-  /**
-   * Highlight search query in text
-   */
   highlightSearch(text: string): string {
     if (!this.searchQuery || !text) {
       return text;
@@ -686,15 +806,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return text.replace(regex, '<mark class="search-highlight">$1</mark>');
   }
 
-  /**
-   * Handle class selection change - auto load grid
-   */
+  // ============================================================
+  // DATA LOADING AND MANAGEMENT
+  // ============================================================
+
   onClassChange(): void {
     if (this.hasUnsavedChanges) {
-      if (
-        !confirm("You have unsaved changes. Discard them and load new data?")
-      ) {
-        // Revert selection - need to store previous value
+      if (!confirm("You have unsaved changes. Discard them and load new data?")) {
         return;
       }
       this.pendingUpdates.clear();
@@ -702,35 +820,26 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }
 
     if (this.startDate && this.endDate) {
-      this.currentPage = 1; // Reset to page 1 on class change
+      this.currentPage = 1;
       this.loadWeeklyGrid();
     }
   }
 
-  /**
-   * Handle date change - auto load grid when both dates are set
-   */
   onDateChange(): void {
     if (this.hasUnsavedChanges) {
-      if (
-        !confirm("You have unsaved changes. Discard them and load new data?")
-      ) {
+      if (!confirm("You have unsaved changes. Discard them and load new data?")) {
         return;
       }
       this.pendingUpdates.clear();
       this.hasUnsavedChanges = false;
     }
 
-    // Only auto-load if both dates are set
     if (this.startDate && this.endDate) {
-      this.currentPage = 1; // Reset to page 1 on date change
+      this.currentPage = 1;
       this.loadWeeklyGrid();
     }
   }
 
-  /**
-   * Set date range to current week (Monday to Saturday)
-   */
   setCurrentWeek(): void {
     const today = new Date();
     const dayOfWeek = today.getDay();
@@ -744,9 +853,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     this.endDate = this.formatDate(saturday);
   }
 
-  /**
-   * Format date to YYYY-MM-DD
-   */
   formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -754,22 +860,16 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  /**
-   * Load weekly attendance grid data
-   */
   loadWeeklyGrid(): void {
     if (!this.startDate || !this.endDate) {
       this.error = "Please select valid date range";
-      this.loading = true;
-  this.error = null;
-  
-  // ADD THIS LINE: Clear any pending updates that are no longer valid
-  this.clearInvalidPendingUpdates();
       return;
     }
 
     this.loading = true;
     this.error = null;
+    
+    this.clearInvalidPendingUpdates();
 
     this.attendanceService
       .getWeeklyGrid(
@@ -778,7 +878,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         this.selectedClassId, 
         this.currentPage, 
         this.pageSize,
-        this.searchQuery // Pass search query
+        this.searchQuery
       )
       .pipe(
         takeUntil(this.destroy$),
@@ -788,18 +888,15 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.gridData = response.data;
           
-          // Handle pagination
           if (response.data.pagination) {
             this.totalStudents = response.data.pagination.total;
             this.totalPages = response.data.pagination.totalPages;
             this.currentPage = response.data.pagination.page;
           } else {
-             // Fallback if backend doesn't return pagination yet
              this.totalStudents = this.gridData?.students?.length || 0;
              this.totalPages = 1;
           }
 
-          // Process the data to calculate daily attendance status
           this.processAttendanceData();
           this.loadSubjectsForDates();
         },
@@ -810,14 +907,10 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Process attendance data to implement daily absence logic
-   */
   processAttendanceData(): void {
     if (!this.gridData) return;
     if (!this.gridData.students) return;
 
-    // Initialize overall_statistics if not present
     if (!this.gridData.overall_statistics) {
       this.gridData.overall_statistics = {
         total_students: 0,
@@ -831,24 +924,10 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }
 
     this.gridData.students.forEach((student) => {
-      // Initialize subject_attendance if not present
       if (!student.subject_attendance) {
         student.subject_attendance = {};
       }
 
-      // Group attendance by date and calculate daily status
-      const dateMap = new Map<
-        string,
-        Array<{
-          subject_id: number;
-          subject_name: string;
-          status: string;
-          notes?: string;
-        }>
-      >();
-
-      // Process attendance data from API
-      // Your API returns: attendance[date] = { subjects: {...}, summary: {...} }
       if (!this.gridData?.period || !this.gridData.period.dates) {
         return;
       }
@@ -861,7 +940,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
           notes?: string;
         }> = [];
 
-        // Get all subject attendance for this date
         const dayData = student.attendance[date];
         if (dayData && dayData.subjects) {
           const subjectsObj = dayData.subjects as {
@@ -872,16 +950,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
             }>;
           };
 
-          // Iterate through subjects object
           Object.keys(subjectsObj).forEach((subjectId: string) => {
             const subjectSessions = subjectsObj[subjectId];
 
-            // Get subject name from the subjects list in gridData
             const subjectInfo = this.gridData?.subjects?.find(
               (s: any) => s.subject_id === parseInt(subjectId),
             );
 
-            // Process each session for this subject
             if (subjectSessions && Array.isArray(subjectSessions)) {
               subjectSessions.forEach(
                 (session: {
@@ -927,17 +1002,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         };
       });
 
-      // Recalculate statistics based on daily status
       this.recalculateStudentStatistics(student);
     });
 
-    // Calculate daily statistics for footer
     this.calculateDailyStatistics();
   }
 
-  /**
-   * Recalculate student statistics based on daily attendance logic
-   */
   recalculateStudentStatistics(student: StudentRow): void {
     let presentDays = 0;
     let absentDays = 0;
@@ -969,7 +1039,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Count subject-level absences for detailed statistics
       dayData.subjects.forEach((subject) => {
         if (subject.status === "A") subjectAbsences++;
         if (subject.status === "L") subjectLates++;
@@ -997,20 +1066,15 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Calculate daily statistics for the footer
-   */
   calculateDailyStatistics(): void {
     if (!this.gridData || !this.gridData.period || !this.gridData.students) {
       return;
     }
 
-    // Initialize daily_statistics if not present
     if (!this.gridData.daily_statistics) {
       this.gridData.daily_statistics = {};
     }
 
-    // Calculate statistics for each date
     this.gridData.period.dates.forEach((date) => {
       let present = 0;
       let absent = 0;
@@ -1050,7 +1114,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       };
     });
 
-    // Calculate overall statistics
     let totalPresent = 0;
     let totalAbsent = 0;
     let totalLate = 0;
@@ -1079,9 +1142,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Load subjects for all dates in the grid
-   */
   loadSubjectsForDates(): void {
     if (
       !this.gridData?.period?.dates ||
@@ -1113,7 +1173,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
             const subjects = response.data || [];
             this.dateSubjects.set(date, subjects);
 
-            // Set first subject as default if available
             if (subjects.length > 0) {
               this.selectedSubjects.set(date, subjects[0].subject_id);
             }
@@ -1126,42 +1185,30 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Get subjects for a specific date
-   */
   getSubjectsForDate(date: string): Subject[] {
     return this.dateSubjects.get(date) || [];
   }
 
-  /**
-   * Get selected subject ID for a date
-   */
   getSelectedSubjectId(date: string): number | undefined {
     return this.selectedSubjects.get(date);
   }
 
-  /**
-   * Handle subject change for a date (NO auto-refresh)
-   */
   onSubjectChange(date: string, subjectId: number): void {
     this.selectedSubjects.set(date, subjectId);
     console.log(`Subject changed for ${date}: ${subjectId}`);
   }
 
-  /**
-   * Get display symbol for attendance status (daily status)
-   */
+  // ============================================================
+  // ATTENDANCE CELL MANAGEMENT
+  // ============================================================
+
   getStatusSymbol(status: string | null): string {
     if (!status) return "";
     const option = this.statusOptions.find((opt) => opt.value === status);
     return option?.symbol || "";
   }
 
-  /**
-   * Get daily attendance status for a student on a specific date
-   */
   getDailyStatus(student: StudentRow, date: string): string | null {
-    // Check if there's a pending update for this cell
     const key = this.getCellKey(student.student_id, date);
     const pendingUpdate = this.pendingUpdates.get(key);
 
@@ -1172,13 +1219,9 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return student.subject_attendance?.[date]?.daily_status || null;
   }
 
-  /**
-   * Get CSS class for attendance status
-   */
   getStatusClass(status: string | null, date?: string): string {
     if (!status) return "status-empty";
     
-    // Add disabled class for non-editable dates
     let baseClass = "";
     const statusMap: Record<string, string> = {
       P: "status-present",
@@ -1188,7 +1231,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     };
     baseClass = statusMap[status] || "status-empty";
     
-    // Add disabled class if date is provided and not editable
     if (date && !this.isDateEditable(date)) {
       baseClass += " status-disabled";
     }
@@ -1196,40 +1238,30 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return baseClass;
   }
 
-  /**
-   * Generate unique key for cell
-   */
   getCellKey(studentId: number, date: string): string {
     return `${studentId}-${date}`;
   }
 
-  /**
-   * Check if cell is in edit mode
-   */
   isEditMode(studentId: number, date: string): boolean {
     return this.editMode.get(this.getCellKey(studentId, date)) || false;
   }
 
-  /**
-   * Check if cell has pending changes
-   */
   hasPendingChanges(studentId: number, date: string): boolean {
     const key = this.getCellKey(studentId, date);
     return this.pendingUpdates.has(key);
   }
 
   /**
-   * Handle cell click to enable editing
-   * UPDATED: Disable in bulk selection mode
+   * Handle cell click with modification awareness
    */
   onCellClick(studentId: number, date: string): void {
-    // Don't allow individual editing in bulk selection mode
+    // FIXED: Check bulk selection mode first
     if (this.isBulkSelectionActive(date)) {
+      console.log('Cell clicked in bulk mode, toggling selection for student:', studentId);
       this.toggleStudentSelection(date, studentId);
       return;
     }
 
-    // Show countdown modal if date is not editable
     if (!this.isDateEditable(date)) {
       this.showCountdownTimerModal(date);
       return;
@@ -1237,17 +1269,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
     const key = this.getCellKey(studentId, date);
 
-    // Close any other open cells
     this.editMode.clear();
 
-    // Open clicked cell
     this.selectedCell = { studentId, date };
     this.editMode.set(key, true);
   }
 
-  /**
-   * Close edit mode for a cell
-   */
   closeEditMode(studentId: number, date: string): void {
     const key = this.getCellKey(studentId, date);
     this.editMode.delete(key);
@@ -1255,14 +1282,13 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Stage attendance update (doesn't save immediately)
+   * Stage attendance update with modification confirmation
    */
-  stageAttendanceUpdate(
+  async stageAttendanceUpdate(
     studentId: number,
     date: string,
     newStatus: string,
-  ): void {
-    // Double-check date is editable
+  ): Promise<void> {
     if (!this.isDateEditable(date)) {
       Swal.fire({
         title: "Invalid Date",
@@ -1274,7 +1300,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Validate status
     if (!newStatus || newStatus === "") {
       this.closeEditMode(studentId, date);
       return;
@@ -1285,7 +1310,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Get subject ID
     const subjectId = this.selectedSubjects.get(date);
     if (!subjectId) {
       alert("Please select a subject for this date");
@@ -1293,142 +1317,203 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const student = this.getFilteredStudents().find(s => s.student_id === studentId);
+    const existingStatus = student ? this.getExistingAttendanceStatus(student, date) : null;
+    
+    if (existingStatus && existingStatus !== newStatus) {
+      const result = await Swal.fire({
+        title: 'Change Existing Attendance?',
+        html: `
+          <div style="text-align: left; padding: 10px;">
+            <p><strong>Student:</strong> ${student?.student_name_eng || 'Unknown'}</p>
+            <p><strong>Date:</strong> ${this.getFormattedDate(date)}</p>
+            <p><strong>Current Status:</strong> <span class="badge bg-info">${this.getStatusLabel(existingStatus)}</span></p>
+            <p><strong>New Status:</strong> <span class="badge bg-warning">${this.getStatusLabel(newStatus)}</span></p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Change It',
+        cancelButtonText: 'Cancel',
+        draggable: true,
+      });
+
+      if (!result.isConfirmed) {
+        this.closeEditMode(studentId, date);
+        return;
+      }
+    }
+
     const key = this.getCellKey(studentId, date);
 
-    // Add to pending updates
     this.pendingUpdates.set(key, {
       studentId,
       date,
       status: newStatus,
       subjectId,
+      previousStatus: existingStatus || undefined,
+      isModification: !!existingStatus,
     });
 
     this.hasUnsavedChanges = true;
     this.closeEditMode(studentId, date);
+
+    if (existingStatus) {
+      Swal.fire({
+        title: 'Change Staged',
+        html: `${this.getStatusLabel(existingStatus)} → ${this.getStatusLabel(newStatus)}`,
+        icon: 'info',
+        timer: 1500,
+        showConfirmButton: false,
+        draggable: true,
+      });
+    }
   }
 
   /**
-   * Submit all pending updates
+   * Submit all with modification summary
    */
-  submitAllChanges(): void {
-  if (this.pendingUpdates.size === 0) {
-    Swal.fire({
-      title: "No Changes",
-      text: "No changes to submit",
-      icon: "info",
-      draggable: true,
-    });
-    return;
-  }
-
-  // IMPORTANT: Verify all pending updates are for today only
-  let hasInvalidDates = false;
-  const invalidDates: string[] = [];
-  
-  this.pendingUpdates.forEach((update) => {
-    if (!this.isDateEditable(update.date)) {
-      hasInvalidDates = true;
-      if (!invalidDates.includes(update.date)) {
-        invalidDates.push(update.date);
-      }
+  async submitAllChanges(): Promise<void> {
+    if (this.pendingUpdates.size === 0) {
+      Swal.fire({
+        title: "No Changes",
+        text: "No changes to submit",
+        icon: "info",
+        draggable: true,
+      });
+      return;
     }
-  });
 
-  if (hasInvalidDates) {
-    Swal.fire({
-      title: "Invalid Updates Detected",
-      html: `You can only submit attendance for <strong>today (${this.getFormattedDate(this.todayDate)})</strong>.<br><br>Found updates for: ${invalidDates.map(d => this.getFormattedDate(d)).join(', ')}`,
-      icon: "error",
+    let hasInvalidDates = false;
+    const invalidDates: string[] = [];
+    
+    this.pendingUpdates.forEach((update) => {
+      if (!this.isDateEditable(update.date)) {
+        hasInvalidDates = true;
+        if (!invalidDates.includes(update.date)) {
+          invalidDates.push(update.date);
+        }
+      }
+    });
+
+    if (hasInvalidDates) {
+      Swal.fire({
+        title: "Invalid Updates Detected",
+        html: `You can only submit attendance for <strong>today (${this.getFormattedDate(this.todayDate)})</strong>.<br><br>Found updates for: ${invalidDates.map(d => this.getFormattedDate(d)).join(', ')}`,
+        icon: "error",
+        draggable: true,
+      });
+      return;
+    }
+
+    let newRecords = 0;
+    let modifications = 0;
+    this.pendingUpdates.forEach(update => {
+      if (update.isModification) {
+        modifications++;
+      } else {
+        newRecords++;
+      }
+    });
+
+    let summaryHTML = '<div style="text-align: left; padding: 10px;">';
+    summaryHTML += `<p><strong>Total Changes:</strong> ${this.pendingUpdates.size}</p>`;
+    if (newRecords > 0) {
+      summaryHTML += `<p>📝 <strong>${newRecords}</strong> new record(s)</p>`;
+    }
+    if (modifications > 0) {
+      summaryHTML += `<p>✏️ <strong>${modifications}</strong> existing record(s) will be changed</p>`;
+    }
+    summaryHTML += '</div>';
+
+    const result = await Swal.fire({
+      title: 'Confirm Submission',
+      html: summaryHTML,
+      icon: modifications > 0 ? 'warning' : 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Submit All',
+      cancelButtonText: 'Cancel',
       draggable: true,
     });
-    return;
-  }
 
-  Swal.fire({
-    title: 'Confirm Submission',
-    text: `Submit ${this.pendingUpdates.size} attendance update(s) for today?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, Submit',
-    cancelButtonText: 'Cancel',
-    draggable: true,
-  }).then((result) => {
     if (result.isConfirmed) {
       this.performSubmission();
     }
-  });
-}
-// ADD this helper method to actually perform the submission
-private performSubmission(): void {
-  this.submitting = true;
-
-  const updates: any[] = [];
-
-  this.pendingUpdates.forEach((update) => {
-    updates.push({
-      student_id: update.studentId,
-      teacher_id: 1,
-      subject_id: update.subjectId,
-      attendance_date: update.date,
-      status: update.status,
-      force_update: true, // Add this flag to force update
-    });
-  });
-
-  const updateObservables = updates.map((data) =>
-    this.attendanceService.createOrUpdateAttendance(data),
-  );
-
-  forkJoin(updateObservables)
-    .pipe(
-      takeUntil(this.destroy$),
-      finalize(() => (this.submitting = false)),
-    )
-    .subscribe({
-      next: () => {
-        this.pendingUpdates.clear();
-        this.hasUnsavedChanges = false;
-        this.loadWeeklyGrid();
-
-        Swal.fire({
-          title: "Success!",
-          text: "Attendance updated successfully!",
-          icon: "success",
-          draggable: true,
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      },
-      error: (err) => {
-        console.error("Failed to update attendance:", err);
-        Swal.fire({
-          title: "Submission Failed",
-          text: err.error?.message || "Failed to update attendance. Please try again.",
-          icon: "error",
-          draggable: true,
-        });
-      },
-    });
-}
-
-// ADD this method to clear pending updates that are not for today
-// Call this when date range changes or on component init
-clearInvalidPendingUpdates(): void {
-  const keysToDelete: string[] = [];
-  
-  this.pendingUpdates.forEach((update, key) => {
-    if (!this.isDateEditable(update.date)) {
-      keysToDelete.push(key);
-    }
-  });
-  
-  keysToDelete.forEach(key => this.pendingUpdates.delete(key));
-  
-  if (this.pendingUpdates.size === 0) {
-    this.hasUnsavedChanges = false;
   }
-}
-  // Pagination methods
+
+  private performSubmission(): void {
+    this.submitting = true;
+
+    const updates: any[] = [];
+
+    this.pendingUpdates.forEach((update) => {
+      updates.push({
+        student_id: update.studentId,
+        teacher_id: 1,
+        subject_id: update.subjectId,
+        attendance_date: update.date,
+        status: update.status,
+        force_update: true,
+      });
+    });
+
+    const updateObservables = updates.map((data) =>
+      this.attendanceService.createOrUpdateAttendance(data),
+    );
+
+    forkJoin(updateObservables)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => (this.submitting = false)),
+      )
+      .subscribe({
+        next: () => {
+          const totalUpdates = this.pendingUpdates.size;
+          this.pendingUpdates.clear();
+          this.hasUnsavedChanges = false;
+          this.loadWeeklyGrid();
+
+          Swal.fire({
+            title: "Success!",
+            html: `<strong>${totalUpdates}</strong> attendance record(s) updated successfully!`,
+            icon: "success",
+            draggable: true,
+            timer: 2500,
+            showConfirmButton: false,
+          });
+        },
+        error: (err) => {
+          console.error("Failed to update attendance:", err);
+          Swal.fire({
+            title: "Submission Failed",
+            text: err.error?.message || "Failed to update attendance. Please try again.",
+            icon: "error",
+            draggable: true,
+          });
+        },
+      });
+  }
+
+  clearInvalidPendingUpdates(): void {
+    const keysToDelete: string[] = [];
+    
+    this.pendingUpdates.forEach((update, key) => {
+      if (!this.isDateEditable(update.date)) {
+        keysToDelete.push(key);
+      }
+    });
+    
+    keysToDelete.forEach(key => this.pendingUpdates.delete(key));
+    
+    if (this.pendingUpdates.size === 0) {
+      this.hasUnsavedChanges = false;
+    }
+  }
+
+  // ============================================================
+  // PAGINATION
+  // ============================================================
+
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -1453,9 +1538,6 @@ clearInvalidPendingUpdates(): void {
     this.loadWeeklyGrid();
   }
 
-  /**
-   * Cancel all pending changes
-   */
   cancelAllChanges(): void {
     if (this.pendingUpdates.size === 0) {
       return;
@@ -1471,9 +1553,6 @@ clearInvalidPendingUpdates(): void {
     this.selectedCell = null;
   }
 
-  /**
-   * Remove a specific pending update
-   */
   removePendingUpdate(studentId: number, date: string): void {
     const key = this.getCellKey(studentId, date);
     this.pendingUpdates.delete(key);
@@ -1483,9 +1562,10 @@ clearInvalidPendingUpdates(): void {
     }
   }
 
-  /**
-   * Show detailed subject attendance for a specific day
-   */
+  // ============================================================
+  // DETAIL MODAL
+  // ============================================================
+
   showAttendanceDetail(student: StudentRow, date: string): void {
     this.detailModalData = {
       student: student,
@@ -1495,33 +1575,25 @@ clearInvalidPendingUpdates(): void {
     this.showDetailModal = true;
   }
 
-  /**
-   * Close detail modal
-   */
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.detailModalData = {};
   }
 
-  /**
-   * Check if a date has multiple subjects with absences
-   */
   hasMultipleSubjectRecords(student: StudentRow, date: string): boolean {
     const subjects = student.subject_attendance?.[date]?.subjects || [];
     return subjects.length > 1;
   }
 
-  /**
-   * Get count of absent subjects for a specific date
-   */
   getAbsentSubjectCount(student: StudentRow, date: string): number {
     const subjects = student.subject_attendance?.[date]?.subjects || [];
     return subjects.filter((s) => s.status === "A").length;
   }
 
-  /**
-   * Get formatted date display (Day Month/Date)
-   */
+  // ============================================================
+  // UTILITY METHODS
+  // ============================================================
+
   getDateDisplay(dateString: string): string {
     const date = new Date(dateString);
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -1531,31 +1603,19 @@ clearInvalidPendingUpdates(): void {
     return `${day}\n${month}/${dateNum}`;
   }
 
-  /**
-   * Export attendance data to Excel
-   */
   exportToExcel(): void {
     const url = `${environment.apiUrl}/attendance/export/weekly-excel?start_date=${this.startDate}&end_date=${this.endDate}&class_id=${this.selectedClassId}`;
     window.open(url, "_blank");
   }
 
-  /**
-   * Legacy support for cached templates
-   */
   exportToCSV(): void {
     this.exportToExcel();
   }
 
-  /**
-   * Print attendance grid
-   */
   print(): void {
     window.print();
   }
 
-  /**
-   * Navigate to previous week
-   */
   previousWeek(): void {
     if (this.hasUnsavedChanges) {
       if (!confirm("You have unsaved changes. Discard them and continue?")) {
@@ -1576,9 +1636,6 @@ clearInvalidPendingUpdates(): void {
     this.loadWeeklyGrid();
   }
 
-  /**
-   * Navigate to next week
-   */
   nextWeek(): void {
     if (this.hasUnsavedChanges) {
       if (!confirm("You have unsaved changes. Discard them and continue?")) {
@@ -1599,20 +1656,13 @@ clearInvalidPendingUpdates(): void {
     this.loadWeeklyGrid();
   }
 
-  /**
-   * Get gender icon class
-   */
   getGenderIconClass(gender: string): string {
     return gender === "M"
       ? "bi bi-gender-male text-primary"
       : "bi bi-gender-female text-danger";
   }
 
-  /**
-   * Get attendance cell title
-   */
   getCellTitle(dateString: string, student: StudentRow): string {
-    // Check if date is editable first
     if (!this.isDateEditable(dateString)) {
       if (this.isPastDate(dateString)) {
         return "Past date - Click to see time remaining";
@@ -1622,10 +1672,18 @@ clearInvalidPendingUpdates(): void {
     }
 
     const key = this.getCellKey(student.student_id, dateString);
+    const pendingUpdate = this.pendingUpdates.get(key);
 
-    // Check for pending update first
-    if (this.pendingUpdates.has(key)) {
-      return "Pending change - click to edit or submit to save";
+    if (pendingUpdate) {
+      if (pendingUpdate.isModification && pendingUpdate.previousStatus) {
+        return `Changing: ${this.getStatusLabel(pendingUpdate.previousStatus)} → ${this.getStatusLabel(pendingUpdate.status)} (click to edit or submit to save)`;
+      }
+      return `New: ${this.getStatusLabel(pendingUpdate.status)} (click to edit or submit to save)`;
+    }
+
+    const existingStatus = this.getExistingAttendanceStatus(student, dateString);
+    if (existingStatus) {
+      return `Current: ${this.getStatusLabel(existingStatus)} - Click to change`;
     }
 
     const subjectData = student.subject_attendance?.[dateString];
@@ -1634,14 +1692,13 @@ clearInvalidPendingUpdates(): void {
       !subjectData.subjects ||
       subjectData.subjects.length === 0
     ) {
-      return "Click to edit";
+      return "Click to mark attendance";
     }
 
     if (subjectData.subjects.length === 1) {
       return subjectData.subjects[0].notes || "Click to edit";
     }
 
-    // Multiple subjects - show count
     const absentCount = subjectData.subjects.filter(
       (s) => s.status === "A",
     ).length;
@@ -1652,9 +1709,6 @@ clearInvalidPendingUpdates(): void {
     return `${subjectData.subjects.length} subjects recorded. Click for details.`;
   }
 
-  /**
-   * Get color class based on attendance rate
-   */
   getAttendanceRateColor(rate: string | null | undefined): string {
     if (!rate) return "text-muted";
     const rateNum = parseFloat(rate);
@@ -1664,9 +1718,6 @@ clearInvalidPendingUpdates(): void {
     return "text-danger";
   }
 
-  /**
-   * Refresh current data
-   */
   refresh(): void {
     if (this.hasUnsavedChanges) {
       if (!confirm("You have unsaved changes. Discard them and refresh?")) {
@@ -1679,9 +1730,6 @@ clearInvalidPendingUpdates(): void {
     this.loadWeeklyGrid();
   }
 
-  /**
-   * Reset to current week
-   */
   resetToCurrentWeek(): void {
     if (this.hasUnsavedChanges) {
       if (!confirm("You have unsaved changes. Discard them and reset?")) {
