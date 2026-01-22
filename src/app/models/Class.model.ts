@@ -18,8 +18,4 @@ export interface Class {
 
 export interface ClassFormData {
   class_code: string;
-  class_year: string;
-  schedule?: string;
-  teacher_id: number;
-  subject_id: number;
 }

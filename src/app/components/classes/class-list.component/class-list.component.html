@@ -75,12 +75,8 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width: 60px">#</th>
-                            <th>Code</th>
-                            <th>Year</th>
-                            <th>Subject</th>
-                            <th>Teacher</th>
+                            <th>Class Name</th>
                             <th>Students</th>
-                            <th>Schedule</th>
                             <th style="width: 150px">Actions</th>
                         </tr>
                     </thead>
@@ -88,13 +84,9 @@
                         <tr *ngFor="let classItem of classes; let i = index">
                             <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                             <td><strong>{{ classItem.class_code }}</strong></td>
-                            <td><span class="badge bg-info text-dark">{{ classItem.class_year }}</span></td>
-                            <td>{{ classItem.subject?.subject_name || 'N/A' }}</td>
-                            <td>{{ classItem.teacher?.teacher_name_eng || 'N/A' }}</td>
                             <td>
                                 <span class="badge bg-secondary">{{ classItem.students?.length || 0 }}</span>
                             </td>
-                            <td>{{ classItem.schedule || 'N/A' }}</td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     <button class="btn btn-outline-secondary mx-1" (click)="openEditModal(classItem)"
@@ -159,37 +151,9 @@
             <div class="modal-body">
                 <form>
                     <div class="mb-3">
-                        <label class="form-label">Class Code *</label>
+                        <label class="form-label">Class Name *</label>
                         <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
                             required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Class Year *</label>
-                        <input type="text" class="form-control" [(ngModel)]="classForm.class_year" name="class_year"
-                            placeholder="e.g. 2024-2025" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Subject *</label>
-                        <select class="form-select" [(ngModel)]="classForm.subject_id" name="subject_id" required>
-                            <option [ngValue]="0" disabled>Select Subject</option>
-                            <option *ngFor="let subject of subjects" [ngValue]="subject.subject_id">
-                                {{ subject.subject_name }} ({{ subject.subject_code }})
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Teacher *</label>
-                        <select class="form-select" [(ngModel)]="classForm.teacher_id" name="teacher_id" required>
-                            <option [ngValue]="0" disabled>Select Teacher</option>
-                            <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacher_id">
-                                {{ teacher.teacher_name_eng }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Schedule</label>
-                        <input type="text" class="form-control" [(ngModel)]="classForm.schedule" name="schedule"
-                            placeholder="e.g. Mon, Wed 10:00-11:30" />
                     </div>
                 </form>
             </div>
@@ -215,36 +179,9 @@
             <div class="modal-body">
                 <form>
                     <div class="mb-3">
-                        <label class="form-label">Class Code *</label>
+                        <label class="form-label">Class Name *</label>
                         <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
                             required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Class Year *</label>
-                        <input type="text" class="form-control" [(ngModel)]="classForm.class_year" name="class_year"
-                            required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Subject *</label>
-                        <select class="form-select" [(ngModel)]="classForm.subject_id" name="subject_id" required>
-                            <option [ngValue]="0" disabled>Select Subject</option>
-                            <option *ngFor="let subject of subjects" [ngValue]="subject.subject_id">
-                                {{ subject.subject_name }} ({{ subject.subject_code }})
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Teacher *</label>
-                        <select class="form-select" [(ngModel)]="classForm.teacher_id" name="teacher_id" required>
-                            <option [ngValue]="0" disabled>Select Teacher</option>
-                            <option *ngFor="let teacher of teachers" [ngValue]="teacher.teacher_id">
-                                {{ teacher.teacher_name_eng }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Schedule</label>
-                        <input type="text" class="form-control" [(ngModel)]="classForm.schedule" name="schedule" />
                     </div>
                 </form>
             </div>

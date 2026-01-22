@@ -36,10 +36,6 @@ export class ClassListComponent implements OnInit {
   selectedClass: Class | null = null;
   classForm: ClassFormData = {
     class_code: '',
-    class_year: '',
-    schedule: '',
-    teacher_id: 0,
-    subject_id: 0
   };
 
   Math = Math;
@@ -145,11 +141,6 @@ export class ClassListComponent implements OnInit {
     this.selectedClass = classItem;
     this.classForm = {
       class_code: classItem.class_code,
-      class_year: classItem.class_year,
-      schedule: classItem.schedule || '',
-      // Prioritize explicit IDs if available, else try to get from nested objects
-      teacher_id: classItem.teacher_id || classItem.teacher?.teacher_id || 0,
-      subject_id: classItem.subject_id || classItem.subject?.subject_id || 0
     };
     this.showEditModal = true;
   }
@@ -162,10 +153,6 @@ export class ClassListComponent implements OnInit {
   resetForm(): void {
     this.classForm = {
       class_code: '',
-      class_year: '',
-      schedule: '',
-      teacher_id: 0,
-      subject_id: 0
     };
   }
 
@@ -217,6 +204,6 @@ export class ClassListComponent implements OnInit {
   }
 
   isValidForm(): boolean {
-    return !!(this.classForm.class_code && this.classForm.class_year && this.classForm.teacher_id && this.classForm.subject_id);
+    return !!(this.classForm.class_code);
   }
 }
