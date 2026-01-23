@@ -10,6 +10,7 @@ import {
 } from "../../services/subjectservice/subject.service";
 import Swal from "sweetalert2";
 import { Subject } from "../../models/Subject.model";
+import { RouterLink } from "@angular/router";
 
 interface AttendanceData {
   subjects?: {
@@ -120,7 +121,7 @@ interface BulkSelectionState {
 
 @Component({
   selector: "app-weeklyattendance.component",
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: "./weeklyattendance.component.html",
   styleUrl: "./weeklyattendance.component.css",
 })
