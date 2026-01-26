@@ -1547,11 +1547,26 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm(`Discard ${this.pendingUpdates.size} unsaved change(s)?`)) {
-      return;
-    }
+    Swal.fire({
+  title: "Are you sure?",
+  text: `Discard ${this.pendingUpdates.size} unsaved change(s)?`,
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, Cancel it!"
+}).then((result) => {
+  if (result.isConfirmed) {
+    Swal.fire({
+      title: "Cancelled!",
+      text: "Your changes have been cancelled.",
+      icon: "success"
+    });
+     this.pendingUpdates.clear();
+  }
+});
 
-    this.pendingUpdates.clear();
+   
     this.hasUnsavedChanges = false;
     this.editMode.clear();
     this.selectedCell = null;
