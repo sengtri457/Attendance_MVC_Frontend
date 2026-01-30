@@ -330,18 +330,31 @@
 /* ========================
    COLUMN SIZING (TIGHTER)
    ======================== */
+/* ========================
+   COLUMN SIZING (TIGHTER)
+   ======================== */
+.col-select {
+  width: 30px;
+  min-width: 30px;
+  text-align: center;
+  padding: 2px 1px;
+  left: 0 !important;
+  z-index: 6; /* Higher z-index to stay on top if needed */
+}
+
 .col-no {
   width: 30px;
   min-width: 30px;
   text-align: center;
   font-weight: 600;
   padding: 2px 1px;
+  left: 30px !important; /* Shifted */
 }
 
 .col-name-kh {
   min-width: 100px;
   max-width: 130px;
-  left: 30px !important;
+  left: 60px !important; /* Shifted 30+30 */
   padding: 2px 4px;
   font-size: 0.75rem;
 }
@@ -349,7 +362,7 @@
 .col-name-eng {
   min-width: 100px;
   max-width: 130px;
-  left: 130px !important;
+  left: 160px !important; /* Shifted 130+30 */
   padding: 2px 4px;
   font-size: 0.75rem;
 }
@@ -358,7 +371,7 @@
   width: 40px;
   min-width: 40px;
   text-align: center;
-  left: 230px !important;
+  left: 260px !important; /* Shifted 230+30 */
   padding: 2px 1px;
   font-size: 0.75rem;
 }

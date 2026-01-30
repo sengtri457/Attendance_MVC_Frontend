@@ -3,13 +3,17 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <!-- Logo Icon -->
                 <i class="bi bi-clock-history logo-icon"></i>
                 <span class="logo-text">Attendance</span>
             </div>
-            <!-- Mobile Close Trigger -->
-            <button class="btn-toggle d-md-none" (click)="toggleSidebar()">
+            <!-- Mobile: close overlay. Desktop: collapse sidebar -->
+            <button class="btn-toggle d-md-none" (click)="toggleSidebar()" title="Close menu">
                 <i class="bi bi-x-lg"></i>
+            </button>
+            <button class="btn-collapse-sidebar d-none d-md-flex" (click)="toggleSidebar()"
+                [title]="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+                <i class="bi"
+                    [ngClass]="isSidebarCollapsed ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar-inset-reverse'"></i>
             </button>
         </div>
 
@@ -20,9 +24,10 @@
                     <!-- Check roles if needed -->
                     <ng-container *ngIf="hasRole(item.roles)">
                         <a [routerLink]="item.route" routerLinkActive="active"
-                            [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item">
+                            [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item"
+                            [title]="isSidebarCollapsed ? (item.label | translate) : null">
                             <i class="bi" [ngClass]="item.icon"></i>
-                            <span class="nav-label">{{ item.label }}</span>
+                            <span class="nav-label">{{ item.label | translate }}</span>
                         </a>
                     </ng-container>
                 </li>
@@ -32,7 +37,8 @@
         <!-- Footer Profile -->
         <div class="sidebar-footer">
             <div class="user-profile-compact">
-                <div class="avatar-circle">
+                <div class="avatar-circle"
+                    [title]="(currentUser.username || 'Admin') + ' – ' + (currentUser.role || '')">
                     <i class="bi bi-person-fill"></i>
                 </div>
                 <div class="user-info">
@@ -43,7 +49,7 @@
                     <span class="user-role">{{ currentUser.role | titlecase }}</span>
                 </div>
             </div>
-            <button class="btn-logout-icon" (click)="logout()" title="Logout">
+            <button class="btn-logout-icon" (click)="logout()" [title]="'LOGOUT' | translate">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
         </div>
@@ -57,10 +63,16 @@
                 <button class="btn-toggle-sidebar" (click)="toggleSidebar()">
                     <i class="bi bi-list"></i>
                 </button>
-                <h4 class="page-title d-none d-sm-block">Attendance Management System</h4>
+                <h4 class="page-title d-none d-sm-block">{{ 'ATTENDANCE_SYSTEM' | translate }}</h4>
             </div>
 
             <div class="topbar-right">
+                <!-- Language Toggle -->
+                <button class="btn-clean" (click)="languageService.toggleLanguage()" title="Switch Language">
+                    <i class="bi bi-translate me-1"></i>
+                    {{ languageService.currentLang() === 'en' ? 'ខ្មែរ' : 'English' }}
+                </button>
+
                 <button class="icon-btn" title="Notifications">
                     <div class="badge-dot"></div>
                     <i class="bi bi-bell"></i>

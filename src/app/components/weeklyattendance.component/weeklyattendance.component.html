@@ -10,7 +10,7 @@
       <div class="modal-header-clean">
         <h5 class="modal-title-clean">
           <i class="bi bi-clock-history"></i>
-          <span>Attendance Editing Timer</span>
+          <span>{{ 'ATTENDANCE_EDITING_TIMER' | translate }}</span>
         </h5>
         <button type="button" class="modal-close-btn" (click)="closeCountdownModal()">
           <i class="bi bi-x-lg"></i>
@@ -96,36 +96,41 @@
   <div class="header-section">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2 class="mb-1">Weekly Attendance Grid</h2>
+        <h2 class="mb-1">{{ 'WEEKLY_ATTENDANCE_GRID' | translate }}</h2>
         <p class="text-muted mb-0" *ngIf="gridData">
           <strong>{{ gridData.class.class_name }}</strong> |
           {{ gridData.period.start_date }} to {{ gridData.period.end_date }}
           <span class="badge bg-secondary ms-2">
-            {{ gridData.students.length }} Students
+            {{ gridData.students.length }} {{ 'TOTAL_STUDENTS' | translate }}
           </span>
         </p>
       </div>
       <div class="d-flex gap-2">
+        <!-- Language Toggle -->
+        <button class="btn btn-outline-info" (click)="languageService.toggleLanguage()" title="Switch Language">
+          <i class="bi bi-translate"></i> {{ languageService.currentLang() === 'en' ? 'ខ្មែរ' : 'English' }}
+        </button>
+
         <!-- Submit and Cancel buttons -->
         <div class=" me-2" *ngIf="hasUnsavedChanges">
           <button class="btn btn-success mx-2" (click)="submitAllChanges()" [disabled]="submitting">
             <i class="bi bi-check-circle"></i>
-            Submit Changes ({{ pendingUpdates.size }})
+            {{ 'SUBMIT_CHANGES' | translate }} ({{ pendingUpdates.size }})
           </button>
           <button class="btn btn-danger" (click)="cancelAllChanges()" [disabled]="submitting">
             <i class="bi bi-x-circle"></i>
-            Cancel
+            {{ 'CANCEL' | translate }}
           </button>
         </div>
 
         <!-- Action buttons -->
         <button class="btn btn-outline-success" (click)="refresh()" [disabled]="loading || submitting"
-          title="Refresh data">
-          <i class="bi bi-arrow-clockwise"></i> Refresh
+          [title]="'REFRESH' | translate">
+          <i class="bi bi-arrow-clockwise"></i> {{ 'REFRESH' | translate }}
         </button>
         <button class="btn btn-outline-primary" (click)="exportToExcel()" [disabled]="!gridData"
-          title="Export to Excel">
-          <i class="bi bi-file-earmark-excel"></i> Export Excel
+          [title]="'EXPORT_EXCEL' | translate">
+          <i class="bi bi-file-earmark-excel"></i> {{ 'EXPORT_EXCEL' | translate }}
         </button>
         <button class="btn btn-outline-secondary" (click)="print()" [disabled]="!gridData" title="Print grid">
           <i class="bi bi-printer"></i>
@@ -136,34 +141,34 @@
     <!-- Controls -->
     <div class="row mb-3">
       <div class="col-md-3">
-        <label class="form-label fw-semibold">Class</label>
+        <label class="form-label fw-semibold">{{ 'CLASS' | translate }}</label>
         <select class="form-select" [(ngModel)]="selectedClassId" (change)="onClassChange()"
           [disabled]="loading || submitting">
           <option *ngFor="let item of classes" [value]="item.class_id">{{ item.class_code }}</option>
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label fw-semibold">Start Date</label>
+        <label class="form-label fw-semibold">{{ 'START_DATE' | translate }}</label>
         <input type="date" class="form-control" [(ngModel)]="startDate" (change)="onDateChange()"
           [disabled]="loading || submitting" [max]="endDate">
       </div>
       <div class="col-md-3">
-        <label class="form-label fw-semibold">End Date</label>
+        <label class="form-label fw-semibold">{{ 'END_DATE' | translate }}</label>
         <input type="date" class="form-control" [(ngModel)]="endDate" (change)="onDateChange()"
           [disabled]="loading || submitting" [min]="startDate">
       </div>
       <div class="col-md-3 d-flex align-items-end gap-2">
         <button class="btn btn-outline-secondary" (click)="previousWeek()" [disabled]="loading || submitting"
-          title="Previous week">
+          [title]="'PREVIOUS_WEEK' | translate">
           <i class="bi bi-chevron-left"></i>
         </button>
         <button class="btn btn-outline-secondary" (click)="nextWeek()" [disabled]="loading || submitting"
-          title="Next week">
+          [title]="'NEXT_WEEK' | translate">
           <i class="bi bi-chevron-right"></i>
         </button>
         <button class="btn-clean btn-primary-clean" (click)="resetToCurrentWeek()" [disabled]="loading || submitting"
-          title="Reset to current week">
-          Reset Current<i class="bi bi-x-circle"></i>
+          [title]="'RESET_CURRENT' | translate">
+          {{ 'RESET_CURRENT' | translate }}<i class="bi bi-x-circle"></i>
         </button>
       </div>
     </div>
@@ -172,11 +177,11 @@
     <div class="row mb-3 d-flex justify-content-between align-items-end" *ngIf="gridData">
       <div class="col-md-6">
         <label class="form-label fw-semibold">
-          <i class="bi bi-search"></i> Search Students
+          <i class="bi bi-search"></i> {{ 'SEARCH_PLACEHOLDER' | translate }}
         </label>
         <div class="input-group">
           <input type="text" class="form-control" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-            placeholder="Search by name or ID..." [disabled]="loading || submitting">
+            [placeholder]="'SEARCH_PLACEHOLDER' | translate" [disabled]="loading || submitting">
           <button class="btn btn-outline-primary" type="button" (click)="onSearch()" [disabled]="loading || submitting">
             <i class="bi bi-search"></i>
           </button>
@@ -186,22 +191,23 @@
           </button>
         </div>
         <small class="text-muted" *ngIf="searchQuery && !loading">
-          Found {{ totalStudents }} students matching "{{ searchQuery }}"
+          {{ 'FOUND_STUDENTS' | translate }} {{ totalStudents }} {{ 'MATCHING' | translate }} "{{ searchQuery }}"
         </small>
       </div>
       <div class="col-6">
         <button class="btn-clean btn-primary-clean" routerLink="/">
-          <i class="bi bi-arrow-left"></i> Back to Dashboard
+          <i class="bi bi-arrow-left"></i> {{ 'BACK_TO_DASHBOARD' | translate }}
         </button>
       </div>
     </div>
 
     <!-- NEW: Bulk Selection Panel -->
     <div *ngIf="showBulkSelectionPanel && currentBulkDate" class="bulk-selection-panel alert alert-info mb-3">
+      <!-- ... existing bulk panel code ... -->
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h5 class="mb-0">
           <i class="bi bi-check-square me-2"></i>
-          Bulk Selection Mode - {{ getFormattedDate(currentBulkDate) }}
+          {{ 'BULK_SELECTION_MODE' | translate }} - {{ getFormattedDate(currentBulkDate) }}
         </h5>
         <button type="button" class="btn-close" (click)="cancelBulkSelection(currentBulkDate)" aria-label="Close">
         </button>
@@ -210,7 +216,7 @@
       <div class="row g-3">
         <!-- Status Selection -->
         <div class="col-md-3">
-          <label class="form-label fw-bold">Mark As:</label>
+          <label class="form-label fw-bold">{{ 'MARK_AS' | translate }}:</label>
           <select class="form-select" [(ngModel)]="getBulkSelectionState(currentBulkDate)!.selectedStatus">
             <option *ngFor="let status of statusOptions" [value]="status.value">
               {{ status.label }} ({{ status.symbol }})
@@ -224,26 +230,26 @@
           <div class="d-flex gap-2 flex-wrap">
             <button type="button" class="btn btn-sm btn-outline-primary" (click)="selectAllStudents(currentBulkDate)">
               <i class="bi bi-check-all me-1"></i>
-              Select All ({{ getFilteredStudents().length }})
+              {{ 'SELECT_ALL' | translate }} ({{ getFilteredStudents().length }})
             </button>
 
             <button type="button" class="btn btn-sm btn-outline-secondary"
               (click)="deselectAllStudents(currentBulkDate)">
               <i class="bi bi-x-square me-1"></i>
-              Deselect All
+              {{ 'DESELECT_ALL' | translate }}
             </button>
 
             <div class="vr"></div>
 
             <span class="badge bg-primary fs-6 d-flex align-items-center">
-              Selected: {{ getSelectedStudentCount(currentBulkDate) }}
+              {{ 'SELECTED' | translate }}: {{ getSelectedStudentCount(currentBulkDate) }}
             </span>
 
             <button type="button" class="btn btn-sm btn-success"
               [disabled]="getSelectedStudentCount(currentBulkDate) === 0"
               (click)="applyBulkAttendance(currentBulkDate)">
               <i class="bi bi-save me-1"></i>
-              Apply to Selected
+              {{ 'APPLY_TO_SELECTED' | translate }}
             </button>
 
             <button type="button" class="btn btn-sm btn-outline-danger" (click)="cancelBulkSelection(currentBulkDate)">
@@ -262,41 +268,85 @@
       </div>
     </div>
 
+    <!-- NEW: Global Bulk Actions Toolbar (Row Based) -->
+    <div *ngIf="showGlobalBulkPanel && !showBulkSelectionPanel"
+      class="global-bulk-panel alert alert-primary mb-3 shadow-sm border-primary">
+      <div class="d-flex flex-wrap align-items-center justify-content-between p-1">
+        <div class="d-flex align-items-center gap-3">
+          <div class="fs-5 fw-bold text-primary">
+            <i class="bi bi-check2-circle"></i>
+            {{ globalSelectedStudents.size }} {{ 'SELECTED' | translate }}
+          </div>
+          <div class="vr"></div>
+          <div class="d-flex align-items-center gap-2">
+            <label class="fw-semibold small">{{ 'QUICK_ACTION' | translate }}:</label>
+            <button class="btn btn-sm btn-success"
+              (click)="applyGlobalBulkAction('P')">{{ 'PRESENT' | translate }}</button>
+            <button class="btn btn-sm btn-danger"
+              (click)="applyGlobalBulkAction('A')">{{ 'ABSENT' | translate }}</button>
+            <!-- More actions dropdown if needed -->
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                More
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="javascript:void(0)"
+                    (click)="applyGlobalBulkAction('L')">{{ 'LATE' | translate }}</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)"
+                    (click)="applyGlobalBulkAction('E')">{{ 'EXCUSED' | translate }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <small class="text-muted fst-italic me-2">{{ 'APPLIES_TO_TODAY' | translate }}
+            ({{ getFormattedDate(todayDate) }})</small>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearGlobalSelection()">
+            <i class="bi bi-x-lg"></i> {{ 'CLEAR_SELECTION' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Warning banner for unsaved changes -->
     <div class="alert alert-warning d-flex align-items-center" role="alert" *ngIf="hasUnsavedChanges">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       <div>
-        You have <strong>{{ pendingUpdates.size }}</strong> unsaved change(s).
-        Click <strong>Submit Changes</strong> to save or <strong>Cancel</strong> to discard.
+        {{ 'UNSAVED_CHANGES' | translate }} <strong>{{ pendingUpdates.size }}</strong>
+        {{ 'UNSAVED_CHANGES_COUNT' | translate }}.
+        {{ 'SUBMIT_CHANGES' | translate }}
       </div>
     </div>
 
     <!-- Legend -->
     <div class="legend-container mb-3 p-3 bg-light rounded">
       <div class="d-flex flex-wrap gap-3 align-items-center">
-        <span class="fw-semibold text-muted me-2">Legend:</span>
+        <span class="fw-semibold text-muted me-2">{{ 'LEGEND' | translate }}:</span>
         <span class="legend-item">
           <span class="legend-badge status-present">✓</span>
-          <span class="ms-1">Present (P)</span>
+          <span class="ms-1">{{ 'PRESENT' | translate }} (P)</span>
         </span>
         <span class="legend-item">
           <span class="legend-badge status-absent">A</span>
-          <span class="ms-1">Absent (A)</span>
+          <span class="ms-1">{{ 'ABSENT' | translate }} (A)</span>
         </span>
         <span class="legend-item">
           <span class="legend-badge status-late">L</span>
-          <span class="ms-1">Late (L)</span>
+          <span class="ms-1">{{ 'LATE' | translate }} (L)</span>
         </span>
         <span class="legend-item">
           <span class="legend-badge status-excused">E</span>
-          <span class="ms-1">Excused (E)</span>
+          <span class="ms-1">{{ 'EXCUSED' | translate }} (E)</span>
         </span>
         <span class="legend-item ms-3">
           <span class="badge bg-info text-white"><i class="bi bi-info-circle"></i></span>
-          <span class="ms-1">= View subject details</span>
+          <span class="ms-1">= {{ 'VIEW_SUBJECT_DETAILS' | translate }}</span>
         </span>
       </div>
     </div>
+
   </div>
 
   <!-- Loading state -->
@@ -319,13 +369,19 @@
         <thead class="table-light">
           <!-- Main Header Row: Dates span multiple columns -->
           <tr class="header-row">
+            <th class="col-select sticky-col text-center" rowspan="2" style="background-color: #f8f9fa;">
+              <input type="checkbox" class="form-check-input"
+                [checked]="globalSelectedStudents.size > 0 && globalSelectedStudents.size === totalStudents"
+                [indeterminate]="globalSelectedStudents.size > 0 && globalSelectedStudents.size < totalStudents"
+                (change)="toggleGlobalSelectAll($event)">
+            </th>
             <th class="col-no sticky-col" rowspan="2">#</th>
-            <th class="col-name-kh sticky-col" rowspan="2">ឈ្មោះ (Khmer)</th>
-            <th class="col-name-eng sticky-col" rowspan="2">Name (English)</th>
-            <th class="col-gender sticky-col" rowspan="2">Sex</th>
+            <th class="col-name-kh sticky-col" rowspan="2">{{ 'NAME_KHMER' | translate }}</th>
+            <th class="col-name-eng sticky-col" rowspan="2">{{ 'NAME_ENGLISH' | translate }}</th>
+            <th class="col-gender sticky-col" rowspan="2">{{ 'SEX' | translate }}</th>
 
             <!-- Date Columns: Span based on subject count -->
-            <ng-container *ngFor="let dateString of gridData.period.dates">
+            <ng-container *ngFor="let dateString of gridData.period.dates; trackBy: trackByDate">
               <th [attr.colspan]="getSubjectsForDate(dateString).length || 1"
                 class="text-center date-header-group date-divider-right"
                 [ngClass]="{ 'today-column': isToday(dateString) }">
@@ -361,9 +417,9 @@
 
           <!-- Sub Header Row: Subjects -->
           <tr class="sub-header-row">
-            <ng-container *ngFor="let dateString of gridData.period.dates">
+            <ng-container *ngFor="let dateString of gridData.period.dates; trackBy: trackByDate">
               <!-- If subjects exist -->
-              <ng-container *ngFor="let subject of getSubjectsForDate(dateString)">
+              <ng-container *ngFor="let subject of getSubjectsForDate(dateString); trackBy: trackBySubject">
                 <th class="subject-header-cell" [title]="subject.subject_name">
                   <div class="subject-header-content">
                     <span class="subject-code text-truncate" style="max-width: 100%;">
@@ -395,8 +451,13 @@
           </tr>
 
           <!-- Student rows -->
-          <tr *ngFor="let student of getFilteredStudents(); let i = index" class="student-row"
-            [class.table-active]="i % 2 === 0">
+          <tr *ngFor="let student of getFilteredStudents(); let i = index; trackBy: trackByStudent" class="student-row"
+            [class.table-active]="i % 2 === 0 || isStudentGloballySelected(student.student_id)">
+            <td class="col-select sticky-col text-center"
+              (click)="toggleGlobalStudentSelection(student.student_id); $event.stopPropagation()">
+              <input type="checkbox" class="form-check-input" [checked]="isStudentGloballySelected(student.student_id)"
+                (click)="$event.stopPropagation(); toggleGlobalStudentSelection(student.student_id)">
+            </td>
             <td class="col-no sticky-col">
               <span [innerHTML]="highlightSearch(student.row_number.toString())"></span>
             </td>
@@ -412,9 +473,9 @@
             </td>
 
             <!-- Attendance Cells -->
-            <ng-container *ngFor="let dateString of gridData.period.dates">
+            <ng-container *ngFor="let dateString of gridData.period.dates; trackBy: trackByDate">
               <!-- Loop subjects -->
-              <ng-container *ngFor="let subject of getSubjectsForDate(dateString)">
+              <ng-container *ngFor="let subject of getSubjectsForDate(dateString); trackBy: trackBySubject">
                 <td class="attendance-cell text-center" [ngClass]="{
                         'pending-change': hasPendingChanges(student.student_id, dateString, subject.subject_id),
                         'clickable': !isEditMode(student.student_id, dateString, subject.subject_id),
@@ -480,12 +541,12 @@
         <tfoot class="table-secondary">
           <!-- Keep footer simple for now, spanning all cols -->
           <tr class="totals-row">
-            <td colspan="4" class="text-end sticky-col"><strong>Totals:</strong></td>
+            <td colspan="5" class="text-end sticky-col"><strong>{{ 'TOTALS' | translate }}:</strong></td>
             <td [attr.colspan]="999">
               <div class="d-flex gap-4">
-                <span>Present: {{ gridData.overall_statistics?.present }}</span>
-                <span>Absent: {{ gridData.overall_statistics?.absent }}</span>
-                <span>Rate: {{ gridData.overall_statistics?.attendance_rate }}</span>
+                <span>{{ 'PRESENT' | translate }}: {{ gridData.overall_statistics?.present }}</span>
+                <span>{{ 'ABSENT' | translate }}: {{ gridData.overall_statistics?.absent }}</span>
+                <span>{{ 'RATE' | translate }}: {{ gridData.overall_statistics?.attendance_rate }}</span>
               </div>
             </td>
           </tr>
@@ -539,7 +600,7 @@
     <div class="col-md-3">
       <div class="card summary-card">
         <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Total Students</h6>
+          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_STUDENTS' | translate }}</h6>
           <h3 class="card-title">{{ gridData.overall_statistics?.total_students || 0 }}</h3>
         </div>
       </div>
@@ -547,7 +608,7 @@
     <div class="col-md-3">
       <div class="card summary-card">
         <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Total Present Days</h6>
+          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_PRESENT_DAYS' | translate }}</h6>
           <h3 class="card-title text-success">{{ gridData.overall_statistics?.present || 0 }}</h3>
         </div>
       </div>
@@ -555,7 +616,7 @@
     <div class="col-md-3">
       <div class="card summary-card">
         <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Total Absent Days</h6>
+          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_ABSENT_DAYS' | translate }}</h6>
           <h3 class="card-title text-danger">{{ gridData.overall_statistics?.absent || 0 }}</h3>
         </div>
       </div>
@@ -563,7 +624,7 @@
     <div class="col-md-3">
       <div class="card summary-card">
         <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">Attendance Rate</h6>
+          <h6 class="card-subtitle mb-2 text-muted">{{ 'ATTENDANCE_RATE' | translate }}</h6>
           <h3 class="card-title" [ngClass]="getAttendanceRateColor(gridData.overall_statistics?.attendance_rate)">
             {{ gridData.overall_statistics?.attendance_rate || '0%' }}
           </h3>
@@ -687,7 +748,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
             <i class="bi bi-x-circle me-1"></i>
-            Close
+            {{ 'CLOSE' | translate }}
           </button>
         </div>
       </div>

@@ -24,7 +24,7 @@ export const routes: Routes = [
       },
 
       {
-        path: 'students/uploard',
+        path: 'students/upload',
         loadComponent: () => import('./components/students/student-upload.component/student-upload.component').then(m => m.StudentUploadComponent),
         data: { roles: ['admin', 'teacher'] }
       },

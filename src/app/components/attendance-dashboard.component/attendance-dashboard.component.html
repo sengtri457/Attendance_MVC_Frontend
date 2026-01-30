@@ -5,7 +5,7 @@
             <div>
                 <!-- Class Selector -->
                 <div class="d-flex align-items-center gap-3">
-                    <h2 class="mb-0">Overview</h2>
+                    <h2 class="mb-0">{{ 'OVERVIEW' | translate }}</h2>
                     <div *ngIf="classes.length > 0">
                         <select class="form-select w-auto" [(ngModel)]="selectedClassId" (change)="onClassChange()">
                             <option *ngFor="let cls of classes" [value]="cls.class_id">
@@ -14,11 +14,11 @@
                         </select>
                     </div>
                 </div>
-                <p class="text-muted mb-0 mt-1">Real-time attendance monitoring and analytics</p>
+                <p class="text-muted mb-0 mt-1">{{ 'REAL_TIME_MONITORING' | translate }}</p>
             </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-primary" (click)="refreshDashboard()">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh Status
+                    <i class="bi bi-arrow-clockwise"></i> {{ 'REFRESH_STATUS' | translate }}
                 </button>
             </div>
         </div>
@@ -26,11 +26,11 @@
 </div>
 
 <!-- Loading State -->
-<div *ngIf="loading" class="text-center py-5">
+<div *ngIf="loading" class="text-center py-5 loading-state">
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
     </div>
-    <p class="mt-2">Loading dashboard...</p>
+    <p class="mt-2 loading-text">{{ 'LOADING_DASHBOARD' | translate }}</p>
 </div>
 
 <!-- Error State -->
@@ -49,7 +49,7 @@
                     <i class="bi bi-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <h6 class="stat-label">Present Today</h6>
+                    <h6 class="stat-label">{{ 'PRESENT_TODAY' | translate }}</h6>
                     <h2 class="stat-value">{{ dashboardData.today.P }}</h2>
                     <p class="stat-info mb-0">
                         <span class="badge bg-success">{{ dashboardData.today.attendance_rate }}</span>
@@ -64,7 +64,7 @@
                     <i class="bi bi-x-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <h6 class="stat-label">Absent Today</h6>
+                    <h6 class="stat-label">{{ 'ABSENT_TODAY' | translate }}</h6>
                     <h2 class="stat-value">{{ dashboardData.today.A }}</h2>
                     <p class="stat-info mb-0">
                         <span
@@ -80,10 +80,10 @@
                     <i class="bi bi-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <h6 class="stat-label">Late Today</h6>
+                    <h6 class="stat-label">{{ 'LATE_TODAY' | translate }}</h6>
                     <h2 class="stat-value">{{ dashboardData.today.L }}</h2>
                     <p class="stat-info mb-0">
-                        <span class="badge bg-warning">Tardy Students</span>
+                        <span class="badge bg-warning">{{ 'TARDY_STUDENTS' | translate }}</span>
                     </p>
                 </div>
             </div>
@@ -95,10 +95,10 @@
                     <i class="bi bi-file-text"></i>
                 </div>
                 <div class="stat-content">
-                    <h6 class="stat-label">Excused Today</h6>
+                    <h6 class="stat-label">{{ 'EXCUSED_TODAY' | translate }}</h6>
                     <h2 class="stat-value">{{ dashboardData.today.E }}</h2>
                     <p class="stat-info mb-0">
-                        <span class="badge bg-info">With Permission</span>
+                        <span class="badge bg-info">{{ 'WITH_PERMISSION' | translate }}</span>
                     </p>
                 </div>
             </div>
@@ -112,7 +112,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-graph-up"></i> Attendance Trends
+                        <i class="bi bi-graph-up"></i> {{ 'ATTENDANCE_TRENDS' | translate }}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -120,7 +120,7 @@
                     <div class="row text-center mb-4">
                         <div class="col-4">
                             <div class="trend-item">
-                                <h6 class="text-muted">Today</h6>
+                                <h6 class="text-muted">{{ 'TODAY' | translate }}</h6>
                                 <h3 class="mb-1">{{ dashboardData.today.total }}</h3>
                                 <span [class]="'badge bg-' + getStatusColor(dashboardData.today.attendance_rate)">
                                     {{ dashboardData.today.attendance_rate }}
@@ -129,7 +129,7 @@
                         </div>
                         <div class="col-4">
                             <div class="trend-item">
-                                <h6 class="text-muted">This Week</h6>
+                                <h6 class="text-muted">{{ 'THIS_WEEK' | translate }}</h6>
                                 <h3 class="mb-1">{{ dashboardData.this_week.total }}</h3>
                                 <span [class]="'badge bg-' + getStatusColor(dashboardData.this_week.attendance_rate)">
                                     {{ dashboardData.this_week.attendance_rate }}
@@ -138,7 +138,7 @@
                         </div>
                         <div class="col-4">
                             <div class="trend-item">
-                                <h6 class="text-muted">This Month</h6>
+                                <h6 class="text-muted">{{ 'THIS_MONTH' | translate }}</h6>
                                 <h3 class="mb-1">{{ dashboardData.this_month.total }}</h3>
                                 <span [class]="'badge bg-' + getStatusColor(dashboardData.this_month.attendance_rate)">
                                     {{ dashboardData.this_month.attendance_rate }}
@@ -203,14 +203,14 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-pie-chart"></i> Today's Summary
+                        <i class="bi bi-pie-chart"></i> {{ 'TODAYS_SUMMARY' | translate }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="summary-donut">
                         <div class="donut-center">
                             <h2>{{ dashboardData.today.attendance_rate }}</h2>
-                            <p class="text-muted mb-0">Attendance Rate</p>
+                            <p class="text-muted mb-0">{{ 'ATTENDANCE_RATE' | translate }}</p>
                         </div>
                     </div>
                     <div class="summary-legend mt-4">
@@ -232,14 +232,14 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-exclamation-triangle"></i> Students at Risk
+                        <i class="bi bi-exclamation-triangle"></i> {{ 'STUDENTS_AT_RISK' | translate }}
                         <span class="badge bg-danger ms-2">{{ dashboardData.students_at_risk.length }}</span>
                     </h5>
                 </div>
                 <div class="card-body">
                     <div *ngIf="dashboardData.students_at_risk.length === 0" class="text-center py-4 text-muted">
                         <i class="bi bi-check-circle display-4"></i>
-                        <p class="mt-2">No students at risk. Great job!</p>
+                        <p class="mt-2">{{ 'NO_RISK_STUDENTS' | translate }}</p>
                     </div>
                     <div class="risk-list" *ngIf="dashboardData.students_at_risk.length > 0">
                         <div class="risk-item" *ngFor="let student of dashboardData.students_at_risk.slice(0, 5)">
@@ -257,7 +257,7 @@
                                     {{ student.attendance_rate }}
                                 </span>
                                 <small class="text-muted d-block mt-1">
-                                    {{ student.days_present }}/{{ student.total_days }} days
+                                    {{ student.days_present }}/{{ student.total_days }} {{ 'DAYS' | translate }}
                                 </small>
                             </div>
                         </div>
@@ -271,13 +271,13 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-calendar-x"></i> Recent Absences
+                        <i class="bi bi-calendar-x"></i> {{ 'RECENT_ABSENCES' | translate }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div *ngIf="dashboardData.recent_absences.length === 0" class="text-center py-4 text-muted">
                         <i class="bi bi-check-circle display-4"></i>
-                        <p class="mt-2">No recent absences</p>
+                        <p class="mt-2">{{ 'NO_RECENT_ABSENCES' | translate }}</p>
                     </div>
                     <div class="absence-list" *ngIf="dashboardData.recent_absences.length > 0">
                         <div class="absence-item" *ngFor="let absence of dashboardData.recent_absences.slice(0, 5)">

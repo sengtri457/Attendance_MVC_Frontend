@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from "@angular/core";
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject, ChangeDetectionStrategy, ChangeDetectorRef, DestroyRef } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { AttendanceService } from "../../services/attendnaceservice/attendance.service";
 import { forkJoin, Subject as RxSubject, interval } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../env/enviroment';
 import {
   SubjectService,
@@ -14,10 +15,10 @@ import { RouterLink, ActivatedRoute } from "@angular/router";
 import { ClassService } from "../../services/class.service";
 import { Class } from "../../models/Class.model";
 import { HttpClient } from "@angular/common/http";
+import { TelegramserviceService } from "../../services/telegramservice/telegramservice.service";
+import { TranslatePipe } from "../../pipes/translate.pipe";
+import { LanguageService } from "../../services/language.service";
 
-// ... (interfaces omitted for brevity, they remain unchanged if I include everything before Component)
-// Wait, replace_file_content replaces a block. I need to match the block exactly.
-// I will target the imports and then the constructor/ngOnInit.
 
 
 interface AttendanceData {
@@ -129,10 +130,12 @@ interface BulkSelectionState {
 
 @Component({
   selector: "app-weeklyattendance.component",
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: "./weeklyattendance.component.html",
   styleUrl: "./weeklyattendance.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
+
 export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   private destroy$ = new RxSubject<void>();
   private http = inject(HttpClient);
@@ -171,6 +174,11 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   bulkSelectionMode: Map<string, BulkSelectionState> = new Map();
   showBulkSelectionPanel = false;
   currentBulkDate: string | null = null;
+  
+  // NEW: Global Student Selection (Row-based)
+  globalSelectedStudents: Set<number> = new Set();
+  showGlobalBulkPanel = false;
+
 
   // Detail view
   showDetailModal = false;
@@ -198,25 +206,31 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   // Attendance status options
   readonly statusOptions = [
-    { value: "P", label: "Present", symbol: "✓" },
-    { value: "A", label: "Absent", symbol: "A" },
-    { value: "L", label: "Late", symbol: "L" },
-    { value: "E", label: "Excused", symbol: "E" },
+    { value: "P", label: "PRESENT", symbol: "✓" },
+    { value: "A", label: "ABSENT", symbol: "A" },
+    { value: "L", label: "LATE", symbol: "L" },
+    { value: "E", label: "EXCUSED", symbol: "E" },
   ];
 
   // Submission state
   submitting = false;
 
   // Today's date
-  private todayDate: string;
+  public todayDate: string;
+
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private attendanceService: AttendanceService,
     private subjectService: SubjectService,
     private classService: ClassService,
     private route: ActivatedRoute,
+    private cdRef: ChangeDetectorRef,
+    private telegramService: TelegramserviceService,
+    public languageService: LanguageService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
+
     this.setCurrentWeek();
     this.todayDate = this.formatDate(new Date());
   }
@@ -246,9 +260,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
         if (this.selectedClassId) {
            this.loadWeeklyGrid();
         }
+        this.cdRef.markForCheck();
       },
       error: (err) => {
-        console.error(err);
+        // console.error(err);
+        this.error = 'Failed to load classes';
+        this.cdRef.markForCheck();
       }
     });
   }
@@ -370,6 +387,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.updateCountdown(targetDate);
+        this.cdRef.markForCheck();
       });
   }
 
@@ -444,6 +462,134 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
+  // GLOBAL SELECTION METHODS (Checkbox Column)
+  // ============================================================
+
+  /**
+   * Toggle globally selected student
+   */
+  toggleGlobalStudentSelection(studentId: number): void {
+    if (this.globalSelectedStudents.has(studentId)) {
+      this.globalSelectedStudents.delete(studentId);
+    } else {
+      this.globalSelectedStudents.add(studentId);
+    }
+    this.showGlobalBulkPanel = this.globalSelectedStudents.size > 0;
+  }
+
+  /**
+   * Check if student is globally selected
+   */
+  isStudentGloballySelected(studentId: number): boolean {
+    return this.globalSelectedStudents.has(studentId);
+  }
+
+  /**
+   * Select/Deselect all visible students
+   */
+  toggleGlobalSelectAll(event: any): void {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      this.getFilteredStudents().forEach(s => this.globalSelectedStudents.add(s.student_id));
+    } else {
+      this.globalSelectedStudents.clear();
+    }
+    this.showGlobalBulkPanel = this.globalSelectedStudents.size > 0;
+  }
+  
+  /**
+   * Get global selection count
+   */
+  getGlobalSelectionCount(): number {
+    return this.globalSelectedStudents.size;
+  }
+  
+  /**
+   * Clear global selection
+   */
+  clearGlobalSelection(): void {
+    this.globalSelectedStudents.clear();
+    this.showGlobalBulkPanel = false;
+  }
+
+  /**
+   * Apply status to globally selected students for a specific date
+   */
+  async applyGlobalBulkAction(status: string, date: string = this.todayDate): Promise<void> {
+    if (this.globalSelectedStudents.size === 0) return;
+    
+    // Validate Date
+    if (!this.isDateEditable(date)) {
+       this.showCountdownTimerModal(date);
+       return;
+    }
+
+      // Validate Subjects
+    const subjects = this.getSubjectsForDate(date);
+    if (subjects.length === 0) {
+      Swal.fire({
+        title: this.languageService.getTranslation('NO_SUBJECTS'),
+        text: this.languageService.getTranslation('NO_SUBJECTS_MSG'),
+        icon: "warning"
+      });
+      return;
+    }
+
+    // Confirm
+    const result = await Swal.fire({
+      title: this.languageService.getTranslation('CONFIRM_BULK_UPDATE'),
+      text: `Mark ${this.globalSelectedStudents.size} student(s) as ${this.getStatusLabel(status)} for ${this.getFormattedDate(date)}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: this.languageService.getTranslation('SUBMIT_CHANGES'), // Reusing submit/confirm
+      cancelButtonText: this.languageService.getTranslation('CANCEL')
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Apply
+    let updatedCount = 0;
+    const students = this.gridData?.students || [];
+    
+    this.globalSelectedStudents.forEach(studentId => {
+      const student = students.find(s => s.student_id === studentId);
+      if (student) {
+        subjects.forEach(subj => {
+          const existingStatus = this.getSubjectStatus(student, date, subj.subject_id);
+          // Only update if changed or new
+          if (existingStatus !== status) {
+             const key = this.getCellKey(studentId, date, subj.subject_id);
+             this.pendingUpdates.set(key, {
+                studentId,
+                date,
+                status: status,
+                subjectId: subj.subject_id,
+                previousStatus: existingStatus || undefined,
+                isModification: !!existingStatus
+             });
+             updatedCount++;
+          }
+        });
+      }
+    });
+
+    if (updatedCount > 0) {
+      this.hasUnsavedChanges = true;
+      Swal.fire({
+        title: this.languageService.getTranslation('BULK_UPDATE_STAGED'),
+        text: `${updatedCount} records staged for update. Click Submit to save.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.clearGlobalSelection();
+    } else {
+      Swal.fire(this.languageService.getTranslation('NO_CHANGES'), "All selected students already have this status.", "info");
+    }
+  }
+
+
+  // ============================================================
   // FIXED: BULK SELECTION METHODS WITH PROPER COUNTING
   // ============================================================
 
@@ -463,7 +609,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       this.bulkSelectionMode.delete(date);
       this.currentBulkDate = null;
       this.showBulkSelectionPanel = false;
-      console.log('Bulk selection deactivated for', date);
+      // console.log('Bulk selection deactivated for', date);
     } else {
       // Clear any other active bulk selections
       this.bulkSelectionMode.clear();
@@ -472,8 +618,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       const subjects = this.getSubjectsForDate(date);
       if (subjects.length === 0) {
         Swal.fire({
-          title: "No Subjects",
-          text: "No subjects found for this date.",
+          title: this.languageService.getTranslation('NO_SUBJECTS'),
+          text: this.languageService.getTranslation('NO_SUBJECTS_MSG'),
           icon: "warning",
           draggable: true,
         });
@@ -492,7 +638,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       this.currentBulkDate = date;
       this.showBulkSelectionPanel = true;
       
-      console.log('Bulk selection activated for', date, 'State:', newState);
+      // console.log('Bulk selection activated for', date, 'State:', newState);
     }
   }
 
@@ -620,8 +766,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
     if (state.selectedStudents.size === 0) {
       Swal.fire({
-        title: "No Students Selected",
-        text: "Please select at least one student.",
+        title: this.languageService.getTranslation('NO_STUDENTS_SELECTED'),
+        text: this.languageService.getTranslation('PLEASE_SELECT_ONE_STUDENT'),
         icon: "warning",
         draggable: true,
       });
@@ -631,8 +777,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     const subjectId = this.selectedSubjects.get(date);
     if (!subjectId) {
       Swal.fire({
-        title: "No Subject Selected",
-        text: "Please select a subject for this date.",
+        title: this.languageService.getTranslation('NO_SUBJECT_SELECTED'),
+        text: this.languageService.getTranslation('PLEASE_SELECT_SUBJECT'),
         icon: "error",
         draggable: true,
       });
@@ -675,12 +821,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     confirmMessage += `\nAll will be marked as: ${this.getStatusLabel(state.selectedStatus)}`;
 
     const result = await Swal.fire({
-      title: 'Confirm Bulk Update',
+      title: this.languageService.getTranslation('CONFIRM_BULK_UPDATE'),
       text: confirmMessage,
       icon: modifications > 0 ? 'warning' : 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes, Update All',
-      cancelButtonText: 'Cancel',
+      cancelButtonText: this.languageService.getTranslation('CANCEL'),
       draggable: true,
     });
 
@@ -711,8 +857,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     this.hasUnsavedChanges = true;
 
     Swal.fire({
-      title: "Bulk Update Staged",
-      html: `<strong>${state.selectedStudents.size}</strong> student(s) marked as <strong>${this.getStatusLabel(state.selectedStatus)}</strong><br><br>Click "Submit All" to save changes.`,
+      title: this.languageService.getTranslation('BULK_UPDATE_STAGED'),
+      html: `<strong>${state.selectedStudents.size}</strong> student(s) marked as <strong>${this.getStatusLabel(state.selectedStatus)}</strong><br><br>${this.languageService.getTranslation('CLICK_SUBMIT_TO_SAVE')}`,
       icon: "success",
       draggable: true,
       timer: 2500,
@@ -734,7 +880,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(opt => opt.value === status);
-    return option?.label || status;
+    return option ? this.languageService.getTranslation(option.label) : status;
   }
 
   /**
@@ -964,10 +1110,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
           this.processAttendanceData();
           this.loadSubjectsForDates();
+          this.cdRef.markForCheck();
         },
         error: (err) => {
           this.error = err.error?.message || "Failed to load attendance data";
-          console.error("Error loading weekly grid:", err);
+          // console.error("Error loading weekly grid:", err);
+          this.cdRef.markForCheck();
         },
       });
   }
@@ -1242,10 +1390,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
               this.selectedSubjects.set(date, subjects[0].subject_id);
             }
           });
+          this.cdRef.markForCheck();
         },
         error: (err) => {
-          console.error("Failed to load subjects:", err);
+          // console.error("Failed to load subjects:", err);
           this.error = "Failed to load subjects for dates";
+          this.cdRef.markForCheck();
         },
       });
   }
@@ -1355,8 +1505,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   showNoSubjectAlert(date: string): void {
       Swal.fire({
-          title: 'No Subject Scheduled',
-          text: `There are no subjects scheduled for ${this.getFormattedDate(date)}.`,
+          title: this.languageService.getTranslation('NO_SUBJECT_SCHEDULED'),
+          text: `${this.languageService.getTranslation('NO_SUBJECT_SCHEDULED_MSG')} ${this.getFormattedDate(date)}.`,
           icon: 'info'
       });
   }
@@ -1378,8 +1528,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   ): Promise<void> {
     if (!this.isDateEditable(date)) {
       Swal.fire({
-        title: "Invalid Date",
-        text: "You can only update attendance for today.",
+        title: this.languageService.getTranslation('INVALID_DATE'),
+        text: this.languageService.getTranslation('ONLY_TODAY_EDIT'),
         icon: "error",
         draggable: true,
       });
@@ -1434,8 +1584,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   async submitAllChanges(): Promise<void> {
     if (this.pendingUpdates.size === 0) {
       Swal.fire({
-        title: "No Changes",
-        text: "No changes to submit",
+        title: this.languageService.getTranslation('NO_CHANGES'),
+        text: this.languageService.getTranslation('NO_CHANGES_SUBMIT'),
         icon: "info",
         draggable: true,
       });
@@ -1527,28 +1677,107 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           const totalUpdates = this.pendingUpdates.size;
+          
+          // Helper to format date for message
+          const formatDate = (d: string) => {
+             const dateObj = new Date(d);
+             return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+          };
+
+          // Helper to get student name
+          const getStudentName = (id: number) => {
+            return this.gridData?.students?.find(s => s.student_id === id)?.student_name_eng || 'Unknown Student';
+          };
+
+          // Helper to get subject name
+          const getSubjectName = (date: string, subjectId: number) => {
+              const subjects = this.getSubjectsForDate(date);
+              const subject = subjects.find(s => s.subject_id === subjectId);
+              if (subject) return subject.subject_name;
+              
+              // Fallback to global subject list if available
+              return this.gridData?.subjects?.find(s => s.subject_id === subjectId)?.subject_name || 'General';
+          };
+
+          // Group updates by date, subject, and status
+          // Map<Date, Map<SubjectName, Map<Status, StudentName[]>>>
+          const details = new Map<string, Map<string, Map<string, string[]>>>();
+          
+          this.pendingUpdates.forEach(u => {
+              if (!details.has(u.date)) {
+                  details.set(u.date, new Map<string, Map<string, string[]>>());
+              }
+              const subjectMap = details.get(u.date)!;
+              const subjectName = getSubjectName(u.date, u.subjectId);
+
+              if (!subjectMap.has(subjectName)) {
+                  subjectMap.set(subjectName, new Map<string, string[]>());
+              }
+              const statusMap = subjectMap.get(subjectName)!;
+
+              if (!statusMap.has(u.status)) {
+                  statusMap.set(u.status, []);
+              }
+              statusMap.get(u.status)!.push(getStudentName(u.studentId));
+          });
+
+          // Use gridData for class name if available, otherwise fallback
+          const className = this.gridData?.class?.class_name || 
+                            this.classes.find(c => c.class_id === this.selectedClassId)?.class_code || 
+                            'Unknown Class';
+
+          let message = `📢 *Attendance Submitted*\n\n🏫 Class: *${className}*\n👥 Total Attendance: *${totalUpdates}*`;
+          
+          details.forEach((subjectMap, date) => {
+              message += `\n\n📅 *${formatDate(date)}*`;
+              
+              subjectMap.forEach((statusMap, subjectName) => {
+                 message += `\n\n📚 *${subjectName}*`;
+                 
+                 const appendStatusList = (status: string, emoji: string, label: string) => {
+                    const students = statusMap.get(status);
+                    if (students && students.length > 0) {
+                        message += `\n${emoji} *${label} (${students.length}):*\n`;
+                        students.forEach(name => message += `  - ${name}\n`);
+                    }
+                 };
+
+                 appendStatusList('P', '✅', 'Present');
+                 appendStatusList('A', '❌', 'Absent');
+                 appendStatusList('L', '⏰', 'Late');
+                 appendStatusList('E', '📝', 'Excused');
+              });
+          });
+
+          this.telegramService.sendMessage(message).subscribe({
+              error: err => console.error('Telegram notification failed', err)
+          });
+
           this.pendingUpdates.clear();
           this.hasUnsavedChanges = false;
-          this.loadWeeklyGrid();
+          
+          // ... telegram logic ...
 
-          Swal.fire({
-            title: "Success!",
-            html: `<strong>${totalUpdates}</strong> attendance record(s) updated successfully!`,
-            icon: "success",
-            draggable: true,
-            timer: 2500,
-            showConfirmButton: false,
-          });
-        },
-        error: (err) => {
-          console.error("Failed to update attendance:", err);
-          Swal.fire({
-            title: "Submission Failed",
-            text: err.error?.message || "Failed to update attendance. Please try again.",
-            icon: "error",
-            draggable: true,
-          });
-        },
+          this.loadWeeklyGrid();
+ 
+           Swal.fire({
+             title: this.languageService.getTranslation('SUCCESS'),
+             html: `<strong>${totalUpdates}</strong> ${this.languageService.getTranslation('ATTENDANCE_UPDATED')}`,
+             icon: "success",
+             draggable: true,
+             timer: 2500,
+             showConfirmButton: false,
+           });
+         },
+         error: (err) => {
+           console.error("Failed to update attendance:", err);
+           Swal.fire({
+             title: this.languageService.getTranslation('SUBMISSION_FAILED'),
+             text: err.error?.message || this.languageService.getTranslation('FAILED_UPDATE'),
+             icon: "error",
+             draggable: true,
+           });
+         },
       });
   }
 
@@ -1602,8 +1831,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }
 
     Swal.fire({
-  title: "Are you sure?",
-  text: `Discard ${this.pendingUpdates.size} unsaved change(s)?`,
+  title: this.languageService.getTranslation('ARE_YOU_SURE'),
+  text: this.languageService.getTranslation('DISCARD_CHANGES_MSG'), 
   icon: "warning",
   showCancelButton: true,
   confirmButtonColor: "#3085d6",
@@ -1612,8 +1841,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 }).then((result) => {
   if (result.isConfirmed) {
     Swal.fire({
-      title: "Cancelled!",
-      text: "Your changes have been cancelled.",
+      title: this.languageService.getTranslation('CANCELLED'),
+      text: this.languageService.getTranslation('CHANGES_CANCELLED'),
       icon: "success"
     });
      this.pendingUpdates.clear();
@@ -1800,5 +2029,16 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
     this.setCurrentWeek();
     this.loadWeeklyGrid();
+  }
+  trackByStudent(index: number, student: StudentRow): number {
+    return student.student_id;
+  }
+
+  trackByDate(index: number, date: string): string {
+    return date;
+  }
+
+  trackBySubject(index: number, subject: Subject): number {
+    return subject.subject_id;
   }
 }

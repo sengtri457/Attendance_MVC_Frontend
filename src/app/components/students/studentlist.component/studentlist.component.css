@@ -1,5 +1,14 @@
 /* student-list.component.css - Clean Minimal UI */
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.table-card-animate {
+  animation: fadeIn 0.3s ease both;
+}
+
 .student-list-container {
     /* padding: 24px; */
     background: #fafafa;
@@ -145,11 +154,12 @@
 .btn {
     border-radius: 8px;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transform: scale(1);
 }
 
 .btn:hover {
-    transform: translateY(-1px);
+    transform: scale(1.02) translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 

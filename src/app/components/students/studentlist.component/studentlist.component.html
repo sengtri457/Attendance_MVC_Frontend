@@ -13,7 +13,7 @@
                 <button class="btn btn-primary me-2" (click)="openAddModal()">
                     <i class="bi bi-plus-circle"></i> Add New Student
                 </button>
-                <button class="btn btn-primary" (click)="importExcell()">
+                <button class="btn btn-primary" (click)="importExcel()">
                     <i class="bi bi-plus-circle"></i> Add Multiple
                 </button>
             </div>
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Student Table -->
-    <div *ngIf="!loading && !error" class="card">
+    <div *ngIf="!loading && !error" class="card table-card-animate">
         <div class="card-header">
             <h5 class="mb-0">
                 Students List
@@ -106,7 +106,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let student of students; let i = index">
+                        <tr *ngFor="let student of students; let i = index; trackBy: trackByStudentId">
                             <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                             <td>
                                 <div class="student-avatar">

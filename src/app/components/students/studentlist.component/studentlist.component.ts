@@ -1,11 +1,13 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, DestroyRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { StudentService } from '../../../services/studentservice/student.service';
-import { Student } from '../../../models/Student.model';
+import { Student, ApiResponse } from '../../../models/Student.model';
+import { Class } from '../../../models/Class.model';
 import Swal from 'sweetalert2';
 import { ClassService } from '../../../services/class.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-studentlist.component',
   imports: [CommonModule, FormsModule, RouterLink],
@@ -13,8 +15,8 @@ import { ClassService } from '../../../services/class.service';
   styleUrl: './studentlist.component.css',
 })
 export class StudentlistComponent implements OnInit {
-  classes: any[] = [];
-students: Student[] = [];
+  classes: Class[] = [];
+  students: Student[] = [];
   loading = false;
   error: string | null = null;
 
@@ -44,6 +46,8 @@ students: Student[] = [];
   };
   Math = Math;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private studentService: StudentService,
     private router: Router,
@@ -59,16 +63,19 @@ students: Student[] = [];
   }
 
   loadClasses(): void {
-    this.classService.getAllClasses().subscribe({
-      next: (response:any) => {
-        if (response.success) {
-          this.classes = response.data;
+    this.classService.getAllClasses()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            this.classes = response.data;
+          }
+        },
+        error: (err: any) => {
+          // console.error(err); // Removed for production
+          this.error = 'Failed to load classes';
         }
-      },
-      error: (err:any) => {
-        console.error(err);
-      }
-    });
+      });
   }
 
 
@@ -85,23 +92,31 @@ students: Student[] = [];
     if (this.searchQuery) params.search = this.searchQuery;
     if (this.selectedGender) params.gender = this.selectedGender;
 
-    this.studentService.getAllStudents(params).subscribe({
-      next: (response:any) => {
-        if (response.success) {
-          this.students = response.data.students || response.data;
-          if (response.pagination) {
-            this.totalStudents = response.pagination.total;
-            this.totalPages = response.pagination.totalPages;
+    this.studentService.getAllStudents(params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: ApiResponse<{ students: Student[]; pagination: any }>) => { // Typed response
+          if (response.success) {
+            // Flexible handling if backend structure varies slightly
+            const data = response.data as any; 
+            this.students = data.students || data;
+            
+            if (response.data && response.data.pagination) {
+              this.totalStudents = response.data.pagination.total;
+              this.totalPages = response.data.pagination.totalPages;
+            } else if (data && data.pagination) { // Fallback check
+               this.totalStudents = data.pagination.total;
+               this.totalPages = data.pagination.totalPages;
+            }
           }
+          this.loading = false;
+        },
+        error: (err: any) => {
+          this.error = err.message || 'Failed to load students';
+          this.loading = false;
+          // console.error(err);
         }
-        this.loading = false;
-      },
-      error: (err:any) => {
-        this.error = err.message;
-        this.loading = false;
-        console.error(err);
-      }
-    });
+      });
   }
 
 
@@ -110,8 +125,8 @@ students: Student[] = [];
   }
 
 
-  importExcell(){
-    this.router.navigateByUrl('students/uploard');
+  importExcel(){ // Fixed typo from importExcell
+    this.router.navigateByUrl('students/upload'); 
   }
 
 
@@ -129,7 +144,6 @@ students: Student[] = [];
   closeAddModal(): void {
     this.showAddModal = false;
   }
-
   openEditModal(student: Student): void {
     this.selectedStudent = student;
     this.studentForm = {
@@ -150,20 +164,34 @@ students: Student[] = [];
   saveStudent(): void {
     this.loading = true;
 
-    this.studentService.createStudent(this.studentForm).subscribe({
-      next: (response:any) => {
-        if (response.success) {
-          this.closeAddModal();
-          this.loadStudents();
+    this.studentService.createStudent(this.studentForm)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response: ApiResponse<Student>) => {
+          if (response.success) {
+            this.closeAddModal();
+            this.loadStudents();
+            Swal.fire({
+              title: "Success",
+              text: "Student created successfully",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+          this.loading = false;
+        },
+        error: (err: any) => {
+          this.error = 'Failed to create student';
+          this.loading = false;
+          // console.error(err);
+          Swal.fire({
+              title: "Error",
+              text: "Failed to create student",
+              icon: "error"
+            });
         }
-        this.loading = false;
-      },
-      error: (err:any) => {
-        this.error = 'Failed to create student';
-        this.loading = false;
-        console.error(err);
-      }
-    });
+      });
   }
 
   updateStudent(): void {
@@ -174,18 +202,32 @@ students: Student[] = [];
     this.studentService.updateStudent(
       this.selectedStudent.student_id,
       this.studentForm
-    ).subscribe({
-      next: (response:any) => {
+    )
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response: ApiResponse<Student>) => {
         if (response.success) {
           this.closeEditModal();
           this.loadStudents();
+          Swal.fire({
+              title: "Success",
+              text: "Student updated successfully",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
         }
         this.loading = false;
       },
-      error: (err:any) => {
+      error: (err: any) => {
         this.error = 'Failed to update student';
         this.loading = false;
-        console.error(err);
+        // console.error(err);
+        Swal.fire({
+            title: "Error",
+            text: "Failed to update student",
+            icon: "error"
+          });
       }
     });
   }
@@ -213,34 +255,34 @@ swalWithBootstrapButtons.fire({
   reverseButtons: true
 }).then((result) => {
   if (result.isConfirmed) {
-        this.studentService.deleteStudent(student.student_id).subscribe({
-      next: (response:any) => {
-        if (response.success) {
-          this.loadStudents();
-    this.loading = true;
-
-        }
-        this.loading = false;
-      },
-      error: (err:any) => {
-        this.error = 'Failed to delete student';
-        this.loading = false;
-        console.error(err);
-      }
-    });
-    swalWithBootstrapButtons.fire({
-      title: "Deleted!",
-      text: "Your file has been deleted.",
-      icon: "success"
-    });
-
+        this.loading = true;
+        this.studentService.deleteStudent(student.student_id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.loadStudents();
+              swalWithBootstrapButtons.fire({
+                title: "Deleted!",
+                text: "The student has been deleted.",
+                icon: "success"
+              });
+            } else {
+              this.error = "Failed to delete from server";
+            }
+          },
+          error: (err: any) => {
+            this.error = 'Failed to delete student';
+            this.loading = false;
+          }
+        });
   } else if (
     /* Read more about handling dismissals below */
     result.dismiss === Swal.DismissReason.cancel
   ) {
     swalWithBootstrapButtons.fire({
       title: "Cancelled",
-      text: "Your imaginary file is safe :)",
+      text: "Student is safe :)", // Fixed text
       icon: "error"
     });
   }
@@ -292,5 +334,10 @@ swalWithBootstrapButtons.fire({
 
   getGenderClass(gender: string): string {
     return gender === 'M' ? 'text-primary' : 'text-danger';
+  }
+
+  // Optimization: TrackBy function for ngFor
+  trackByStudentId(index: number, student: Student): number {
+    return student.student_id;
   }
 }
