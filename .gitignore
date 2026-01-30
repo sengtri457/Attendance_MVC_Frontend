@@ -9,7 +9,7 @@
 # env
 
 
-./env/enviroment.ts
+/env/enviroment.ts
 
 # Node
 /node_modules
