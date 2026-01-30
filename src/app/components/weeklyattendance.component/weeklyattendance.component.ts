@@ -5,7 +5,7 @@ import { AttendanceService } from "../../services/attendnaceservice/attendance.s
 import { forkJoin, Subject as RxSubject, interval } from "rxjs";
 import { takeUntil, finalize } from "rxjs/operators";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { environment } from '../../../env/enviroment';
+import { environment } from '../../../../env/enviroment';
 import {
   SubjectService,
 } from "../../services/subjectservice/subject.service";

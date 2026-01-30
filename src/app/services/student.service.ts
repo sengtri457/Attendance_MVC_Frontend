@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
-import { environment } from '../../env/enviroment';
+import { environment } from '../../../env/enviroment';
 export interface UploadResponse {
   success: boolean;
   message: string;

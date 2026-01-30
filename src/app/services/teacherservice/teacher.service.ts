@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../env/enviroment';
+import { environment } from '../../../../env/enviroment';
 import { ApiResponse } from '../attendnaceservice/attendance.service';
 import { Teacher, TeacherDetail, TeacherFormData } from '../../models/Teacher.model';
 

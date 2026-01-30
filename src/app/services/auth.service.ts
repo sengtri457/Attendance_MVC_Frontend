@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../env/enviroment';
 
 export interface User {
   user_id: number;
@@ -25,7 +26,7 @@ interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3001/api/v1/auth';
+  private apiUrl = `${environment.apiUrl}/auth`
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser$: Observable<User | null>;
 
