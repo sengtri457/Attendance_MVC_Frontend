@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { AttendanceService } from "../../services/attendnaceservice/attendance.service";
 import { forkJoin, Subject as RxSubject, interval } from "rxjs";
@@ -10,7 +10,15 @@ import {
 } from "../../services/subjectservice/subject.service";
 import Swal from "sweetalert2";
 import { Subject } from "../../models/Subject.model";
-import { RouterLink } from "@angular/router";
+import { RouterLink, ActivatedRoute } from "@angular/router";
+import { ClassService } from "../../services/class.service";
+import { Class } from "../../models/Class.model";
+import { HttpClient } from "@angular/common/http";
+
+// ... (interfaces omitted for brevity, they remain unchanged if I include everything before Component)
+// Wait, replace_file_content replaces a block. I need to match the block exactly.
+// I will target the imports and then the constructor/ngOnInit.
+
 
 interface AttendanceData {
   subjects?: {
@@ -127,13 +135,15 @@ interface BulkSelectionState {
 })
 export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   private destroy$ = new RxSubject<void>();
+  private http = inject(HttpClient);
 
   gridData: WeeklyGridData | null = null;
   loading = false;
   error: string | null = null;
 
   // Filters
-  selectedClassId: number = 1;
+  classes: Class[] = [];
+  selectedClassId: number = 0;
   startDate: string = "";
   endDate: string = "";
   searchQuery: string = "";
@@ -203,13 +213,44 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   constructor(
     private attendanceService: AttendanceService,
     private subjectService: SubjectService,
+    private classService: ClassService,
+    private route: ActivatedRoute,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.setCurrentWeek();
     this.todayDate = this.formatDate(new Date());
   }
 
   ngOnInit(): void {
-    this.loadWeeklyGrid();
+    if (isPlatformBrowser(this.platformId)) {
+      this.selectClass();
+    }
+  }
+
+  selectClass(): void {
+    this.classService.getAllClasses().subscribe({
+      next: (res) => {
+        this.classes = res.data;
+        const queryClassId = this.route.snapshot.queryParamMap.get('class_id');
+        if (queryClassId) {
+           const foundClass = this.classes.find(c => c.class_id.toString() === queryClassId);
+           if (foundClass) {
+              this.selectedClassId = foundClass.class_id;
+           } else if (this.classes.length > 0) {
+              this.selectedClassId = this.classes[0].class_id;
+           }
+        } else if (this.classes.length > 0) {
+           this.selectedClassId = this.classes[0].class_id;
+        }
+
+        if (this.selectedClassId) {
+           this.loadWeeklyGrid();
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -243,7 +284,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
    * Check if attendance editing is allowed for a specific date
    */
   isDateEditable(dateString: string): boolean {
-    return this.isToday(dateString);
+    // Only allow editing for today
+    return dateString === this.todayDate;
   }
 
   /**
@@ -1286,6 +1328,8 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
    * Handle cell click with modification awareness
    */
   onCellClick(studentId: number, date: string, subjectId: number): void {
+    console.log('Cell clicked:', studentId, date, subjectId);
+
     // FIXED: Check bulk selection mode first
     if (this.isBulkSelectionActive(date)) {
       console.log('Cell clicked in bulk mode, toggling selection for student:', studentId);
@@ -1294,17 +1338,27 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     }
 
     if (!this.isDateEditable(date)) {
+      console.log('Date not editable:', date);
       this.showCountdownTimerModal(date);
       return;
     }
 
     const key = this.getCellKey(studentId, date, subjectId);
+    console.log('Setting edit mode for key:', key);
 
     // Clear other edit modes if needed, or allow multiple
     this.editMode.clear();
 
-    this.selectedCell = { studentId, date }; // We could extend this to include subjectId but keeping it simple
+    this.selectedCell = { studentId, date }; 
     this.editMode.set(key, true);
+  }
+
+  showNoSubjectAlert(date: string): void {
+      Swal.fire({
+          title: 'No Subject Scheduled',
+          text: `There are no subjects scheduled for ${this.getFormattedDate(date)}.`,
+          icon: 'info'
+      });
   }
 
   closeEditMode(studentId: number, date: string, subjectId: number): void {
@@ -1620,7 +1674,15 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   exportToExcel(): void {
     const url = `${environment.apiUrl}/attendance/export/weekly-excel?start_date=${this.startDate}&end_date=${this.endDate}&class_id=${this.selectedClassId}`;
-    window.open(url, "_blank");
+    // window.open(url, "_blank");
+    this.http.get(url, { responseType: 'blob' }).subscribe((blob:any) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `weekly-attendance-${this.startDate}-${this.endDate}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 
   exportToCSV(): void {

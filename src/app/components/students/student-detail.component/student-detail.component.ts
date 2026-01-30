@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StudentService } from '../../../services/studentservice/student.service'
 import { AttendanceService } from '../../../services/attendnaceservice/attendance.service';
+import { AuthService } from '../../../services/auth.service';
 import {StudentDetail } from '../../../models/Student.model';
 @Component({
   selector: 'app-student-detail.component',
@@ -20,14 +21,16 @@ studentId!: number;
   startDate: string = '';
   endDate: string = '';
 
-  // Tab state
+// Tab state
   activeTab: 'profile' | 'attendance' | 'performance' = 'profile';
 
+// ... class ...
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private studentService: StudentService,
-    private attendanceService: AttendanceService
+    private attendanceService: AttendanceService,
+    private authService: AuthService
   ) {
     // Set default date range (last 30 days)
     const today = new Date();
@@ -38,9 +41,21 @@ studentId!: number;
     this.startDate = thirtyDaysAgo.toISOString().split('T')[0];
   }
 
+  get isAdminOrTeacher(): boolean {
+    return this.authService.hasRole(['admin', 'teacher']);
+  }
+
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.studentId = +params['id'];
+      
+      const user = this.authService.currentUserValue;
+      if (user && user.role === 'student' && user.profile_id !== this.studentId) {
+           // Redirect student to their own detail page if trying to view others
+           this.router.navigate(['/students', user.profile_id]);
+           return;
+      }
+      
       this.loadStudentDetail();
     });
   }
@@ -153,5 +168,9 @@ studentId!: number;
   editStudent(): void {
     // Navigate to edit page or open modal
     console.log('Edit student:', this.studentId);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

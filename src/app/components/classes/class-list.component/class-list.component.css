@@ -1,7 +1,7 @@
 /* class-list.component.css - Clean Minimal UI */
 
 .class-list-container {
-    padding: 24px;
+    /* padding: 24px; */
     background: #fafafa;
     min-height: 100vh;
 }
@@ -330,6 +330,7 @@
 
 /* Print Styles */
 @media print {
+
     .header-section button,
     .btn-group,
     .pagination,

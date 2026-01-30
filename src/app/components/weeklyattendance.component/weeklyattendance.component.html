@@ -139,9 +139,7 @@
         <label class="form-label fw-semibold">Class</label>
         <select class="form-select" [(ngModel)]="selectedClassId" (change)="onClassChange()"
           [disabled]="loading || submitting">
-          <option value="1">Sv23</option>
-          <option value="2">Sv13</option>
-          <!-- Add more classes dynamically -->
+          <option *ngFor="let item of classes" [value]="item.class_id">{{ item.class_code }}</option>
         </select>
       </div>
       <div class="col-md-3">
@@ -343,9 +341,21 @@
               </th>
             </ng-container>
 
-            <!-- Statistics Header -->
-            <th class="col-stats text-center bg-secondary text-white" rowspan="2" colspan="5">
-              <i class="bi bi-bar-chart-fill me-1"></i> Statistics
+            <!-- Statistics Headers -->
+            <th class="col-stat text-center bg-light border-start text-success" title="Present" rowspan="2">
+              <i class="bi bi-check-circle-fill"></i>
+            </th>
+            <th class="col-stat text-center bg-light text-danger" title="Absent" rowspan="2">
+              <i class="bi bi-x-circle-fill"></i>
+            </th>
+            <th class="col-stat text-center bg-light text-warning" title="Late" rowspan="2">
+              <i class="bi bi-clock-fill"></i>
+            </th>
+            <th class="col-stat text-center bg-light text-info" title="Excused" rowspan="2">
+              <i class="bi bi-envelope-paper-fill"></i>
+            </th>
+            <th class="col-stat text-center bg-light border-start" title="Rate" rowspan="2">
+              <span class="small fw-bold">%</span>
             </th>
           </tr>
 
@@ -356,10 +366,9 @@
               <ng-container *ngFor="let subject of getSubjectsForDate(dateString)">
                 <th class="subject-header-cell" [title]="subject.subject_name">
                   <div class="subject-header-content">
-                    <span
-                      class="subject-code">{{ subject.subject_code || (subject.subject_name | slice:0:3) | uppercase }}</span>
-                    <span class="subject-name-micro text-truncate"
-                      style="max-width: 70px;">{{ subject.subject_name }}</span>
+                    <span class="subject-code text-truncate" style="max-width: 100%;">
+                      {{ subject.subject_code || (subject.subject_name | slice:0:3) | uppercase }}
+                    </span>
                   </div>
                 </th>
               </ng-container>
@@ -450,7 +459,8 @@
 
               <!-- Empty cell if no subjects -->
               <td *ngIf="getSubjectsForDate(dateString).length === 0"
-                class="attendance-cell text-center bg-light text-muted date-divider-right">
+                class="attendance-cell text-center bg-light text-muted date-divider-right"
+                (click)="showNoSubjectAlert(dateString)" style="cursor: pointer;">
                 <small>-</small>
               </td>
             </ng-container>

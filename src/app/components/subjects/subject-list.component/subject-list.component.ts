@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubjectService } from '../../../services/subjectservice/subject.service';
 import { Subject, SubjectFormData } from '../../../models/Subject.model';
@@ -38,10 +38,15 @@ export class SubjectListComponent implements OnInit {
     description: ''
   };
 
-  constructor(private subjectService: SubjectService) {}
+  constructor(
+    private subjectService: SubjectService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.loadSubjects();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadSubjects();
+    }
   }
 
   loadSubjects(): void {

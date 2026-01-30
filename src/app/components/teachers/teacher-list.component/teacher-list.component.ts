@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TeacherService } from '../../../services/teacherservice/teacher.service';
@@ -40,11 +40,14 @@ export class TeacherListComponent implements OnInit {
 
   constructor(
     private teacherService: TeacherService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    this.loadTeachers();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadTeachers();
+    }
   }
 
   loadTeachers(): void {

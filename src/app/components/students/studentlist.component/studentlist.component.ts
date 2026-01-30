@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { StudentService } from '../../../services/studentservice/student.service';
 import { Student } from '../../../models/Student.model';
 import Swal from 'sweetalert2';
+import { ClassService } from '../../../services/class.service';
 @Component({
   selector: 'app-studentlist.component',
   imports: [CommonModule, FormsModule, RouterLink],
@@ -12,6 +13,7 @@ import Swal from 'sweetalert2';
   styleUrl: './studentlist.component.css',
 })
 export class StudentlistComponent implements OnInit {
+  classes: any[] = [];
 students: Student[] = [];
   loading = false;
   error: string | null = null;
@@ -44,12 +46,31 @@ students: Student[] = [];
 
   constructor(
     private studentService: StudentService,
-    private router: Router
+    private router: Router,
+    private classService: ClassService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    this.loadStudents();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadStudents();
+      this.loadClasses();
+    }
   }
+
+  loadClasses(): void {
+    this.classService.getAllClasses().subscribe({
+      next: (response:any) => {
+        if (response.success) {
+          this.classes = response.data;
+        }
+      },
+      error: (err:any) => {
+        console.error(err);
+      }
+    });
+  }
+
 
   loadStudents(): void {
     this.loading = true;
@@ -82,6 +103,7 @@ students: Student[] = [];
       }
     });
   }
+
 
   viewStudentDetail(studentId: number): void {
     this.router.navigate(['/students', studentId]);

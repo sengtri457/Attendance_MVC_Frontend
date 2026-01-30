@@ -1,0 +1,141 @@
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    min-height: 80vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.assign-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.card-header h2 {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.card-header p {
+    color: #718096;
+    margin: 0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.required {
+    color: #e53e3e;
+}
+
+input,
+select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #2d3748;
+    transition: all 0.2s;
+    background-color: #f7fafc;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #4299e1;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.form-actions {
+    margin-top: 1rem;
+    text-align: right;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    border: none;
+    padding: 0.85rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.btn-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.btn-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #a0aec0;
+}
+
+.status-message {
+    grid-column: 1 / -1;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.success {
+    background-color: #c6f6d5;
+    color: #276749;
+    border: 1px solid #9ae6b4;
+}
+
+.error {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: 1px solid #feb2b2;
+}
+
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}

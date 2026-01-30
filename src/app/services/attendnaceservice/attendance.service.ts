@@ -32,7 +32,7 @@ export class AttendanceService {
     let params = new HttpParams()
       .set("start_date", startDate)
       .set("end_date", endDate)
-      .set("class_id", classId.toString())
+      .set("class_id", classId)
       .set("page", page.toString())
       .set("limit", limit.toString());
 

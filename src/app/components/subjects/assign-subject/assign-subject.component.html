@@ -1,0 +1,88 @@
+<div class="assign-container">
+    <div class="card">
+        <div class="card-header">
+            <h2>Assign Subject to Class</h2>
+            <p>Schedule subjects, teachers, and rooms.</p>
+        </div>
+
+        <form [formGroup]="assignForm" (ngSubmit)="onSubmit()" class="form-grid">
+
+            <!-- Class Selection -->
+            <div class="form-group">
+                <label for="class_id">Class <span class="required">*</span></label>
+                <select id="class_id" formControlName="class_id">
+                    <option value="">Select a Class</option>
+                    <option *ngFor="let cls of classes" [value]="cls.class_id">
+                        {{ cls.class_code }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Subject Selection -->
+            <div class="form-group">
+                <label for="subject_id">Subject <span class="required">*</span></label>
+                <select id="subject_id" formControlName="subject_id">
+                    <option value="">Select a Subject</option>
+                    <option *ngFor="let sub of subjects" [value]="sub.subject_id">
+                        {{ sub.subject_name }} ({{ sub.subject_code }})
+                    </option>
+                </select>
+            </div>
+
+            <!-- Teacher Selection -->
+            <div class="form-group">
+                <label for="teacher_id">Teacher</label>
+                <select id="teacher_id" formControlName="teacher_id">
+                    <option value="">Select a Teacher (Optional)</option>
+                    <option *ngFor="let teacher of teachers" [value]="teacher.teacher_id">
+                        {{ teacher.teacher_name_eng }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Day Selection -->
+            <div class="form-group">
+                <label for="day_of_week">Day of Week <span class="required">*</span></label>
+                <select id="day_of_week" formControlName="day_of_week">
+                    <option value="">Select Day</option>
+                    <option *ngFor="let day of daysOfWeek" [value]="day.id">
+                        {{ day.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Time Slots -->
+            <div class="form-group">
+                <label for="start_time">Start Time</label>
+                <input type="time" id="start_time" formControlName="start_time">
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">End Time</label>
+                <input type="time" id="end_time" formControlName="end_time">
+            </div>
+
+            <!-- Room -->
+            <div class="form-group full-width">
+                <label for="room_number">Room Number</label>
+                <input type="text" id="room_number" formControlName="room_number" placeholder="e.g. 101, Lab A">
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions full-width">
+                <button type="submit" [disabled]="assignForm.invalid || loading" class="btn-submit">
+                    {{ loading ? 'Assigning...' : 'Assign Subject' }}
+                </button>
+            </div>
+
+            <!-- Alerts -->
+            <div class="status-message success" *ngIf="successMessage">
+                {{ successMessage }}
+            </div>
+            <div class="status-message error" *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
+        </form>
+    </div>
+</div>

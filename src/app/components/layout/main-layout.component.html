@@ -1,0 +1,90 @@
+<div class="layout-wrapper" [class.sidebar-collapsed]="isSidebarCollapsed">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <!-- Logo Icon -->
+                <i class="bi bi-clock-history logo-icon"></i>
+                <span class="logo-text">Attendance</span>
+            </div>
+            <!-- Mobile Close Trigger -->
+            <button class="btn-toggle d-md-none" (click)="toggleSidebar()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <ul>
+                <li *ngFor="let item of navItems">
+                    <!-- Check roles if needed -->
+                    <ng-container *ngIf="hasRole(item.roles)">
+                        <a [routerLink]="item.route" routerLinkActive="active"
+                            [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item">
+                            <i class="bi" [ngClass]="item.icon"></i>
+                            <span class="nav-label">{{ item.label }}</span>
+                        </a>
+                    </ng-container>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Footer Profile -->
+        <div class="sidebar-footer">
+            <div class="user-profile-compact">
+                <div class="avatar-circle">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name text-truncate" style="max-width: 120px;"
+                        [title]="currentUser.username || 'Admin'">
+                        {{ (currentUser.username || 'Admin') | titlecase }}
+                    </span>
+                    <span class="user-role">{{ currentUser.role | titlecase }}</span>
+                </div>
+            </div>
+            <button class="btn-logout-icon" (click)="logout()" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Column -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <button class="btn-toggle-sidebar" (click)="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h4 class="page-title d-none d-sm-block">Attendance Management System</h4>
+            </div>
+
+            <div class="topbar-right">
+                <button class="icon-btn" title="Notifications">
+                    <div class="badge-dot"></div>
+                    <i class="bi bi-bell"></i>
+                </button>
+                <button class="icon-btn" title="Apps">
+                    <i class="bi bi-grid"></i>
+                </button>
+
+                <div class="user-dropdown">
+                    <div class="user-pill">
+                        <img src="assets/admin-avatar.png"
+                            onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" alt="User"
+                            class="user-avatar">
+                        <span
+                            class="d-none d-md-inline fw-medium text-dark small">{{ currentUser.username || 'Admin' }}</span>
+                        <i class="bi bi-chevron-down ms-1 text-muted" style="font-size: 0.7rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Router Content -->
+        <div class="content-wrapper">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>

@@ -1,9 +1,14 @@
 <!-- student-detail.component.html -->
 <div class="student-detail-container">
     <!-- Header -->
-    <div class="detail-header mb-4">
-        <button class="btn btn-outline-secondary" (click)="goBack()">
-            <i class="bi bi-arrow-left"></i> Back to List
+    <div class="detail-header mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <button *ngIf="isAdminOrTeacher" class="btn btn-outline-secondary" (click)="goBack()">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </button>
+        </div>
+        <button class="btn btn-outline-danger" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Logout
         </button>
     </div>
 
@@ -61,7 +66,7 @@
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" (click)="editStudent()">
+                        <button *ngIf="isAdminOrTeacher" class="btn btn-primary" (click)="editStudent()">
                             <i class="bi bi-pencil"></i> Edit Profile
                         </button>
                         <button class="btn btn-outline-secondary" (click)="printProfile()">
@@ -143,12 +148,6 @@
                     <a class="nav-link" [class.active]="activeTab === 'attendance'"
                         (click)="setActiveTab('attendance')">
                         <i class="bi bi-calendar-check"></i> Attendance History
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" [class.active]="activeTab === 'performance'"
-                        (click)="setActiveTab('performance')">
-                        <i class="bi bi-graph-up"></i> Performance
                     </a>
                 </li>
             </ul>
@@ -286,23 +285,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Performance Tab -->
-            <div class="card" *ngIf="activeTab === 'performance'">
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="bi bi-graph-up"></i> Academic Performance
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-5">
-                        <i class="bi bi-graph-up-arrow" style="font-size: 3rem; color: #ccc"></i>
-                        <p class="text-muted mt-3">
-                            Performance tracking coming soon...
-                        </p>
                     </div>
                 </div>
             </div>
