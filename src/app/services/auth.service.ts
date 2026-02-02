@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../env/enviroment';
@@ -58,29 +58,26 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password })
-      .pipe(tap(response => {
-        if (response && response.token) {
-          if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('token', response.token);
-            const user: User = {
-              user_id: response.user_id,
-              username: response.username,
-              role: response.role,
-              profile_id: response.profile_id,
-              profile: response.profile
-            };
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.currentUserSubject.next(user);
-            
-            if (user.role === 'student' && user.profile_id) {
-               this.router.navigate(['/students', user.profile_id]);
-            } else {
-               this.router.navigate(['/dashboard']);
+    return this.http.post<any>(`${this.apiUrl}/login`, { username, password })
+      .pipe(
+        map(response => response.data),
+        tap(user => {
+          if (user && user.token) {
+            if (isPlatformBrowser(this.platformId)) {
+              localStorage.setItem('token', user.token);
+              
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              this.currentUserSubject.next(user);
+              
+              if (user.role === 'student' && user.profile_id) {
+                 this.router.navigate(['/students', user.profile_id]);
+              } else {
+                 this.router.navigate(['/dashboard']);
+              }
             }
           }
-        }
-      }));
+        })
+      );
   }
 
   logout() {

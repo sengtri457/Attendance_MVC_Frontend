@@ -15,7 +15,8 @@ export const routes: Routes = [
     children: [
             {
         path: 'dashboard',
-        loadComponent: () => import('./components/attendance-dashboard.component/attendance-dashboard.component').then(m => m.AttendanceDashboardComponent)
+        loadComponent: () => import('./components/attendance-dashboard.component/attendance-dashboard.component').then(m => m.AttendanceDashboardComponent),
+        data: { roles: ['admin', 'teacher'] }
       },
       {
         path: '',
@@ -36,7 +37,7 @@ export const routes: Routes = [
       {
         path: 'students/:id',
          loadComponent: () => import('./components/students/student-detail.component/student-detail.component').then(m => m.StudentDetailComponent) ,
-         data: { roles: ['admin', 'teacher'] }
+         data: { roles: ['admin', 'teacher', 'student'] }
       },
       {
         path: 'attendance',
@@ -51,7 +52,7 @@ export const routes: Routes = [
       {
         path: 'teachers/:id',
         loadComponent: () => import('./components/teachers/teacher-detail.component/teacher-detail.component').then(m => m.TeacherDetailComponent),
-        // data: { roles: ['admin', 'teacher'] } 
+        data: { roles: ['admin'] } 
       },
       {
         path: 'subjects/assign',
