@@ -225,6 +225,148 @@
         </div>
     </div>
 
+    <!-- Notification Storage Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bell"></i> {{ 'NOTIFICATION_STORAGE' | translate }}
+                        <span class="badge bg-primary ms-2">Attendance Statistics</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Notification Cards Row -->
+                    <div class="row g-3">
+                        <!-- Weekly Total Card -->
+                        <div class="col-md-3">
+                            <div class="notification-card weekly-total-card">
+                                <div class="notification-icon">
+                                    <i class="bi bi-calendar-week"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h6 class="notification-label">{{ 'WEEKLY_TOTAL' | translate }}</h6>
+                                    <h3 class="notification-value">{{ dashboardData.this_week.total }}</h3>
+                                    <p class="notification-info mb-0">
+                                        <span class="badge bg-info">{{ dashboardData.this_week.attendance_rate }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Present Card -->
+                        <div class="col-md-3">
+                            <div class="notification-card weekly-present-card">
+                                <div class="notification-icon">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h6 class="notification-label">{{ 'WEEKLY_PRESENT' | translate }}</h6>
+                                    <h3 class="notification-value">{{ dashboardData.this_week.P }}</h3>
+                                    <p class="notification-info mb-0">
+                                        <span class="text-success">
+                                            {{ ((dashboardData.this_week.P / dashboardData.this_week.total) * 100).toFixed(1) }}%
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Total Card -->
+                        <div class="col-md-3">
+                            <div class="notification-card monthly-total-card">
+                                <div class="notification-icon">
+                                    <i class="bi bi-calendar-month"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h6 class="notification-label">{{ 'MONTHLY_TOTAL' | translate }}</h6>
+                                    <h3 class="notification-value">{{ dashboardData.this_month.total }}</h3>
+                                    <p class="notification-info mb-0">
+                                        <span
+                                            class="badge bg-warning text-dark">{{ dashboardData.this_month.attendance_rate }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Present Card -->
+                        <div class="col-md-3">
+                            <div class="notification-card monthly-present-card">
+                                <div class="notification-icon">
+                                    <i class="bi bi-award-fill"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <h6 class="notification-label">{{ 'MONTHLY_PRESENT' | translate }}</h6>
+                                    <h3 class="notification-value">{{ dashboardData.this_month.P }}</h3>
+                                    <p class="notification-info mb-0">
+                                        <span class="text-success">
+                                            {{ ((dashboardData.this_month.P / dashboardData.this_month.total) * 100).toFixed(1) }}%
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Statistics -->
+                    <div class="row g-3 mt-2">
+                        <!-- Weekly Absent -->
+                        <div class="col-md-3">
+                            <div class="notification-card-small">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block">{{ 'WEEKLY_ABSENT' | translate }}</small>
+                                        <h5 class="mb-0 text-danger">{{ dashboardData.this_week.A }}</h5>
+                                    </div>
+                                    <i class="bi bi-x-circle text-danger fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Late -->
+                        <div class="col-md-3">
+                            <div class="notification-card-small">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block">{{ 'WEEKLY_LATE' | translate }}</small>
+                                        <h5 class="mb-0 text-warning">{{ dashboardData.this_week.L }}</h5>
+                                    </div>
+                                    <i class="bi bi-clock-history text-warning fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Absent -->
+                        <div class="col-md-3">
+                            <div class="notification-card-small">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block">{{ 'MONTHLY_ABSENT' | translate }}</small>
+                                        <h5 class="mb-0 text-danger">{{ dashboardData.this_month.A }}</h5>
+                                    </div>
+                                    <i class="bi bi-exclamation-circle text-danger fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Late -->
+                        <div class="col-md-3">
+                            <div class="notification-card-small">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted d-block">{{ 'MONTHLY_LATE' | translate }}</small>
+                                        <h5 class="mb-0 text-warning">{{ dashboardData.this_month.L }}</h5>
+                                    </div>
+                                    <i class="bi bi-alarm text-warning fs-3"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bottom Row -->
     <div class="row ">
         <!-- Students at Risk -->

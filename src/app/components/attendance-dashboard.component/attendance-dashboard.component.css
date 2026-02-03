@@ -1,13 +1,27 @@
 /* attendance-dashboard.component.css - Clean Minimal Theme */
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes softPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.65; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
 }
 
 .loading-state .loading-text {
@@ -45,10 +59,21 @@
   animation: fadeInUp 0.4s ease both;
 }
 
-.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(1) .stat-card { animation-delay: 0s; }
-.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(2) .stat-card { animation-delay: 0.06s; }
-.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(3) .stat-card { animation-delay: 0.12s; }
-.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(4) .stat-card { animation-delay: 0.18s; }
+.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(1) .stat-card {
+  animation-delay: 0s;
+}
+
+.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(2) .stat-card {
+  animation-delay: 0.06s;
+}
+
+.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(3) .stat-card {
+  animation-delay: 0.12s;
+}
+
+.dashboard-container .row.mb-4:first-of-type .col-md-3:nth-child(4) .stat-card {
+  animation-delay: 0.18s;
+}
 
 .stat-card:hover {
   transform: translateY(-2px);
@@ -371,18 +396,390 @@
   background: #94a3b8;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Notification Storage Cards */
+.notification-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  height: 100%;
+  animation: fadeInUp 0.4s ease both;
+}
+
+.notification-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.weekly-total-card .notification-icon {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #3b82f6;
+}
+
+.weekly-present-card .notification-icon {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #16a34a;
+}
+
+.monthly-total-card .notification-icon {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #d97706;
+}
+
+.monthly-present-card .notification-icon {
+  background: linear-gradient(135deg, #fae8ff 0%, #f3e8ff 100%);
+  color: #9333ea;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-label {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.notification-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1;
+}
+
+.notification-info {
+  margin-top: 6px;
+  font-size: 0.875rem;
+}
+
+/* Small Notification Cards */
+.notification-card-small {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.notification-card-small:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.notification-card-small h5 {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.notification-card-small small {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Animation Delays for Notification Cards */
+.notification-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.notification-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.notification-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.notification-card:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   ============================================ */
+
+/* Extra Small Devices (phones, 320px - 480px) */
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+
+  .dashboard-header h1,
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .dashboard-header p {
+    font-size: 0.8rem;
+  }
+
+  /* Make buttons full width on very small screens */
+  .dashboard-header .d-flex.gap-2 {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dashboard-header .btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.875rem;
+  }
+
+  /* Stack stat cards vertically */
+  .stat-card {
+    margin-bottom: 12px;
+    padding: 15px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    margin-top: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  /* Notification Cards - Mobile Optimized */
+  .notification-card {
+    padding: 12px;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .notification-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .notification-label {
+    font-size: 0.7rem;
+    margin-bottom: 4px;
+  }
+
+  .notification-value {
+    font-size: 1.25rem;
+  }
+
+  .notification-info {
+    font-size: 0.75rem;
+  }
+
+  /* Small notification cards */
+  .notification-card-small {
+    padding: 12px;
+  }
+
+  .notification-card-small h5 {
+    font-size: 1rem;
+  }
+
+  .notification-card-small small {
+    font-size: 0.65rem;
+  }
+
+  .notification-card-small .fs-3 {
+    font-size: 1.5rem !important;
+  }
+
+  /* Card headers */
+  .card-header {
+    padding: 12px 15px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  .card-body {
+    padding: 12px;
+  }
+
+  /* Trend items */
+  .trend-item {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .trend-item h3 {
+    font-size: 1.25rem;
+  }
+
+  .trend-item h6 {
+    font-size: 0.75rem;
+  }
+
+  /* Summary donut chart */
+  .summary-donut {
+    width: 120px;
+    height: 120px;
+  }
+
+  .donut-center {
+    width: 80px;
+    height: 80px;
+  }
+
+  .donut-center h2 {
+    font-size: 1.25rem;
+  }
+
+  .donut-center p {
+    font-size: 0.7rem;
+  }
+
+  /* Legend */
+  .legend-item {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+
+  .legend-label,
+  .legend-value {
+    font-size: 0.75rem;
+  }
+
+  /* Risk and Absence items */
+  .risk-item,
+  .absence-item {
+    padding: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .risk-student-info {
+    width: 100%;
+  }
+
+  .risk-stats {
+    width: 100%;
+    text-align: left;
+  }
+
+  .risk-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+
+  .date-badge {
+    width: 45px;
+    height: 45px;
+    font-size: 0.85rem;
+  }
+
+  .absence-info h6 {
+    font-size: 0.875rem;
+  }
+
+  .absence-info small {
+    font-size: 0.7rem;
+  }
+
+  /* Form elements */
+  .form-select {
+    font-size: 0.875rem;
+    padding: 8px;
+  }
+
+  /* Badges */
+  .badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  /* Status bars */
+  .status-bar-item {
+    margin-bottom: 12px;
+  }
+
+  .status-bar-item span {
+    font-size: 0.8rem;
+  }
+}
+
+/* Small Devices (landscape phones, tablets, 481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
   .dashboard-container {
     padding: 15px;
   }
 
+  .dashboard-header h1,
+  .dashboard-header h2 {
+    font-size: 1.75rem;
+  }
+
   .stat-card {
     margin-bottom: 15px;
+    padding: 18px;
+  }
+
+  .stat-icon {
+    width: 55px;
+    height: 55px;
+    font-size: 26px;
   }
 
   .stat-value {
     font-size: 2rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .notification-card {
+    padding: 15px;
+  }
+
+  .notification-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .notification-value {
+    font-size: 1.5rem;
+  }
+
+  .notification-label {
+    font-size: 0.75rem;
   }
 
   .trend-item h3 {
@@ -402,6 +799,111 @@
   .donut-center h2 {
     font-size: 1.5rem;
   }
+
+  .card-title {
+    font-size: 1rem;
+  }
+}
+
+/* Medium Devices (tablets, 769px - 992px) */
+@media (min-width: 769px) and (max-width: 992px) {
+  .dashboard-container {
+    padding: 20px;
+  }
+
+  .stat-card {
+    padding: 18px;
+  }
+
+  .notification-card {
+    padding: 18px;
+  }
+}
+
+/* Large Devices (desktops, 993px and up) */
+@media (min-width: 993px) {
+  .dashboard-container {
+    padding: 30px;
+  }
+
+  /* Ensure proper grid layout on large screens */
+  .col-md-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  .col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+
+  .col-lg-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .col-lg-8 {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%;
+  }
+}
+
+/* Touch optimization for all mobile devices */
+@media (hover: none) and (pointer: coarse) {
+
+  /* Increase touch targets */
+  .btn,
+  .form-select,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .stat-card:hover,
+  .notification-card:hover,
+  .notification-card-small:hover {
+    transform: none;
+  }
+
+  /* Add active states instead */
+  .stat-card:active,
+  .notification-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Better spacing for touch */
+  .risk-item,
+  .absence-item {
+    padding: 15px 12px;
+    min-height: 60px;
+  }
+}
+
+/* Landscape orientation optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .dashboard-header {
+    margin-bottom: 15px;
+  }
+
+  .summary-donut {
+    width: 100px;
+    height: 100px;
+  }
+
+  .donut-center {
+    width: 70px;
+    height: 70px;
+  }
+
+  .donut-center h2 {
+    font-size: 1rem;
+  }
+
+  .card-body {
+    max-height: 300px;
+    overflow-y: auto;
+  }
 }
 
 /* Loading & Empty States */
@@ -409,6 +911,13 @@
   width: 3rem;
   height: 3rem;
   color: #64748b !important;
+}
+
+@media (max-width: 480px) {
+  .spinner-border {
+    width: 2rem;
+    height: 2rem;
+  }
 }
 
 /* Animations */
@@ -443,4 +952,16 @@
 
 .stat-card:nth-child(4) {
   animation-delay: 0.4s;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

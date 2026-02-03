@@ -411,6 +411,43 @@ export class LanguageService {
     'NO_SUBJECT_SCHEDULED_MSG': {
       en: 'There are no subjects scheduled for',
       kh: 'មិនមានមុខវិជ្ជាត្រូវបានគ្រោងទុកសម្រាប់'
+    },
+    // --- NOTIFICATION STORAGE ---
+    'NOTIFICATION_STORAGE': {
+      en: 'Notification Storage',
+      kh: 'ការរក្សាទុកការជូនដំណឹង'
+    },
+    'WEEKLY_TOTAL': {
+      en: 'Weekly Total',
+      kh: 'សរុបសប្តាហ៍'
+    },
+    'WEEKLY_PRESENT': {
+      en: 'Weekly Present',
+      kh: 'វត្តមានសប្តាហ៍'
+    },
+    'WEEKLY_ABSENT': {
+      en: 'Weekly Absent',
+      kh: 'អវត្តមានសប្តាហ៍'
+    },
+    'WEEKLY_LATE': {
+      en: 'Weekly Late',
+      kh: 'យឺតសប្តាហ៍'
+    },
+    'MONTHLY_TOTAL': {
+      en: 'Monthly Total',
+      kh: 'សរុបខែ'
+    },
+    'MONTHLY_PRESENT': {
+      en: 'Monthly Present',
+      kh: 'វត្តមានខែ'
+    },
+    'MONTHLY_ABSENT': {
+      en: 'Monthly Absent',
+      kh: 'អវត្តមានខែ'
+    },
+    'MONTHLY_LATE': {
+      en: 'Monthly Late',
+      kh: 'យឺតខែ'
     }
   };
 
