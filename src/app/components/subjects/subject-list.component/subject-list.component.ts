@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubjectService } from '../../../services/subjectservice/subject.service';
 import { Subject, SubjectFormData } from '../../../models/Subject.model';
@@ -7,7 +7,7 @@ import {RouterLink} from '@angular/router';
 @Component({
   selector: 'app-subject-list',
   standalone: true,
-  imports: [CommonModule, FormsModule,RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './subject-list.component.html',
   styleUrl: './subject-list.component.css',
 })

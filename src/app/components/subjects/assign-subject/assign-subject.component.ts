@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClassService } from '../../../services/class.service';
 import { SubjectService } from '../../../services/subjectservice/subject.service';
@@ -11,7 +11,7 @@ import { Teacher } from '../../../models/Teacher.model';
 @Component({
   selector: 'app-assign-subject',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './assign-subject.component.html',
   styleUrls: ['./assign-subject.component.css']
 })

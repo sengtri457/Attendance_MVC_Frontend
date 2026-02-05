@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClassService } from '../../../services/class.service';
@@ -12,7 +12,7 @@ import { Subject } from '../../../models/Subject.model';
 @Component({
   selector: 'app-class-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './class-list.component.html',
   styleUrls: ['./class-list.component.css']
 })

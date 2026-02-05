@@ -18,100 +18,8 @@ import { HttpClient } from "@angular/common/http";
 import { TelegramserviceService } from "../../services/telegramservice/telegramservice.service";
 import { TranslatePipe } from "../../pipes/translate.pipe";
 import { LanguageService } from "../../services/language.service";
-
-
-
-interface AttendanceData {
-  subjects?: {
-    [subjectId: string]: Array<{
-      session: string;
-      status: string;
-      notes?: string;
-    }>;
-  };
-  summary?: {
-    P: number;
-    A: number;
-    L: number;
-    E: number;
-    total: number;
-  };
-}
-
-interface StudentRow {
-  row_number: number;
-  student_id: number;
-  student_name_kh: string;
-  student_name_eng: string;
-  gender: string;
-  attendance: { [date: string]: AttendanceData };
-  subject_attendance: {
-    [date: string]: {
-      subjects: Array<{
-        subject_id: number;
-        subject_name: string;
-        status: string;
-        notes?: string;
-      }>;
-      daily_status: string;
-    };
-  };
-  statistics: {
-    present: number;
-    absent: number;
-    late: number;
-    excused: number;
-    total_days: number;
-    recorded_days: number;
-    attendance_rate: string;
-    subject_absences: number;
-    subject_lates: number;
-    subject_excused: number;
-  };
-}
-
-interface WeeklyGridData {
-  class: {
-    class_id: number;
-    class_name: string;
-  };
-  period: {
-    start_date: string;
-    end_date: string;
-    dates: string[];
-    total_days: number;
-  };
-  subjects?: Array<{
-    subject_id: number;
-    subject_name: string;
-  }>;
-  students: StudentRow[];
-  daily_statistics: Record<string, any>;
-  overall_statistics?: {
-    total_students?: number;
-    present?: number;
-    absent?: number;
-    late?: number;
-    excused?: number;
-    attendance_rate?: string;
-    recorded_days?: number;
-  };
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-interface PendingUpdate {
-  studentId: number;
-  date: string;
-  status: string;
-  subjectId: number;
-  previousStatus?: string;
-  isModification: boolean;
-}
+import { WeeklyGridData, StudentRow, PendingUpdate } from '../../models/WeeklyAttendance.model';
+import { AttendanceExportService } from '../../services/attendance-export.service';
 
 interface CountdownTime {
   hours: number;
@@ -228,6 +136,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     private cdRef: ChangeDetectorRef,
     private telegramService: TelegramserviceService,
     public languageService: LanguageService,
+    private exportService: AttendanceExportService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
 
@@ -1901,21 +1810,22 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     return `${day}\n${month}/${dateNum}`;
   }
 
-  exportToExcel(): void {
-    const url = `${environment.apiUrl}/attendance/export/weekly-excel?start_date=${this.startDate}&end_date=${this.endDate}&class_id=${this.selectedClassId}`;
-    // window.open(url, "_blank");
-    this.http.get(url, { responseType: 'blob' }).subscribe((blob:any) => {
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `weekly-attendance-${this.startDate}-${this.endDate}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-    });
+  async exportSummaryReport(): Promise<void> {
+    if (!this.gridData) return;
+    const selectedClass = this.classes.find(c => c.class_id == this.selectedClassId);
+    const className = selectedClass ? selectedClass.class_code : 'Unknown Class';
+    await this.exportService.exportSummaryReport(this.gridData, this.startDate, className);
+  }
+
+  async exportDetailedReport(): Promise<void> {
+    if (!this.gridData) return;
+    const selectedClass = this.classes.find(c => c.class_id == this.selectedClassId);
+    const className = selectedClass ? selectedClass.class_code : 'Unknown Class';
+    await this.exportService.exportDetailedReport(this.gridData, this.startDate, this.endDate, this.dateSubjects, className);
   }
 
   exportToCSV(): void {
-    this.exportToExcel();
+    this.exportDetailedReport();
   }
 
   print(): void {

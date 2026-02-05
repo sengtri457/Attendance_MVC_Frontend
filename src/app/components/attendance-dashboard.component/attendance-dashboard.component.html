@@ -1,445 +1,455 @@
 <div class="dashboard-container">
-    <!-- Header -->
-    <div class="dashboard-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
+  <!-- Header -->
+  <div class="dashboard-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <!-- Class Selector -->
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0">{{ 'OVERVIEW' | translate }}</h2>
+          @if (classes.length > 0) {
             <div>
-                <!-- Class Selector -->
-                <div class="d-flex align-items-center gap-3">
-                    <h2 class="mb-0">{{ 'OVERVIEW' | translate }}</h2>
-                    <div *ngIf="classes.length > 0">
-                        <select class="form-select w-auto" [(ngModel)]="selectedClassId" (change)="onClassChange()">
-                            <option *ngFor="let cls of classes" [value]="cls.class_id">
-                                {{ cls.class_code }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <p class="text-muted mb-0 mt-1">{{ 'REAL_TIME_MONITORING' | translate }}</p>
+              <select class="form-select w-auto" [(ngModel)]="selectedClassId" (change)="onClassChange()">
+                @for (cls of classes; track cls) {
+                  <option [value]="cls.class_id">
+                    {{ cls.class_code }}
+                  </option>
+                }
+              </select>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary" (click)="refreshDashboard()">
-                    <i class="bi bi-arrow-clockwise"></i> {{ 'REFRESH_STATUS' | translate }}
-                </button>
-            </div>
+          }
         </div>
+        <p class="text-muted mb-0 mt-1">{{ 'REAL_TIME_MONITORING' | translate }}</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" (click)="refreshDashboard()">
+          <i class="bi bi-arrow-clockwise"></i> {{ 'REFRESH_STATUS' | translate }}
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Loading State -->
-<div *ngIf="loading" class="text-center py-5 loading-state">
+@if (loading) {
+  <div class="text-center py-5 loading-state">
     <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+      <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-2 loading-text">{{ 'LOADING_DASHBOARD' | translate }}</p>
-</div>
+  </div>
+}
 
 <!-- Error State -->
-<div *ngIf="error" class="alert alert-danger" role="alert">
+@if (error) {
+  <div class="alert alert-danger" role="alert">
     {{ error }}
-</div>
+  </div>
+}
 
 <!-- Dashboard Content -->
-<div *ngIf="!loading && dashboardData" class="mt-4 container-fluid">
+@if (!loading && dashboardData) {
+  <div class="mt-4 container-fluid">
     <!-- Summary Cards Row -->
     <div class="row  mb-4">
-        <!-- Today's Stats -->
-        <div class="col-md-3">
-            <div class="stat-card present-card">
-                <div class="stat-icon">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h6 class="stat-label">{{ 'PRESENT_TODAY' | translate }}</h6>
-                    <h2 class="stat-value">{{ dashboardData.today.P }}</h2>
-                    <p class="stat-info mb-0">
-                        <span class="badge bg-success">{{ dashboardData.today.attendance_rate }}</span>
-                    </p>
-                </div>
-            </div>
+      <!-- Today's Stats -->
+      <div class="col-md-3">
+        <div class="stat-card present-card">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h6 class="stat-label">{{ 'PRESENT_TODAY' | translate }}</h6>
+            <h2 class="stat-value">{{ dashboardData.today.P }}</h2>
+            <p class="stat-info mb-0">
+              <span class="badge bg-success">{{ dashboardData.today.attendance_rate }}</span>
+            </p>
+          </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="stat-card absent-card">
-                <div class="stat-icon">
-                    <i class="bi bi-x-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h6 class="stat-label">{{ 'ABSENT_TODAY' | translate }}</h6>
-                    <h2 class="stat-value">{{ dashboardData.today.A }}</h2>
-                    <p class="stat-info mb-0">
-                        <span
-                            class="badge bg-danger">{{ ((dashboardData.today.A / dashboardData.today.total) * 100).toFixed(1) }}%</span>
-                    </p>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card absent-card">
+          <div class="stat-icon">
+            <i class="bi bi-x-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h6 class="stat-label">{{ 'ABSENT_TODAY' | translate }}</h6>
+            <h2 class="stat-value">{{ dashboardData.today.A }}</h2>
+            <p class="stat-info mb-0">
+              <span
+              class="badge bg-danger">{{ ((dashboardData.today.A / dashboardData.today.total) * 100).toFixed(1) }}%</span>
+            </p>
+          </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="stat-card late-card">
-                <div class="stat-icon">
-                    <i class="bi bi-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <h6 class="stat-label">{{ 'LATE_TODAY' | translate }}</h6>
-                    <h2 class="stat-value">{{ dashboardData.today.L }}</h2>
-                    <p class="stat-info mb-0">
-                        <span class="badge bg-warning">{{ 'TARDY_STUDENTS' | translate }}</span>
-                    </p>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card late-card">
+          <div class="stat-icon">
+            <i class="bi bi-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h6 class="stat-label">{{ 'LATE_TODAY' | translate }}</h6>
+            <h2 class="stat-value">{{ dashboardData.today.L }}</h2>
+            <p class="stat-info mb-0">
+              <span class="badge bg-warning">{{ 'TARDY_STUDENTS' | translate }}</span>
+            </p>
+          </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="stat-card excused-card">
-                <div class="stat-icon">
-                    <i class="bi bi-file-text"></i>
-                </div>
-                <div class="stat-content">
-                    <h6 class="stat-label">{{ 'EXCUSED_TODAY' | translate }}</h6>
-                    <h2 class="stat-value">{{ dashboardData.today.E }}</h2>
-                    <p class="stat-info mb-0">
-                        <span class="badge bg-info">{{ 'WITH_PERMISSION' | translate }}</span>
-                    </p>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card excused-card">
+          <div class="stat-icon">
+            <i class="bi bi-file-text"></i>
+          </div>
+          <div class="stat-content">
+            <h6 class="stat-label">{{ 'EXCUSED_TODAY' | translate }}</h6>
+            <h2 class="stat-value">{{ dashboardData.today.E }}</h2>
+            <p class="stat-info mb-0">
+              <span class="badge bg-info">{{ 'WITH_PERMISSION' | translate }}</span>
+            </p>
+          </div>
         </div>
+      </div>
     </div>
-
     <!-- Main Content Row -->
     <div class="row  mb-4">
-        <!-- Weekly Trend Chart -->
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-graph-up"></i> {{ 'ATTENDANCE_TRENDS' | translate }}
-                    </h5>
+      <!-- Weekly Trend Chart -->
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-graph-up"></i> {{ 'ATTENDANCE_TRENDS' | translate }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Period Comparison -->
+            <div class="row text-center mb-4">
+              <div class="col-4">
+                <div class="trend-item">
+                  <h6 class="text-muted">{{ 'TODAY' | translate }}</h6>
+                  <h3 class="mb-1">{{ dashboardData.today.total }}</h3>
+                  <span [class]="'badge bg-' + getStatusColor(dashboardData.today.attendance_rate)">
+                    {{ dashboardData.today.attendance_rate }}
+                  </span>
                 </div>
-                <div class="card-body">
-                    <!-- Period Comparison -->
-                    <div class="row text-center mb-4">
-                        <div class="col-4">
-                            <div class="trend-item">
-                                <h6 class="text-muted">{{ 'TODAY' | translate }}</h6>
-                                <h3 class="mb-1">{{ dashboardData.today.total }}</h3>
-                                <span [class]="'badge bg-' + getStatusColor(dashboardData.today.attendance_rate)">
-                                    {{ dashboardData.today.attendance_rate }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="trend-item">
-                                <h6 class="text-muted">{{ 'THIS_WEEK' | translate }}</h6>
-                                <h3 class="mb-1">{{ dashboardData.this_week.total }}</h3>
-                                <span [class]="'badge bg-' + getStatusColor(dashboardData.this_week.attendance_rate)">
-                                    {{ dashboardData.this_week.attendance_rate }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="trend-item">
-                                <h6 class="text-muted">{{ 'THIS_MONTH' | translate }}</h6>
-                                <h3 class="mb-1">{{ dashboardData.this_month.total }}</h3>
-                                <span [class]="'badge bg-' + getStatusColor(dashboardData.this_month.attendance_rate)">
-                                    {{ dashboardData.this_month.attendance_rate }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Distribution Bars -->
-                    <div class="status-bars">
-                        <div class="status-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Present</span>
-                                <span><strong>{{ dashboardData.today.P }}</strong></span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-success"
-                                    [style.width.%]="(dashboardData.today.P / dashboardData.today.total) * 100">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="status-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Absent</span>
-                                <span><strong>{{ dashboardData.today.A }}</strong></span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-danger"
-                                    [style.width.%]="(dashboardData.today.A / dashboardData.today.total) * 100">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="status-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Late</span>
-                                <span><strong>{{ dashboardData.today.L }}</strong></span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning"
-                                    [style.width.%]="(dashboardData.today.L / dashboardData.today.total) * 100">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="status-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Excused</span>
-                                <span><strong>{{ dashboardData.today.E }}</strong></span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-info"
-                                    [style.width.%]="(dashboardData.today.E / dashboardData.today.total) * 100">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              </div>
+              <div class="col-4">
+                <div class="trend-item">
+                  <h6 class="text-muted">{{ 'THIS_WEEK' | translate }}</h6>
+                  <h3 class="mb-1">{{ dashboardData.this_week.total }}</h3>
+                  <span [class]="'badge bg-' + getStatusColor(dashboardData.this_week.attendance_rate)">
+                    {{ dashboardData.this_week.attendance_rate }}
+                  </span>
                 </div>
+              </div>
+              <div class="col-4">
+                <div class="trend-item">
+                  <h6 class="text-muted">{{ 'THIS_MONTH' | translate }}</h6>
+                  <h3 class="mb-1">{{ dashboardData.this_month.total }}</h3>
+                  <span [class]="'badge bg-' + getStatusColor(dashboardData.this_month.attendance_rate)">
+                    {{ dashboardData.this_month.attendance_rate }}
+                  </span>
+                </div>
+              </div>
             </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-pie-chart"></i> {{ 'TODAYS_SUMMARY' | translate }}
-                    </h5>
+            <!-- Status Distribution Bars -->
+            <div class="status-bars">
+              <div class="status-bar-item">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Present</span>
+                  <span><strong>{{ dashboardData.today.P }}</strong></span>
                 </div>
-                <div class="card-body">
-                    <div class="summary-donut">
-                        <div class="donut-center">
-                            <h2>{{ dashboardData.today.attendance_rate }}</h2>
-                            <p class="text-muted mb-0">{{ 'ATTENDANCE_RATE' | translate }}</p>
-                        </div>
-                    </div>
-                    <div class="summary-legend mt-4">
-                        <div class="legend-item" *ngFor="let item of statusDistribution">
-                            <span class="legend-color" [style.background-color]="item.color"></span>
-                            <span class="legend-label">{{ item.name }}</span>
-                            <span class="legend-value">{{ item.value }}</span>
-                        </div>
-                    </div>
+                <div class="progress">
+                  <div class="progress-bar bg-success"
+                    [style.width.%]="(dashboardData.today.P / dashboardData.today.total) * 100">
+                  </div>
                 </div>
+              </div>
+              <div class="status-bar-item">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Absent</span>
+                  <span><strong>{{ dashboardData.today.A }}</strong></span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-danger"
+                    [style.width.%]="(dashboardData.today.A / dashboardData.today.total) * 100">
+                  </div>
+                </div>
+              </div>
+              <div class="status-bar-item">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Late</span>
+                  <span><strong>{{ dashboardData.today.L }}</strong></span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-warning"
+                    [style.width.%]="(dashboardData.today.L / dashboardData.today.total) * 100">
+                  </div>
+                </div>
+              </div>
+              <div class="status-bar-item">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Excused</span>
+                  <span><strong>{{ dashboardData.today.E }}</strong></span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar bg-info"
+                    [style.width.%]="(dashboardData.today.E / dashboardData.today.total) * 100">
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
+      <!-- Quick Stats -->
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-pie-chart"></i> {{ 'TODAYS_SUMMARY' | translate }}
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="summary-donut">
+              <div class="donut-center">
+                <h2>{{ dashboardData.today.attendance_rate }}</h2>
+                <p class="text-muted mb-0">{{ 'ATTENDANCE_RATE' | translate }}</p>
+              </div>
+            </div>
+            <div class="summary-legend mt-4">
+              @for (item of statusDistribution; track item) {
+                <div class="legend-item">
+                  <span class="legend-color" [style.background-color]="item.color"></span>
+                  <span class="legend-label">{{ item.name }}</span>
+                  <span class="legend-value">{{ item.value }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
     <!-- Notification Storage Section -->
     <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-bell"></i> {{ 'NOTIFICATION_STORAGE' | translate }}
-                        <span class="badge bg-primary ms-2">Attendance Statistics</span>
-                    </h5>
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-bell"></i> {{ 'NOTIFICATION_STORAGE' | translate }}
+              <span class="badge bg-primary ms-2">Attendance Statistics</span>
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Notification Cards Row -->
+            <div class="row g-3">
+              <!-- Weekly Total Card -->
+              <div class="col-md-3">
+                <div class="notification-card weekly-total-card">
+                  <div class="notification-icon">
+                    <i class="bi bi-calendar-week"></i>
+                  </div>
+                  <div class="notification-content">
+                    <h6 class="notification-label">{{ 'WEEKLY_TOTAL' | translate }}</h6>
+                    <h3 class="notification-value">{{ dashboardData.this_week.total }}</h3>
+                    <p class="notification-info mb-0">
+                      <span class="badge bg-info">{{ dashboardData.this_week.attendance_rate }}</span>
+                    </p>
+                  </div>
                 </div>
-                <div class="card-body">
-                    <!-- Notification Cards Row -->
-                    <div class="row g-3">
-                        <!-- Weekly Total Card -->
-                        <div class="col-md-3">
-                            <div class="notification-card weekly-total-card">
-                                <div class="notification-icon">
-                                    <i class="bi bi-calendar-week"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <h6 class="notification-label">{{ 'WEEKLY_TOTAL' | translate }}</h6>
-                                    <h3 class="notification-value">{{ dashboardData.this_week.total }}</h3>
-                                    <p class="notification-info mb-0">
-                                        <span class="badge bg-info">{{ dashboardData.this_week.attendance_rate }}</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Weekly Present Card -->
-                        <div class="col-md-3">
-                            <div class="notification-card weekly-present-card">
-                                <div class="notification-icon">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <h6 class="notification-label">{{ 'WEEKLY_PRESENT' | translate }}</h6>
-                                    <h3 class="notification-value">{{ dashboardData.this_week.P }}</h3>
-                                    <p class="notification-info mb-0">
-                                        <span class="text-success">
-                                            {{ ((dashboardData.this_week.P / dashboardData.this_week.total) * 100).toFixed(1) }}%
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Monthly Total Card -->
-                        <div class="col-md-3">
-                            <div class="notification-card monthly-total-card">
-                                <div class="notification-icon">
-                                    <i class="bi bi-calendar-month"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <h6 class="notification-label">{{ 'MONTHLY_TOTAL' | translate }}</h6>
-                                    <h3 class="notification-value">{{ dashboardData.this_month.total }}</h3>
-                                    <p class="notification-info mb-0">
-                                        <span
-                                            class="badge bg-warning text-dark">{{ dashboardData.this_month.attendance_rate }}</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Monthly Present Card -->
-                        <div class="col-md-3">
-                            <div class="notification-card monthly-present-card">
-                                <div class="notification-icon">
-                                    <i class="bi bi-award-fill"></i>
-                                </div>
-                                <div class="notification-content">
-                                    <h6 class="notification-label">{{ 'MONTHLY_PRESENT' | translate }}</h6>
-                                    <h3 class="notification-value">{{ dashboardData.this_month.P }}</h3>
-                                    <p class="notification-info mb-0">
-                                        <span class="text-success">
-                                            {{ ((dashboardData.this_month.P / dashboardData.this_month.total) * 100).toFixed(1) }}%
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Additional Statistics -->
-                    <div class="row g-3 mt-2">
-                        <!-- Weekly Absent -->
-                        <div class="col-md-3">
-                            <div class="notification-card-small">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block">{{ 'WEEKLY_ABSENT' | translate }}</small>
-                                        <h5 class="mb-0 text-danger">{{ dashboardData.this_week.A }}</h5>
-                                    </div>
-                                    <i class="bi bi-x-circle text-danger fs-3"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Weekly Late -->
-                        <div class="col-md-3">
-                            <div class="notification-card-small">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block">{{ 'WEEKLY_LATE' | translate }}</small>
-                                        <h5 class="mb-0 text-warning">{{ dashboardData.this_week.L }}</h5>
-                                    </div>
-                                    <i class="bi bi-clock-history text-warning fs-3"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Monthly Absent -->
-                        <div class="col-md-3">
-                            <div class="notification-card-small">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block">{{ 'MONTHLY_ABSENT' | translate }}</small>
-                                        <h5 class="mb-0 text-danger">{{ dashboardData.this_month.A }}</h5>
-                                    </div>
-                                    <i class="bi bi-exclamation-circle text-danger fs-3"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Monthly Late -->
-                        <div class="col-md-3">
-                            <div class="notification-card-small">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted d-block">{{ 'MONTHLY_LATE' | translate }}</small>
-                                        <h5 class="mb-0 text-warning">{{ dashboardData.this_month.L }}</h5>
-                                    </div>
-                                    <i class="bi bi-alarm text-warning fs-3"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              </div>
+              <!-- Weekly Present Card -->
+              <div class="col-md-3">
+                <div class="notification-card weekly-present-card">
+                  <div class="notification-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </div>
+                  <div class="notification-content">
+                    <h6 class="notification-label">{{ 'WEEKLY_PRESENT' | translate }}</h6>
+                    <h3 class="notification-value">{{ dashboardData.this_week.P }}</h3>
+                    <p class="notification-info mb-0">
+                      <span class="text-success">
+                        {{ ((dashboardData.this_week.P / dashboardData.this_week.total) * 100).toFixed(1) }}%
+                      </span>
+                    </p>
+                  </div>
                 </div>
+              </div>
+              <!-- Monthly Total Card -->
+              <div class="col-md-3">
+                <div class="notification-card monthly-total-card">
+                  <div class="notification-icon">
+                    <i class="bi bi-calendar-month"></i>
+                  </div>
+                  <div class="notification-content">
+                    <h6 class="notification-label">{{ 'MONTHLY_TOTAL' | translate }}</h6>
+                    <h3 class="notification-value">{{ dashboardData.this_month.total }}</h3>
+                    <p class="notification-info mb-0">
+                      <span
+                      class="badge bg-warning text-dark">{{ dashboardData.this_month.attendance_rate }}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <!-- Monthly Present Card -->
+              <div class="col-md-3">
+                <div class="notification-card monthly-present-card">
+                  <div class="notification-icon">
+                    <i class="bi bi-award-fill"></i>
+                  </div>
+                  <div class="notification-content">
+                    <h6 class="notification-label">{{ 'MONTHLY_PRESENT' | translate }}</h6>
+                    <h3 class="notification-value">{{ dashboardData.this_month.P }}</h3>
+                    <p class="notification-info mb-0">
+                      <span class="text-success">
+                        {{ ((dashboardData.this_month.P / dashboardData.this_month.total) * 100).toFixed(1) }}%
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
+            <!-- Additional Statistics -->
+            <div class="row g-3 mt-2">
+              <!-- Weekly Absent -->
+              <div class="col-md-3">
+                <div class="notification-card-small">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small class="text-muted d-block">{{ 'WEEKLY_ABSENT' | translate }}</small>
+                      <h5 class="mb-0 text-danger">{{ dashboardData.this_week.A }}</h5>
+                    </div>
+                    <i class="bi bi-x-circle text-danger fs-3"></i>
+                  </div>
+                </div>
+              </div>
+              <!-- Weekly Late -->
+              <div class="col-md-3">
+                <div class="notification-card-small">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small class="text-muted d-block">{{ 'WEEKLY_LATE' | translate }}</small>
+                      <h5 class="mb-0 text-warning">{{ dashboardData.this_week.L }}</h5>
+                    </div>
+                    <i class="bi bi-clock-history text-warning fs-3"></i>
+                  </div>
+                </div>
+              </div>
+              <!-- Monthly Absent -->
+              <div class="col-md-3">
+                <div class="notification-card-small">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small class="text-muted d-block">{{ 'MONTHLY_ABSENT' | translate }}</small>
+                      <h5 class="mb-0 text-danger">{{ dashboardData.this_month.A }}</h5>
+                    </div>
+                    <i class="bi bi-exclamation-circle text-danger fs-3"></i>
+                  </div>
+                </div>
+              </div>
+              <!-- Monthly Late -->
+              <div class="col-md-3">
+                <div class="notification-card-small">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small class="text-muted d-block">{{ 'MONTHLY_LATE' | translate }}</small>
+                      <h5 class="mb-0 text-warning">{{ dashboardData.this_month.L }}</h5>
+                    </div>
+                    <i class="bi bi-alarm text-warning fs-3"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-
     <!-- Bottom Row -->
     <div class="row ">
-        <!-- Students at Risk -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-exclamation-triangle"></i> {{ 'STUDENTS_AT_RISK' | translate }}
-                        <span class="badge bg-danger ms-2">{{ dashboardData.students_at_risk.length }}</span>
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div *ngIf="dashboardData.students_at_risk.length === 0" class="text-center py-4 text-muted">
-                        <i class="bi bi-check-circle display-4"></i>
-                        <p class="mt-2">{{ 'NO_RISK_STUDENTS' | translate }}</p>
+      <!-- Students at Risk -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-exclamation-triangle"></i> {{ 'STUDENTS_AT_RISK' | translate }}
+              <span class="badge bg-danger ms-2">{{ dashboardData.students_at_risk.length }}</span>
+            </h5>
+          </div>
+          <div class="card-body">
+            @if (dashboardData.students_at_risk.length === 0) {
+              <div class="text-center py-4 text-muted">
+                <i class="bi bi-check-circle display-4"></i>
+                <p class="mt-2">{{ 'NO_RISK_STUDENTS' | translate }}</p>
+              </div>
+            }
+            @if (dashboardData.students_at_risk.length > 0) {
+              <div class="risk-list">
+                @for (student of dashboardData.students_at_risk.slice(0, 5); track student) {
+                  <div class="risk-item">
+                    <div class="risk-student-info">
+                      <div class="risk-avatar">
+                        <i class="bi bi-person"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">{{ student.student_name_eng }}</h6>
+                        <small class="text-muted">{{ student.student_name_kh }}</small>
+                      </div>
                     </div>
-                    <div class="risk-list" *ngIf="dashboardData.students_at_risk.length > 0">
-                        <div class="risk-item" *ngFor="let student of dashboardData.students_at_risk.slice(0, 5)">
-                            <div class="risk-student-info">
-                                <div class="risk-avatar">
-                                    <i class="bi bi-person"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">{{ student.student_name_eng }}</h6>
-                                    <small class="text-muted">{{ student.student_name_kh }}</small>
-                                </div>
-                            </div>
-                            <div class="risk-stats">
-                                <span [class]="'badge ' + getRiskBadgeClass(student.attendance_rate)">
-                                    {{ student.attendance_rate }}
-                                </span>
-                                <small class="text-muted d-block mt-1">
-                                    {{ student.days_present }}/{{ student.total_days }} {{ 'DAYS' | translate }}
-                                </small>
-                            </div>
-                        </div>
+                    <div class="risk-stats">
+                      <span [class]="'badge ' + getRiskBadgeClass(student.attendance_rate)">
+                        {{ student.attendance_rate }}
+                      </span>
+                      <small class="text-muted d-block mt-1">
+                        {{ student.days_present }}/{{ student.total_days }} {{ 'DAYS' | translate }}
+                      </small>
                     </div>
-                </div>
-            </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
-
-        <!-- Recent Absences -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-calendar-x"></i> {{ 'RECENT_ABSENCES' | translate }}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div *ngIf="dashboardData.recent_absences.length === 0" class="text-center py-4 text-muted">
-                        <i class="bi bi-check-circle display-4"></i>
-                        <p class="mt-2">{{ 'NO_RECENT_ABSENCES' | translate }}</p>
+      </div>
+      <!-- Recent Absences -->
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-calendar-x"></i> {{ 'RECENT_ABSENCES' | translate }}
+            </h5>
+          </div>
+          <div class="card-body">
+            @if (dashboardData.recent_absences.length === 0) {
+              <div class="text-center py-4 text-muted">
+                <i class="bi bi-check-circle display-4"></i>
+                <p class="mt-2">{{ 'NO_RECENT_ABSENCES' | translate }}</p>
+              </div>
+            }
+            @if (dashboardData.recent_absences.length > 0) {
+              <div class="absence-list">
+                @for (absence of dashboardData.recent_absences.slice(0, 5); track absence) {
+                  <div class="absence-item">
+                    <div class="absence-date">
+                      <div class="date-badge">
+                        {{ absence.attendance_date | date:'dd' }}
+                        <small>{{ absence.attendance_date | date:'MMM' }}</small>
+                      </div>
                     </div>
-                    <div class="absence-list" *ngIf="dashboardData.recent_absences.length > 0">
-                        <div class="absence-item" *ngFor="let absence of dashboardData.recent_absences.slice(0, 5)">
-                            <div class="absence-date">
-                                <div class="date-badge">
-                                    {{ absence.attendance_date | date:'dd' }}
-                                    <small>{{ absence.attendance_date | date:'MMM' }}</small>
-                                </div>
-                            </div>
-                            <div class="absence-info">
-                                <h6 class="mb-0">{{ absence.student.student_name_eng }}</h6>
-                                <small class="text-muted">{{ absence.student.student_name_kh }}</small>
-                                <p class="mb-0 mt-1" *ngIf="absence.notes">
-                                    <small><i class="bi bi-chat-left-text"></i> {{ absence.notes }}</small>
-                                </p>
-                            </div>
-                        </div>
+                    <div class="absence-info">
+                      <h6 class="mb-0">{{ absence.student.student_name_eng }}</h6>
+                      <small class="text-muted">{{ absence.student.student_name_kh }}</small>
+                      @if (absence.notes) {
+                        <p class="mb-0 mt-1">
+                          <small><i class="bi bi-chat-left-text"></i> {{ absence.notes }}</small>
+                        </p>
+                      }
                     </div>
-                </div>
-            </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+}
