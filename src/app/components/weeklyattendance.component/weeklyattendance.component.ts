@@ -128,6 +128,21 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   private destroyRef = inject(DestroyRef);
 
+  // Export dropdown state
+  showExportMenu = false;
+
+  toggleExportMenu(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.showExportMenu = !this.showExportMenu;
+  }
+  
+  closeExportMenu() {
+    this.showExportMenu = false;
+  }
+
   constructor(
     private attendanceService: AttendanceService,
     private subjectService: SubjectService,

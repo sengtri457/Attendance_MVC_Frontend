@@ -84,696 +84,674 @@
     </div>
   </ng-template>
 
-  <div class="header-section">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-1">{{ 'WEEKLY_ATTENDANCE_GRID' | translate }}</h2>
+  <div class="header-section p-2 mb-2">
+    <!-- Top Row: Title, Context, and Primary Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex align-items-center gap-3">
+        <h5 class="mb-0 fw-bold text-primary">{{ 'WEEKLY_ATTENDANCE_GRID' | translate }}</h5>
         @if (gridData) {
-        <p class="text-muted mb-0">
-          <strong>{{ gridData.class.class_name }}</strong> |
-          {{ gridData.period.start_date }} to {{ gridData.period.end_date }}
-          <span class="badge bg-secondary ms-2">
-            {{ gridData.students.length }} {{ 'TOTAL_STUDENTS' | translate }}
-          </span>
-        </p>
+        <div class="d-flex align-items-center text-muted small gap-2 border-start ps-3">
+          <span class="fw-bold text-dark">{{ gridData.class.class_name }}</span>
+          <span>•</span>
+          <span>{{ gridData.period.start_date }} - {{ gridData.period.end_date }}</span>
+          <span class="badge bg-secondary rounded-pill">{{ gridData.students.length }} Students</span>
+        </div>
         }
       </div>
-      <div class="d-flex gap-2">
-        <!-- Language Toggle -->
-        <button class="btn btn-outline-info" (click)="languageService.toggleLanguage()" title="Switch Language">
-          <i class="bi bi-translate"></i> {{ languageService.currentLang() === 'en' ? 'ខ្មែរ' : 'English' }}
-        </button>
 
-        <!-- Submit and Cancel buttons -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Unsaved Changes Alert (Compact) -->
         @if (hasUnsavedChanges) {
-        <div class=" me-2">
-          <button class="btn btn-success mx-2" (click)="submitAllChanges()" [disabled]="submitting">
-            <i class="bi bi-check-circle"></i>
-            {{ 'SUBMIT_CHANGES' | translate }} ({{ pendingUpdates.size }})
-          </button>
-          <button class="btn btn-danger" (click)="cancelAllChanges()" [disabled]="submitting">
-            <i class="bi bi-x-circle"></i>
-            {{ 'CANCEL' | translate }}
-          </button>
-        </div>
+        <span class="badge bg-warning text-dark animate-pulse">
+          <i class="bi bi-exclamation-triangle-fill"></i> {{ pendingUpdates.size }} Unsaved
+        </span>
+        <button class="btn btn-sm btn-success" (click)="submitAllChanges()" [disabled]="submitting">
+          <i class="bi bi-check2"></i> Save
+        </button>
+        <button class="btn btn-sm btn-outline-danger" (click)="cancelAllChanges()" [disabled]="submitting">
+          <i class="bi bi-x"></i>
+        </button>
+        <div class="vr mx-1"></div>
         }
 
-        <!-- Action buttons -->
-        <button class="btn btn-outline-success" (click)="refresh()" [disabled]="loading || submitting"
-          [title]="'REFRESH' | translate">
-          <i class="bi bi-arrow-clockwise"></i> {{ 'REFRESH' | translate }}
+        <button class="btn btn-sm btn-clean" (click)="languageService.toggleLanguage()" title="Language">
+          <i class="bi bi-translate"></i> {{ languageService.currentLang() === 'en' ? 'KH' : 'EN' }}
         </button>
-
-        <div class="btn-group" role="group">
-          <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
-            aria-expanded="false" [disabled]="!gridData">
-            <i class="bi bi-file-earmark-excel"></i> {{ 'EXPORT_EXCEL' | translate }}
-          </button>
-          <ul class="dropdown-menu">
-            <li>
-              <a class="dropdown-item" href="javascript:void(0)" (click)="exportDetailedReport()">
-                <i class="bi bi-grid-3x3"></i> {{ 'WEEKLY_GRID' | translate }} (Detail)
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="javascript:void(0)" (click)="exportSummaryReport()">
-                <i class="bi bi-file-earmark-spreadsheet"></i> {{ 'STUDENT_SUMMARY' | translate }} (Clean)
-              </a>
-            </li>
-          </ul>
-        </div>
-        <button class="btn btn-outline-secondary" (click)="print()" [disabled]="!gridData" title="Print grid">
-          <i class="bi bi-printer"></i>
+        <button class="btn btn-sm btn-clean" routerLink="/" title="Back">
+          <i class="bi bi-arrow-left"></i> Dashboard
         </button>
       </div>
     </div>
 
-    <!-- Controls -->
-    <div class="row mb-3">
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">{{ 'CLASS' | translate }}</label>
-        <select class="form-select" [(ngModel)]="selectedClassId" (change)="onClassChange()"
-          [disabled]="loading || submitting">
+    <!-- Bottom Row: Unified Toolbar (Filters, Nav, Search, Tools) -->
+    <div class="d-flex flex-wrap align-items-center gap-2 bg-light p-1 rounded">
+      <!-- Filters -->
+      <div class="d-flex align-items-center gap-1">
+        <select class="form-select form-select-sm" style="width: 100px;" [(ngModel)]="selectedClassId"
+          (change)="onClassChange()" [disabled]="loading || submitting">
           @for (item of classes; track item) {
           <option [value]="item.class_id">{{ item.class_code }}</option>
           }
         </select>
+        <input type="date" class="form-control form-control-sm" style="width: 130px;" [(ngModel)]="startDate"
+          (change)="onDateChange()" [disabled]="loading || submitting" [max]="endDate">
+        <span class="text-muted small">-</span>
+        <input type="date" class="form-control form-control-sm" style="width: 130px;" [(ngModel)]="endDate"
+          (change)="onDateChange()" [disabled]="loading || submitting" [min]="startDate">
       </div>
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">{{ 'START_DATE' | translate }}</label>
-        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="onDateChange()"
-          [disabled]="loading || submitting" [max]="endDate">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">{{ 'END_DATE' | translate }}</label>
-        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="onDateChange()"
-          [disabled]="loading || submitting" [min]="startDate">
-      </div>
-      <div class="col-md-3 d-flex align-items-end gap-2">
-        <button class="btn btn-outline-secondary" (click)="previousWeek()" [disabled]="loading || submitting"
-          [title]="'PREVIOUS_WEEK' | translate">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-        <button class="btn btn-outline-secondary" (click)="nextWeek()" [disabled]="loading || submitting"
-          [title]="'NEXT_WEEK' | translate">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-        <button class="btn-clean btn-primary-clean" (click)="resetToCurrentWeek()" [disabled]="loading || submitting"
-          [title]="'RESET_CURRENT' | translate">
-          {{ 'RESET_CURRENT' | translate }}<i class="bi bi-x-circle"></i>
-        </button>
-      </div>
-    </div>
 
-    <!-- Search Box -->
-    @if (gridData) {
-    <div class="row mb-3 d-flex justify-content-between align-items-end">
-      <div class="col-md-6">
-        <label class="form-label fw-semibold">
-          <i class="bi bi-search"></i> {{ 'SEARCH_PLACEHOLDER' | translate }}
-        </label>
-        <div class="input-group">
-          <input type="text" class="form-control" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-            [placeholder]="'SEARCH_PLACEHOLDER' | translate" [disabled]="loading || submitting">
-          <button class="btn btn-outline-primary" type="button" (click)="onSearch()" [disabled]="loading || submitting">
-            <i class="bi bi-search"></i>
-          </button>
-          <button class="btn btn-outline-secondary" type="button" (click)="clearSearch()" [disabled]="!searchQuery"
-            title="Clear search">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        @if (searchQuery && !loading) {
-        <small class="text-muted">
-          {{ 'FOUND_STUDENTS' | translate }} {{ totalStudents }} {{ 'MATCHING' | translate }} "{{ searchQuery }}"
-        </small>
+      <!-- Navigation -->
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-secondary" (click)="previousWeek()" [disabled]="loading || submitting"><i
+            class="bi bi-chevron-left"></i></button>
+        <button class="btn btn-outline-secondary" (click)="resetToCurrentWeek()"
+          [disabled]="loading || submitting">Today</button>
+        <button class="btn btn-outline-secondary" (click)="nextWeek()" [disabled]="loading || submitting"><i
+            class="bi bi-chevron-right"></i></button>
+      </div>
+
+      <div class="vr mx-1"></div>
+
+      <!-- Search -->
+      <div class="input-group input-group-sm" style="max-width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control border-start-0" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+          [placeholder]="'SEARCH_PLACEHOLDER' | translate" [disabled]="loading || submitting">
+        @if (searchQuery) {
+        <button class="btn btn-outline-secondary border-start-0" type="button" (click)="clearSearch()">
+          <i class="bi bi-x-lg"></i>
+        </button>
         }
       </div>
-      <div class="col-6">
-        <button class="btn-clean btn-primary-clean" routerLink="/">
-          <i class="bi bi-arrow-left"></i> {{ 'BACK_TO_DASHBOARD' | translate }}
-        </button>
-      </div>
-    </div>
-    }
 
-    <!-- NEW: Bulk Selection Panel -->
-    @if (showBulkSelectionPanel && currentBulkDate) {
-    <div class="bulk-selection-panel alert alert-info mb-3">
-      <!-- ... existing bulk panel code ... -->
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="mb-0">
-          <i class="bi bi-check-square me-2"></i>
-          {{ 'BULK_SELECTION_MODE' | translate }} - {{ getFormattedDate(currentBulkDate) }}
-        </h5>
-        <button type="button" class="btn-close" (click)="cancelBulkSelection(currentBulkDate)" aria-label="Close">
+      <div class="ms-auto d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary" (click)="refresh()" [disabled]="loading || submitting"
+          title="Refresh">
+          <i class="bi bi-arrow-clockwise"></i>
         </button>
-      </div>
-      <div class="row g-3">
-        <!-- Status Selection -->
-        <div class="col-md-3">
-          <label class="form-label fw-bold">{{ 'MARK_AS' | translate }}:</label>
-          <select class="form-select" [(ngModel)]="getBulkSelectionState(currentBulkDate)!.selectedStatus">
-            @for (status of statusOptions; track status) {
-            <option [value]="status.value">
-              {{ status.label }} ({{ status.symbol }})
-            </option>
-            }
-          </select>
-        </div>
-        <!-- Selection Actions -->
-        <div class="col-md-9">
-          <label class="form-label fw-bold">Students:</label>
-          <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="selectAllStudents(currentBulkDate)">
-              <i class="bi bi-check-all me-1"></i>
-              {{ 'SELECT_ALL' | translate }} ({{ getFilteredStudents().length }})
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary"
-              (click)="deselectAllStudents(currentBulkDate)">
-              <i class="bi bi-x-square me-1"></i>
-              {{ 'DESELECT_ALL' | translate }}
-            </button>
-            <div class="vr"></div>
-            <span class="badge bg-primary fs-6 d-flex align-items-center">
-              {{ 'SELECTED' | translate }}: {{ getSelectedStudentCount(currentBulkDate) }}
-            </span>
-            <button type="button" class="btn btn-sm btn-success"
-              [disabled]="getSelectedStudentCount(currentBulkDate) === 0"
-              (click)="applyBulkAttendance(currentBulkDate)">
-              <i class="bi bi-save me-1"></i>
-              {{ 'APPLY_TO_SELECTED' | translate }}
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" (click)="cancelBulkSelection(currentBulkDate)">
-              <i class="bi bi-x-circle me-1"></i>
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="mt-2">
-        <small class="text-muted">
-          <i class="bi bi-info-circle me-1"></i>
-          Click on student rows to select/deselect them. Changes will be staged and can be submitted together.
-        </small>
-      </div>
-    </div>
-    }
+        <!-- Custom Export Dropdown -->
+        <div class="custom-dropdown">
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="toggleExportMenu($event)"
+            [disabled]="!gridData">
+            <i class="bi bi-file-earmark-excel"></i> Export
+          </button>
 
-    <!-- NEW: Global Bulk Actions Toolbar (Row Based) -->
-    @if (showGlobalBulkPanel && !showBulkSelectionPanel) {
-    <div class="global-bulk-panel alert alert-primary mb-3 shadow-sm border-primary">
-      <div class="d-flex flex-wrap align-items-center justify-content-between p-1">
-        <div class="d-flex align-items-center gap-3">
-          <div class="fs-5 fw-bold text-primary">
-            <i class="bi bi-check2-circle"></i>
-            {{ globalSelectedStudents.size }} {{ 'SELECTED' | translate }}
-          </div>
-          <div class="vr"></div>
-          <div class="d-flex align-items-center gap-2">
-            <label class="fw-semibold small">{{ 'QUICK_ACTION' | translate }}:</label>
-            <button class="btn btn-sm btn-success"
-              (click)="applyGlobalBulkAction('P')">{{ 'PRESENT' | translate }}</button>
-            <button class="btn btn-sm btn-danger"
-              (click)="applyGlobalBulkAction('A')">{{ 'ABSENT' | translate }}</button>
-            <!-- More actions dropdown if needed -->
-            <div class="btn-group" role="group">
-              <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                More
+          @if (showExportMenu) {
+          <div class="custom-dropdown-backdrop" (click)="closeExportMenu()"></div>
+          <ul class="custom-dropdown-menu">
+            <li>
+              <button class="custom-dropdown-item" (click)="exportDetailedReport(); closeExportMenu()">
+                <i class="bi bi-grid-3x3 me-2"></i> Detailed Grid
               </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="javascript:void(0)"
-                    (click)="applyGlobalBulkAction('L')">{{ 'LATE' | translate }}</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)"
-                    (click)="applyGlobalBulkAction('E')">{{ 'EXCUSED' | translate }}</a></li>
-              </ul>
-            </div>
-          </div>
+            </li>
+            <li>
+              <button class="custom-dropdown-item" (click)="exportSummaryReport(); closeExportMenu()">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i> Student Summary
+              </button>
+            </li>
+          </ul>
+          }
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <small class="text-muted fst-italic me-2">{{ 'APPLIES_TO_TODAY' | translate }}
-            ({{ getFormattedDate(todayDate) }})</small>
-          <button class="btn btn-sm btn-outline-secondary" (click)="clearGlobalSelection()">
-            <i class="bi bi-x-lg"></i> {{ 'CLEAR_SELECTION' | translate }}
+        <button class="btn btn-sm btn-outline-secondary" (click)="print()" [disabled]="!gridData" title="Print">
+          <i class="bi bi-printer"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Bulk Selection Panel -->
+  @if (showBulkSelectionPanel && currentBulkDate) {
+  <div class="bulk-selection-panel alert alert-info mb-3">
+    <!-- ... existing bulk panel code ... -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">
+        <i class="bi bi-check-square me-2"></i>
+        {{ 'BULK_SELECTION_MODE' | translate }} - {{ getFormattedDate(currentBulkDate) }}
+      </h5>
+      <button type="button" class="btn-close" (click)="cancelBulkSelection(currentBulkDate)" aria-label="Close">
+      </button>
+    </div>
+    <div class="row g-3">
+      <!-- Status Selection -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold">{{ 'MARK_AS' | translate }}:</label>
+        <select class="form-select" [(ngModel)]="getBulkSelectionState(currentBulkDate)!.selectedStatus">
+          @for (status of statusOptions; track status) {
+          <option [value]="status.value">
+            {{ status.label }} ({{ status.symbol }})
+          </option>
+          }
+        </select>
+      </div>
+      <!-- Selection Actions -->
+      <div class="col-md-9">
+        <label class="form-label fw-bold">Students:</label>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="selectAllStudents(currentBulkDate)">
+            <i class="bi bi-check-all me-1"></i>
+            {{ 'SELECT_ALL' | translate }} ({{ getFilteredStudents().length }})
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="deselectAllStudents(currentBulkDate)">
+            <i class="bi bi-x-square me-1"></i>
+            {{ 'DESELECT_ALL' | translate }}
+          </button>
+          <div class="vr"></div>
+          <span class="badge bg-primary fs-6 d-flex align-items-center">
+            {{ 'SELECTED' | translate }}: {{ getSelectedStudentCount(currentBulkDate) }}
+          </span>
+          <button type="button" class="btn btn-sm btn-success"
+            [disabled]="getSelectedStudentCount(currentBulkDate) === 0" (click)="applyBulkAttendance(currentBulkDate)">
+            <i class="bi bi-save me-1"></i>
+            {{ 'APPLY_TO_SELECTED' | translate }}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="cancelBulkSelection(currentBulkDate)">
+            <i class="bi bi-x-circle me-1"></i>
+            Cancel
           </button>
         </div>
       </div>
     </div>
-    }
-
-
-    <!-- Warning banner for unsaved changes -->
-    @if (hasUnsavedChanges) {
-    <div class="alert alert-warning d-flex align-items-center" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <div>
-        {{ 'UNSAVED_CHANGES' | translate }} <strong>{{ pendingUpdates.size }}</strong>
-        {{ 'UNSAVED_CHANGES_COUNT' | translate }}.
-        {{ 'SUBMIT_CHANGES' | translate }}
-      </div>
+    <div class="mt-2">
+      <small class="text-muted">
+        <i class="bi bi-info-circle me-1"></i>
+        Click on student rows to select/deselect them. Changes will be staged and can be submitted together.
+      </small>
     </div>
-    }
-
-    <!-- Legend -->
-    <div class="legend-container mb-3 p-3 bg-light rounded">
-      <div class="d-flex flex-wrap gap-3 align-items-center">
-        <span class="fw-semibold text-muted me-2">{{ 'LEGEND' | translate }}:</span>
-        <span class="legend-item">
-          <span class="legend-badge status-present">✓</span>
-          <span class="ms-1">{{ 'PRESENT' | translate }} (P)</span>
-        </span>
-        <span class="legend-item">
-          <span class="legend-badge status-absent">A</span>
-          <span class="ms-1">{{ 'ABSENT' | translate }} (A)</span>
-        </span>
-        <span class="legend-item">
-          <span class="legend-badge status-late">L</span>
-          <span class="ms-1">{{ 'LATE' | translate }} (L)</span>
-        </span>
-        <span class="legend-item">
-          <span class="legend-badge status-excused">E</span>
-          <span class="ms-1">{{ 'EXCUSED' | translate }} (E)</span>
-        </span>
-        <span class="legend-item ms-3">
-          <span class="badge bg-info text-white"><i class="bi bi-info-circle"></i></span>
-          <span class="ms-1">= {{ 'VIEW_SUBJECT_DETAILS' | translate }}</span>
-        </span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Loading state -->
-  @if (loading) {
-  <div class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-    <p class="mt-2 text-muted">Loading attendance data...</p>
   </div>
   }
 
-  <!-- Error state -->
-  @if (error) {
-  <div class="alert alert-danger" role="alert">
-    <i class="bi bi-exclamation-circle"></i> {{ error }}
+  <!-- NEW: Global Bulk Actions Toolbar (Row Based) -->
+  @if (showGlobalBulkPanel && !showBulkSelectionPanel) {
+  <div class="global-bulk-panel alert alert-primary mb-3 shadow-sm border-primary">
+    <div class="d-flex flex-wrap align-items-center justify-content-between p-1">
+      <div class="d-flex align-items-center gap-3">
+        <div class="fs-5 fw-bold text-primary">
+          <i class="bi bi-check2-circle"></i>
+          {{ globalSelectedStudents.size }} {{ 'SELECTED' | translate }}
+        </div>
+        <div class="vr"></div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="fw-semibold small">{{ 'QUICK_ACTION' | translate }}:</label>
+          <button class="btn btn-sm btn-success"
+            (click)="applyGlobalBulkAction('P')">{{ 'PRESENT' | translate }}</button>
+          <button class="btn btn-sm btn-danger" (click)="applyGlobalBulkAction('A')">{{ 'ABSENT' | translate }}</button>
+          <!-- More actions dropdown if needed -->
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              More
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="javascript:void(0)"
+                  (click)="applyGlobalBulkAction('L')">{{ 'LATE' | translate }}</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)"
+                  (click)="applyGlobalBulkAction('E')">{{ 'EXCUSED' | translate }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <small class="text-muted fst-italic me-2">{{ 'APPLIES_TO_TODAY' | translate }}
+          ({{ getFormattedDate(todayDate) }})</small>
+        <button class="btn btn-sm btn-outline-secondary" (click)="clearGlobalSelection()">
+          <i class="bi bi-x-lg"></i> {{ 'CLEAR_SELECTION' | translate }}
+        </button>
+      </div>
+    </div>
   </div>
   }
 
-  <!-- Attendance Grid -->
-  @if (!loading && gridData) {
-  <div class="grid-wrapper">
-    <div class="table-responsive">
-      <table class="table table-bordered attendance-table">
-        <thead class="table-light">
-          <!-- Main Header Row: Dates span multiple columns -->
-          <tr class="header-row">
-            <th class="col-select sticky-col text-center" rowspan="2" style="background-color: #f8f9fa;">
-              <input type="checkbox" class="form-check-input"
-                [checked]="globalSelectedStudents.size > 0 && globalSelectedStudents.size === totalStudents"
-                [indeterminate]="globalSelectedStudents.size > 0 && globalSelectedStudents.size < totalStudents"
-                (change)="toggleGlobalSelectAll($event)">
-            </th>
-            <th class="col-no sticky-col" rowspan="2">#</th>
-            <th class="col-name-kh sticky-col" rowspan="2">{{ 'NAME_KHMER' | translate }}</th>
-            <th class="col-name-eng sticky-col" rowspan="2">{{ 'NAME_ENGLISH' | translate }}</th>
-            <th class="col-gender sticky-col" rowspan="2">{{ 'SEX' | translate }}</th>
-            <!-- Date Columns: Span based on subject count -->
-            @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
-            <th [attr.colspan]="getSubjectsForDate(dateString).length || 1"
-              class="text-center date-header-group date-divider-right"
-              [ngClass]="{ 'today-column': isToday(dateString) }">
-              <div class="d-flex flex-column align-items-center justify-content-center p-1">
-                <span class="fw-bold">{{ getFormattedDate(dateString) }}</span>
-                @if (isDateEditable(dateString) && getSubjectsForDate(dateString).length > 0) {
-                <div class="bulk-actions-micro mt-1">
-                  <!-- Global Actions for this Date (optional) -->
-                  <i class="bi bi-gear text-muted" style="cursor: pointer; font-size: 0.8rem"
-                    [title]="'Manage ' + dateString" (click)="toggleBulkSelection(dateString)"></i>
-                </div>
-                }
+
+  <!-- Warning banner for unsaved changes -->
+  @if (hasUnsavedChanges) {
+  <div class="alert alert-warning d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>
+      {{ 'UNSAVED_CHANGES' | translate }} <strong>{{ pendingUpdates.size }}</strong>
+      {{ 'UNSAVED_CHANGES_COUNT' | translate }}.
+      {{ 'SUBMIT_CHANGES' | translate }}
+    </div>
+  </div>
+  }
+
+  <!-- Legend -->
+  <div class="legend-container mb-3 p-3 bg-light rounded">
+    <div class="d-flex flex-wrap gap-3 align-items-center">
+      <span class="fw-semibold text-muted me-2">{{ 'LEGEND' | translate }}:</span>
+      <span class="legend-item">
+        <span class="legend-badge status-present">✓</span>
+        <span class="ms-1">{{ 'PRESENT' | translate }} (P)</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-badge status-absent">A</span>
+        <span class="ms-1">{{ 'ABSENT' | translate }} (A)</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-badge status-late">L</span>
+        <span class="ms-1">{{ 'LATE' | translate }} (L)</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-badge status-excused">E</span>
+        <span class="ms-1">{{ 'EXCUSED' | translate }} (E)</span>
+      </span>
+      <span class="legend-item ms-3">
+        <span class="badge bg-info text-white"><i class="bi bi-info-circle"></i></span>
+        <span class="ms-1">= {{ 'VIEW_SUBJECT_DETAILS' | translate }}</span>
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading state -->
+@if (loading) {
+<div class="text-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-2 text-muted">Loading attendance data...</p>
+</div>
+}
+
+<!-- Error state -->
+@if (error) {
+<div class="alert alert-danger" role="alert">
+  <i class="bi bi-exclamation-circle"></i> {{ error }}
+</div>
+}
+
+<!-- Attendance Grid -->
+@if (!loading && gridData) {
+<div class="grid-wrapper">
+  <div class="table-responsive">
+    <table class="table table-bordered attendance-table">
+      <thead class="table-light">
+        <!-- Main Header Row: Dates span multiple columns -->
+        <tr class="header-row">
+          <th class="col-select sticky-col text-center" rowspan="2" style="background-color: #f8f9fa;">
+            <input type="checkbox" class="form-check-input"
+              [checked]="globalSelectedStudents.size > 0 && globalSelectedStudents.size === totalStudents"
+              [indeterminate]="globalSelectedStudents.size > 0 && globalSelectedStudents.size < totalStudents"
+              (change)="toggleGlobalSelectAll($event)">
+          </th>
+          <th class="col-no sticky-col" rowspan="2">#</th>
+          <th class="col-name-kh sticky-col" rowspan="2">{{ 'NAME_KHMER' | translate }}</th>
+          <th class="col-name-eng sticky-col" rowspan="2">{{ 'NAME_ENGLISH' | translate }}</th>
+          <th class="col-gender sticky-col" rowspan="2">{{ 'SEX' | translate }}</th>
+          <!-- Date Columns: Span based on subject count -->
+          @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
+          <th [attr.colspan]="getSubjectsForDate(dateString).length || 1"
+            class="text-center date-header-group date-divider-right"
+            [ngClass]="{ 'today-column': isToday(dateString) }">
+            <div class="d-flex flex-column align-items-center justify-content-center p-1">
+              <span class="fw-bold">{{ getFormattedDate(dateString) }}</span>
+              @if (isDateEditable(dateString) && getSubjectsForDate(dateString).length > 0) {
+              <div class="bulk-actions-micro mt-1">
+                <!-- Global Actions for this Date (optional) -->
+                <i class="bi bi-gear text-muted" style="cursor: pointer; font-size: 0.8rem"
+                  [title]="'Manage ' + dateString" (click)="toggleBulkSelection(dateString)"></i>
               </div>
-            </th>
-            }
-            <!-- Statistics Headers -->
-            <th class="col-stat text-center bg-light border-start text-success" title="Present" rowspan="2">
-              <i class="bi bi-check-circle-fill"></i>
-            </th>
-            <th class="col-stat text-center bg-light text-danger" title="Absent" rowspan="2">
-              <i class="bi bi-x-circle-fill"></i>
-            </th>
-            <th class="col-stat text-center bg-light text-warning" title="Late" rowspan="2">
-              <i class="bi bi-clock-fill"></i>
-            </th>
-            <th class="col-stat text-center bg-light text-info" title="Excused" rowspan="2">
-              <i class="bi bi-envelope-paper-fill"></i>
-            </th>
-            <th class="col-stat text-center bg-light border-start" title="Rate" rowspan="2">
-              <span class="small fw-bold">%</span>
-            </th>
-          </tr>
-          <!-- Sub Header Row: Subjects -->
-          <tr class="sub-header-row">
-            @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
-            <!-- If subjects exist -->
-            @for (subject of getSubjectsForDate(dateString); track trackBySubject($index, subject)) {
-            <th class="subject-header-cell" [title]="subject.subject_name">
-              <div class="subject-header-content">
-                <span class="subject-code text-truncate" style="max-width: 100%;">
-                  {{ subject.subject_code || (subject.subject_name | slice:0:3) | uppercase }}
-                </span>
-              </div>
-            </th>
-            }
-            <!-- If no subjects -->
-            @if (getSubjectsForDate(dateString).length === 0) {
-            <th class="subject-header-cell date-divider-right">
-              <span class="no-subject-header">-</span>
-            </th>
-            }
-            }
-          </tr>
-        </thead>
-        <tbody>
-          <!-- No search results message -->
-          @if (searchQuery && getFilteredStudents().length === 0) {
-          <tr>
-            <td colspan="100" class="text-center py-4">
-              <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-              <p class="text-muted mb-0 mt-2">
-                No students found matching "<strong>{{ searchQuery }}</strong>"
-              </p>
-              <button class="btn btn-sm btn-link" (click)="clearSearch()">
-                Clear search
-              </button>
-            </td>
-          </tr>
+              }
+            </div>
+          </th>
           }
-          <!-- Student rows -->
-          @for (student of getFilteredStudents(); track trackByStudent(i, student); let i = $index) {
-          <tr class="student-row" [class.table-active]="i % 2 === 0 || isStudentGloballySelected(student.student_id)">
-            <td class="col-select sticky-col text-center"
-              (click)="toggleGlobalStudentSelection(student.student_id); $event.stopPropagation()">
-              <input type="checkbox" class="form-check-input" [checked]="isStudentGloballySelected(student.student_id)"
-                (click)="$event.stopPropagation(); toggleGlobalStudentSelection(student.student_id)">
-            </td>
-            <td class="col-no sticky-col">
-              <span [innerHTML]="highlightSearch(student.row_number.toString())"></span>
-            </td>
-            <td class="col-name-kh sticky-col">
-              <span [innerHTML]="highlightSearch(student.student_name_kh)"></span>
-            </td>
-            <td class="col-name-eng sticky-col">
-              <span [innerHTML]="highlightSearch(student.student_name_eng)"></span>
-            </td>
-            <td class="col-gender text-center sticky-col">
-              <i [ngClass]="getGenderIconClass(student.gender)"></i>
-              {{ student.gender }}
-            </td>
-            <!-- Attendance Cells -->
-            @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
-            <!-- Loop subjects -->
-            @for (subject of getSubjectsForDate(dateString); track trackBySubject($index, subject)) {
-            <td class="attendance-cell text-center" [ngClass]="{
+          <!-- Statistics Headers -->
+          <th class="col-stat text-center bg-light border-start text-success" title="Present" rowspan="2">
+            <i class="bi bi-check-circle-fill"></i>
+          </th>
+          <th class="col-stat text-center bg-light text-danger" title="Absent" rowspan="2">
+            <i class="bi bi-x-circle-fill"></i>
+          </th>
+          <th class="col-stat text-center bg-light text-warning" title="Late" rowspan="2">
+            <i class="bi bi-clock-fill"></i>
+          </th>
+          <th class="col-stat text-center bg-light text-info" title="Excused" rowspan="2">
+            <i class="bi bi-envelope-paper-fill"></i>
+          </th>
+          <th class="col-stat text-center bg-light border-start" title="Rate" rowspan="2">
+            <span class="small fw-bold">%</span>
+          </th>
+        </tr>
+        <!-- Sub Header Row: Subjects -->
+        <tr class="sub-header-row">
+          @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
+          <!-- If subjects exist -->
+          @for (subject of getSubjectsForDate(dateString); track trackBySubject($index, subject)) {
+          <th class="subject-header-cell" [title]="subject.subject_name">
+            <div class="subject-header-content">
+              <span class="subject-code text-truncate" style="max-width: 100%;">
+                {{ subject.subject_code || (subject.subject_name | slice:0:3) | uppercase }}
+              </span>
+            </div>
+          </th>
+          }
+          <!-- If no subjects -->
+          @if (getSubjectsForDate(dateString).length === 0) {
+          <th class="subject-header-cell date-divider-right">
+            <span class="no-subject-header">-</span>
+          </th>
+          }
+          }
+        </tr>
+      </thead>
+      <tbody>
+        <!-- No search results message -->
+        @if (searchQuery && getFilteredStudents().length === 0) {
+        <tr>
+          <td colspan="100" class="text-center py-4">
+            <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+            <p class="text-muted mb-0 mt-2">
+              No students found matching "<strong>{{ searchQuery }}</strong>"
+            </p>
+            <button class="btn btn-sm btn-link" (click)="clearSearch()">
+              Clear search
+            </button>
+          </td>
+        </tr>
+        }
+        <!-- Student rows -->
+        @for (student of getFilteredStudents(); track trackByStudent(i, student); let i = $index) {
+        <tr class="student-row" [class.table-active]="i % 2 === 0 || isStudentGloballySelected(student.student_id)">
+          <td class="col-select sticky-col text-center"
+            (click)="toggleGlobalStudentSelection(student.student_id); $event.stopPropagation()">
+            <input type="checkbox" class="form-check-input" [checked]="isStudentGloballySelected(student.student_id)"
+              (click)="$event.stopPropagation(); toggleGlobalStudentSelection(student.student_id)">
+          </td>
+          <td class="col-no sticky-col">
+            <span [innerHTML]="highlightSearch(student.row_number.toString())"></span>
+          </td>
+          <td class="col-name-kh sticky-col">
+            <span [innerHTML]="highlightSearch(student.student_name_kh)"></span>
+          </td>
+          <td class="col-name-eng sticky-col">
+            <span [innerHTML]="highlightSearch(student.student_name_eng)"></span>
+          </td>
+          <td class="col-gender text-center sticky-col">
+            <i [ngClass]="getGenderIconClass(student.gender)"></i>
+            {{ student.gender }}
+          </td>
+          <!-- Attendance Cells -->
+          @for (dateString of gridData.period.dates; track trackByDate($index, dateString)) {
+          <!-- Loop subjects -->
+          @for (subject of getSubjectsForDate(dateString); track trackBySubject($index, subject)) {
+          <td class="attendance-cell text-center" [ngClass]="{
                         'pending-change': hasPendingChanges(student.student_id, dateString, subject.subject_id),
                         'clickable': !isEditMode(student.student_id, dateString, subject.subject_id),
                         'bulk-selection-active': isBulkSelectionActive(dateString),
                         'student-selected': isStudentSelected(dateString, student.student_id)
                       }"
-              [class]="getStatusClass(getSubjectStatus(student, dateString, subject.subject_id), dateString)"
-              (click)="onCellClick(student.student_id, dateString, subject.subject_id)">
-              <!-- Bulk checkbox -->
-              @if (isBulkSelectionActive(dateString)) {
-              <div class="bulk-checkbox-overlay">
-                <input type="checkbox" class="form-check-input"
-                  [checked]="isStudentSelected(dateString, student.student_id)" (click)="$event.stopPropagation()">
-              </div>
-              }
-              <!-- Display -->
-              @if (!isBulkSelectionActive(dateString) && !isEditMode(student.student_id, dateString,
-              subject.subject_id)) {
-              <span class="status-symbol">
-                {{ getStatusSymbol(getSubjectStatus(student, dateString, subject.subject_id)) }}
-              </span>
-              }
-              <!-- Edit Mode -->
-              @if (!isBulkSelectionActive(dateString) && isEditMode(student.student_id, dateString, subject.subject_id))
-              {
-              <div class="edit-mode" (click)="$event.stopPropagation()">
-                <div class="btn-group-vertical btn-group-sm">
-                  @for (option of statusOptions; track option) {
-                  <button class="btn btn-outline-secondary" [ngClass]="getStatusClass(option.value)"
-                    (click)="stageAttendanceUpdate(student.student_id, dateString, option.value, subject.subject_id); $event.stopPropagation()">
-                    {{ option.symbol }}
-                  </button>
-                  }
-                </div>
+            [class]="getStatusClass(getSubjectStatus(student, dateString, subject.subject_id), dateString)"
+            (click)="onCellClick(student.student_id, dateString, subject.subject_id)">
+            <!-- Bulk checkbox -->
+            @if (isBulkSelectionActive(dateString)) {
+            <div class="bulk-checkbox-overlay">
+              <input type="checkbox" class="form-check-input"
+                [checked]="isStudentSelected(dateString, student.student_id)" (click)="$event.stopPropagation()">
+            </div>
+            }
+            <!-- Display -->
+            @if (!isBulkSelectionActive(dateString) && !isEditMode(student.student_id, dateString,
+            subject.subject_id)) {
+            <span class="status-symbol">
+              {{ getStatusSymbol(getSubjectStatus(student, dateString, subject.subject_id)) }}
+            </span>
+            }
+            <!-- Edit Mode -->
+            @if (!isBulkSelectionActive(dateString) && isEditMode(student.student_id, dateString, subject.subject_id))
+            {
+            <div class="edit-mode" (click)="$event.stopPropagation()">
+              <div class="btn-group-vertical btn-group-sm">
+                @for (option of statusOptions; track option) {
+                <button class="btn btn-outline-secondary" [ngClass]="getStatusClass(option.value)"
+                  (click)="stageAttendanceUpdate(student.student_id, dateString, option.value, subject.subject_id); $event.stopPropagation()">
+                  {{ option.symbol }}
+                </button>
+                }
                 <button class="btn btn-sm btn-secondary mt-1 w-100" style="font-size: 0.5rem; padding: 0;"
                   (click)="closeEditMode(student.student_id, dateString, subject.subject_id); $event.stopPropagation()">
                   X
                 </button>
               </div>
-              }
-            </td>
+            </div>
             }
-            <!-- Empty cell if no subjects -->
-            @if (getSubjectsForDate(dateString).length === 0) {
-            <td class="attendance-cell text-center bg-light text-muted date-divider-right"
-              (click)="showNoSubjectAlert(dateString)" style="cursor: pointer;">
-              <small>-</small>
-            </td>
-            }
-            }
-            <!-- Statistics -->
-            <td class="col-stat text-center">{{ student.statistics.present }}</td>
-            <td class="col-stat text-center">{{ student.statistics.absent }}</td>
-            <td class="col-stat text-center">{{ student.statistics.late }}</td>
-            <td class="col-stat text-center">{{ student.statistics.excused }}</td>
-            <td class="col-stat text-center" [ngClass]="getAttendanceRateColor(student.statistics.attendance_rate)">
-              <strong>{{ student.statistics.attendance_rate }}</strong>
-            </td>
-          </tr>
+          </td>
           }
-        </tbody>
-        <!-- Footer -->
-        <tfoot class="table-secondary">
-          <!-- Keep footer simple for now, spanning all cols -->
-          <tr class="totals-row">
-            <td colspan="5" class="text-end sticky-col"><strong>{{ 'TOTALS' | translate }}:</strong></td>
-            <td [attr.colspan]="999">
-              <div class="d-flex gap-4">
-                <span>{{ 'PRESENT' | translate }}: {{ gridData.overall_statistics?.present }}</span>
-                <span>{{ 'ABSENT' | translate }}: {{ gridData.overall_statistics?.absent }}</span>
-                <span>{{ 'RATE' | translate }}: {{ gridData.overall_statistics?.attendance_rate }}</span>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          <!-- Empty cell if no subjects -->
+          @if (getSubjectsForDate(dateString).length === 0) {
+          <td class="attendance-cell text-center bg-light text-muted date-divider-right"
+            (click)="showNoSubjectAlert(dateString)" style="cursor: pointer;">
+            <small>-</small>
+          </td>
+          }
+          }
+          <!-- Statistics -->
+          <td class="col-stat text-center">{{ student.statistics.present }}</td>
+          <td class="col-stat text-center">{{ student.statistics.absent }}</td>
+          <td class="col-stat text-center">{{ student.statistics.late }}</td>
+          <td class="col-stat text-center">{{ student.statistics.excused }}</td>
+          <td class="col-stat text-center" [ngClass]="getAttendanceRateColor(student.statistics.attendance_rate)">
+            <strong>{{ student.statistics.attendance_rate }}</strong>
+          </td>
+        </tr>
+        }
+      </tbody>
+      <!-- Footer -->
+      <tfoot class="table-secondary">
+        <!-- Keep footer simple for now, spanning all cols -->
+        <tr class="totals-row">
+          <td colspan="5" class="text-end sticky-col"><strong>{{ 'TOTALS' | translate }}:</strong></td>
+          <td [attr.colspan]="999">
+            <div class="d-flex gap-4">
+              <span>{{ 'PRESENT' | translate }}: {{ gridData.overall_statistics?.present }}</span>
+              <span>{{ 'ABSENT' | translate }}: {{ gridData.overall_statistics?.absent }}</span>
+              <span>{{ 'RATE' | translate }}: {{ gridData.overall_statistics?.attendance_rate }}</span>
+            </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <!-- Pagination Controls -->
+  @if (totalPages > 1) {
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="d-flex align-items-center gap-2">
+      <select class="form-select form-select-sm" style="width: 70px" [(ngModel)]="pageSize"
+        (change)="onPageSizeChange()">
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+        <option [value]="100">100</option>
+      </select>
+      <span class="text-muted small">Items per page</span>
     </div>
-    <!-- Pagination Controls -->
-    @if (totalPages > 1) {
-    <div class="d-flex justify-content-between align-items-center mt-3">
-      <div class="d-flex align-items-center gap-2">
-        <select class="form-select form-select-sm" style="width: 70px" [(ngModel)]="pageSize"
-          (change)="onPageSizeChange()">
-          <option [value]="10">10</option>
-          <option [value]="20">20</option>
-          <option [value]="50">50</option>
-          <option [value]="100">100</option>
-        </select>
-        <span class="text-muted small">Items per page</span>
-      </div>
-      <nav aria-label="Page navigation">
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" [class.disabled]="currentPage === 1">
-            <button class="page-link" (click)="previousPage()" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </button>
-          </li>
-          <li class="page-item disabled">
-            <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
-          </li>
-          <li class="page-item" [class.disabled]="currentPage === totalPages">
-            <button class="page-link" (click)="nextPage()" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </button>
-          </li>
-        </ul>
-      </nav>
-      <span class="text-muted small">
-        Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalStudents) }}
-        of {{ totalStudents }} students
-      </span>
-    </div>
-    }
+    <nav aria-label="Page navigation">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="previousPage()" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </button>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+    <span class="text-muted small">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalStudents) }}
+      of {{ totalStudents }} students
+    </span>
   </div>
   }
+</div>
+}
 
-  <!-- Summary Cards -->
-  @if (!loading && gridData) {
-  <div class="row mt-4">
-    <div class="col-md-3">
-      <div class="card summary-card">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_STUDENTS' | translate }}</h6>
-          <h3 class="card-title">{{ gridData.overall_statistics?.total_students || 0 }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card summary-card">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_PRESENT_DAYS' | translate }}</h6>
-          <h3 class="card-title text-success">{{ gridData.overall_statistics?.present || 0 }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card summary-card">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_ABSENT_DAYS' | translate }}</h6>
-          <h3 class="card-title text-danger">{{ gridData.overall_statistics?.absent || 0 }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card summary-card">
-        <div class="card-body">
-          <h6 class="card-subtitle mb-2 text-muted">{{ 'ATTENDANCE_RATE' | translate }}</h6>
-          <h3 class="card-title" [ngClass]="getAttendanceRateColor(gridData.overall_statistics?.attendance_rate)">
-            {{ gridData.overall_statistics?.attendance_rate || '0%' }}
-          </h3>
-        </div>
+<!-- Summary Cards -->
+@if (!loading && gridData) {
+<div class="row mt-4">
+  <div class="col-md-3">
+    <div class="card summary-card">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_STUDENTS' | translate }}</h6>
+        <h3 class="card-title">{{ gridData.overall_statistics?.total_students || 0 }}</h3>
       </div>
     </div>
   </div>
-  }
+  <div class="col-md-3">
+    <div class="card summary-card">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_PRESENT_DAYS' | translate }}</h6>
+        <h3 class="card-title text-success">{{ gridData.overall_statistics?.present || 0 }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card summary-card">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">{{ 'TOTAL_ABSENT_DAYS' | translate }}</h6>
+        <h3 class="card-title text-danger">{{ gridData.overall_statistics?.absent || 0 }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card summary-card">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">{{ 'ATTENDANCE_RATE' | translate }}</h6>
+        <h3 class="card-title" [ngClass]="getAttendanceRateColor(gridData.overall_statistics?.attendance_rate)">
+          {{ gridData.overall_statistics?.attendance_rate || '0%' }}
+        </h3>
+      </div>
+    </div>
+  </div>
+</div>
+}
 
-  <!-- NEW: Detail Modal for Subject-Level Attendance -->
-  @if (showDetailModal) {
-  <div class="modal fade" [class.show]="showDetailModal" [style.display]="showDetailModal ? 'block' : 'none'"
-    tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">
-            <i class="bi bi-calendar-check me-2"></i>
-            Attendance Details
-          </h5>
-          <button type="button" class="btn-close btn-close-white" (click)="closeDetailModal()"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Student Info -->
-          <div class="student-info mb-3">
-            <h6>
-              <i [ngClass]="getGenderIconClass(detailModalData.student?.gender || '')"></i>
-              {{ detailModalData.student?.student_name_eng }}
-              <small class="text-muted">({{ detailModalData.student?.student_name_kh }})</small>
-            </h6>
-            <p class="mb-1">
-              <strong>Date:</strong> {{ detailModalData.date }}
-            </p>
-            <p class="mb-0">
-              <strong>Daily Status:</strong>
-              <span class="badge ms-2" [ngClass]="{
+<!-- NEW: Detail Modal for Subject-Level Attendance -->
+@if (showDetailModal) {
+<div class="modal fade" [class.show]="showDetailModal" [style.display]="showDetailModal ? 'block' : 'none'"
+  tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-calendar-check me-2"></i>
+          Attendance Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDetailModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Student Info -->
+        <div class="student-info mb-3">
+          <h6>
+            <i [ngClass]="getGenderIconClass(detailModalData.student?.gender || '')"></i>
+            {{ detailModalData.student?.student_name_eng }}
+            <small class="text-muted">({{ detailModalData.student?.student_name_kh }})</small>
+          </h6>
+          <p class="mb-1">
+            <strong>Date:</strong> {{ detailModalData.date }}
+          </p>
+          <p class="mb-0">
+            <strong>Daily Status:</strong>
+            <span class="badge ms-2" [ngClass]="{
                       'bg-success': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'P',
                       'bg-danger': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'A',
                       'bg-warning': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'L',
                       'bg-info': getDailyStatus(detailModalData.student!, detailModalData.date!) === 'E'
                     }">
-                {{ getDailyStatus(detailModalData.student!, detailModalData.date!) || 'Not Recorded' }}
-              </span>
-            </p>
-          </div>
-          <hr>
-          <!-- Subject-level breakdown -->
-          <h6 class="mb-3">
-            <i class="bi bi-book me-2"></i>
-            Subject-Level Attendance
-          </h6>
-          @if (detailModalData.subjects && detailModalData.subjects.length > 0) {
-          <div>
-            <table class="table table-sm table-hover">
-              <thead class="table-light">
-                <tr>
-                  <th width="50">#</th>
-                  <th>Subject Name</th>
-                  <th width="100" class="text-center">Status</th>
-                  <th>Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subject of detailModalData.subjects; track subject; let idx = $index) {
-                <tr [ngClass]="{
+              {{ getDailyStatus(detailModalData.student!, detailModalData.date!) || 'Not Recorded' }}
+            </span>
+          </p>
+        </div>
+        <hr>
+        <!-- Subject-level breakdown -->
+        <h6 class="mb-3">
+          <i class="bi bi-book me-2"></i>
+          Subject-Level Attendance
+        </h6>
+        @if (detailModalData.subjects && detailModalData.subjects.length > 0) {
+        <div>
+          <table class="table table-sm table-hover">
+            <thead class="table-light">
+              <tr>
+                <th width="50">#</th>
+                <th>Subject Name</th>
+                <th width="100" class="text-center">Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (subject of detailModalData.subjects; track subject; let idx = $index) {
+              <tr [ngClass]="{
                       'table-danger': subject.status === 'A',
                       'table-warning': subject.status === 'L',
                       'table-info': subject.status === 'E',
                       'table-success': subject.status === 'P'
                     }">
-                  <td>{{ idx + 1 }}</td>
-                  <td>
-                    <strong>{{ subject.subject_name }}</strong>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge" [ngClass]="{
+                <td>{{ idx + 1 }}</td>
+                <td>
+                  <strong>{{ subject.subject_name }}</strong>
+                </td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="{
                             'bg-success': subject.status === 'P',
                             'bg-danger': subject.status === 'A',
                             'bg-warning text-dark': subject.status === 'L',
                             'bg-info': subject.status === 'E'
                           }">
-                      {{ getStatusSymbol(subject.status) }}
-                      {{
+                    {{ getStatusSymbol(subject.status) }}
+                    {{
                                           subject.status === 'P' ? 'Present' :
                                           subject.status === 'A' ? 'Absent' :
                                           subject.status === 'L' ? 'Late' :
                                           subject.status === 'E' ? 'Excused' : 'Unknown'
                                           }}
-                    </span>
-                  </td>
-                  <td>
-                    <small>{{ subject.notes || '-' }}</small>
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-            <!-- Summary -->
-            <div class="alert alert-info mt-3">
-              <strong><i class="bi bi-info-circle me-1"></i> Summary:</strong>
-              @if (getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) > 0) {
-              Student was absent in
-              <strong>{{ getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) }}</strong>
-              out of <strong>{{ detailModalData.subjects.length }}</strong> subjects on this day.
-              This counts as <strong>1 absent day</strong> in the overall statistics.
+                  </span>
+                </td>
+                <td>
+                  <small>{{ subject.notes || '-' }}</small>
+                </td>
+              </tr>
               }
-              @if (getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) === 0) {
-              Student attended all {{ detailModalData.subjects.length }} subjects on this day.
-              }
-            </div>
+            </tbody>
+          </table>
+          <!-- Summary -->
+          <div class="alert alert-info mt-3">
+            <strong><i class="bi bi-info-circle me-1"></i> Summary:</strong>
+            @if (getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) > 0) {
+            Student was absent in
+            <strong>{{ getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) }}</strong>
+            out of <strong>{{ detailModalData.subjects.length }}</strong> subjects on this day.
+            This counts as <strong>1 absent day</strong> in the overall statistics.
+            }
+            @if (getAbsentSubjectCount(detailModalData.student!, detailModalData.date!) === 0) {
+            Student attended all {{ detailModalData.subjects.length }} subjects on this day.
+            }
           </div>
-          } @else {
-          <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            No subject attendance records found for this date.
-          </div>
-          }
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
-            <i class="bi bi-x-circle me-1"></i>
-            {{ 'CLOSE' | translate }}
-          </button>
+        } @else {
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          No subject attendance records found for this date.
         </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+          <i class="bi bi-x-circle me-1"></i>
+          {{ 'CLOSE' | translate }}
+        </button>
       </div>
     </div>
   </div>
-  }
-
-  <!-- Modal backdrop -->
-  @if (showDetailModal) {
-  <div class="modal-backdrop fade" [class.show]="showDetailModal" (click)="closeDetailModal()">
-  </div>
-  }
 </div>
+}
+
+<!-- Modal backdrop -->
+@if (showDetailModal) {
+<div class="modal-backdrop fade" [class.show]="showDetailModal" (click)="closeDetailModal()">
+</div>
+}

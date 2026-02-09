@@ -81,6 +81,7 @@ export class AttendanceDashboardComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.dashboardData = response.data;
+          console.log(this.dashboardData);
           this.prepareChartData();
           this.loading = false;
         },
