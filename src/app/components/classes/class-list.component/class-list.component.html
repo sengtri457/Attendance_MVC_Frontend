@@ -21,106 +21,104 @@
             <label class="form-label">Search</label>
             <input type="text" class="form-control" [(ngModel)]="searchYear"
               placeholder="Search by Class Year (e.g. 2024-2025)..." (keyup.enter)="applyFilters()" />
-            </div>
+          </div>
 
-            <div class="col-md-2">
-              <label class="form-label">Page Size</label>
-              <select class="form-select" [(ngModel)]="pageSize" (change)="applyFilters()">
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-            <div class="col-md-5 d-flex align-items-end gap-2">
-              <button class="btn btn-primary" (click)="applyFilters()">
-                <i class="bi bi-search"></i> Search
-              </button>
-              <button class="btn btn-outline-secondary" (click)="clearFilters()">
-                <i class="bi bi-x-circle"></i> Clear
-              </button>
-              <button class="btn btn-outline-secondary" routerLink="/">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-              </button>
-            </div>
+          <div class="col-md-2">
+            <label class="form-label">Page Size</label>
+            <select class="form-select" [(ngModel)]="pageSize" (change)="applyFilters()">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div class="col-md-5 d-flex align-items-end gap-2">
+            <button class="btn btn-primary" (click)="applyFilters()">
+              <i class="bi bi-search"></i> Search
+            </button>
+            <button class="btn btn-outline-secondary" (click)="clearFilters()">
+              <i class="bi bi-x-circle"></i> Clear
+            </button>
+            <button class="btn btn-outline-secondary" routerLink="/">
+              <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Loading State -->
-    @if (loading) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Loading classes...</p>
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading classes...</p>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+  <div class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+  </div>
+  }
+
+  <!-- Class Table -->
+  @if (!loading && !error) {
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        Classes List
+        <span class="badge bg-primary ms-2">{{ classes.length }}</span>
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 60px">#</th>
+              <th>Class Name</th>
+              <th>Students</th>
+              <th style="width: 150px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (classItem of classes; track classItem; let i = $index) {
+            <tr>
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td><strong>{{ classItem.class_code }}</strong></td>
+              <td>
+                <span class="badge bg-secondary">{{ classItem.students?.length || 0 }}</span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button class="btn btn-outline-secondary mx-1" (click)="openEditModal(classItem)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger mx-1" (click)="deleteClass(classItem)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+            @if (classes.length === 0) {
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc"></i>
+                <p class="text-muted mt-3">No classes found</p>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
       </div>
-    }
-
-    <!-- Error State -->
-    @if (error) {
-      <div class="alert alert-danger" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> {{ error }}
-      </div>
-    }
-
-    <!-- Class Table -->
-    @if (!loading && !error) {
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">
-            Classes List
-            <span class="badge bg-primary ms-2">{{ classes.length }}</span>
-          </h5>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 60px">#</th>
-                  <th>Class Name</th>
-                  <th>Students</th>
-                  <th style="width: 150px">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (classItem of classes; track classItem; let i = $index) {
-                  <tr>
-                    <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                    <td><strong>{{ classItem.class_code }}</strong></td>
-                    <td>
-                      <span class="badge bg-secondary">{{ classItem.students?.length || 0 }}</span>
-                    </td>
-                    <td>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button class="btn btn-outline-secondary mx-1" (click)="openEditModal(classItem)"
-                          title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-danger mx-1" (click)="deleteClass(classItem)"
-                          title="Delete">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-                @if (classes.length === 0) {
-                  <tr>
-                    <td colspan="7" class="text-center py-5">
-                      <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc"></i>
-                      <p class="text-muted mt-3">No classes found</p>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <!-- Pagination -->
-        <!-- <div class="card-footer" *ngIf="totalPages > 1">
+    </div>
+    <!-- Pagination -->
+    <!-- <div class="card-footer" *ngIf="totalPages > 1">
         <div class="d-flex justify-content-between align-items-center">
           <div class="text-muted">
             Showing {{ (currentPage - 1) * pageSize + 1 }} to
@@ -143,7 +141,7 @@
           </nav>
         </div>
       </div> -->
-    </div>
+  </div>
   }
 </div>
 
@@ -161,48 +159,46 @@
         <form>
           <div class="mb-3">
             <label class="form-label">Class Name *</label>
-            <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
-              required />
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-          <button type="button" class="btn btn-primary" (click)="saveClass()">Save Class</button>
-        </div>
+            <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveClass()">Save Class</button>
       </div>
     </div>
   </div>
-  @if (showAddModal) {
-    <div class="modal-backdrop fade" [class.show]="showAddModal"></div>
-  }
+</div>
+@if (showAddModal) {
+<div class="modal-backdrop fade" [class.show]="showAddModal"></div>
+}
 
-  <!-- Edit Class Modal -->
-  <div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            <i class="bi bi-pencil"></i> Edit Class
-          </h5>
-          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="mb-3">
-              <label class="form-label">Class Name *</label>
-              <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code"
-                required />
-              </div>
-            </form>
+<!-- Edit Class Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil"></i> Edit Class
+        </h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Class Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="classForm.class_code" name="class_code" required />
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="updateClass()">Update Class</button>
-          </div>
-        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateClass()">Update Class</button>
       </div>
     </div>
-    @if (showEditModal) {
-      <div class="modal-backdrop fade" [class.show]="showEditModal"></div>
-    }
+  </div>
+</div>
+@if (showEditModal) {
+<div class="modal-backdrop fade" [class.show]="showEditModal"></div>
+}

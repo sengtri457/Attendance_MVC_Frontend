@@ -69,8 +69,8 @@ export class ClassListComponent implements OnInit {
       next: (res) => {
         // Backend returns { success: true, data: [...], pagination: {...} }
         this.classes = res.data;
-        this.totalClasses = res.pagination.total;
-        this.totalPages = res.pagination.totalPages;
+        // this.totalClasses = res.pagination.total;
+        // this.totalPages = res.pagination.totalPages;
         this.loading = false;
         this.error = null;
       },
