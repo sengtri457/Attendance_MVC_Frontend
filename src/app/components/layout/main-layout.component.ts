@@ -99,6 +99,28 @@ export class MainLayoutComponent {
     this.router.navigate([item.route], { queryParams: item.queryParams || {} });
   }
 
+  isThemeSwitching = false;
+  isOverlayClosing = false;
+
+  switchTheme() {
+    this.isThemeSwitching = true;
+    this.isOverlayClosing = false;
+    
+    // Delay the actual theme toggle to let the animation play
+    setTimeout(() => {
+      this.themeService.toggleTheme();
+      
+      // Start fade out animation
+      this.isOverlayClosing = true;
+      
+      // Remove overlay after animation completes
+      setTimeout(() => {
+        this.isThemeSwitching = false;
+        this.isOverlayClosing = false;
+      }, 500); // 500ms for fade out
+    }, 1200); // Keep overlay a bit longer to see the effect
+  }
+
   logout() {
     this.authService.logout();
   }

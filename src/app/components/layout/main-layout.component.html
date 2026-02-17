@@ -74,8 +74,7 @@
         </button>
 
         <!-- Theme Toggle -->
-        <button class="icon-btn" (click)="themeService.toggleTheme()"
-          [title]="themeService.darkMode() ? 'Light Mode' : 'Dark Mode'">
+        <button class="icon-btn" (click)="switchTheme()" [title]="themeService.darkMode() ? 'Light Mode' : 'Dark Mode'">
           <i class="bi" [ngClass]="themeService.darkMode() ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
         </button>
 
@@ -126,4 +125,19 @@
       <router-outlet></router-outlet>
     </div>
   </main>
+
+  @if (isThemeSwitching) {
+  <div class="theme-transition-overlay" [class.to-dark]="!themeService.darkMode()"
+    [class.to-light]="themeService.darkMode()" [class.fading-out]="isOverlayClosing">
+    <div class="theme-content">
+      <div class="icon-transition">
+        <i class="bi" [ngClass]="!themeService.darkMode() ? 'bi-moon-stars-fill' : 'bi-sun-fill'"></i>
+      </div>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+      <p class="theme-text">Switching to {{ !themeService.darkMode() ? 'Night Mode' : 'Light Mode' }}</p>
+    </div>
+  </div>
+  }
 </div>

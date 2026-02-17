@@ -155,13 +155,15 @@ body.dark-mode .dropdown-item:focus {
     color: var(--text-color);
 }
 
+
 /* Button Clean Fix */
-.btn-clean {
+/* .btn-clean {
     color: var(--text-color);
-}
+} */
 
 .btn-clean:hover {
-    background-color: var(--bg-light);
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* Table Dark Mode Overrides */

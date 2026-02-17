@@ -188,6 +188,11 @@
   font-weight: 700;
 }
 
+.status-bar-item span {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
 /* Status Bars */
 .status-bars {
   margin-top: 20px;
@@ -204,7 +209,7 @@
 .progress {
   height: 10px;
   border-radius: 5px;
-  background-color: var(--bg-light);
+  /* background-color: var(--bg-light); */
 }
 
 .progress-bar {
@@ -480,7 +485,7 @@
 .notification-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-color);
   margin: 0;
   line-height: 1;
 }

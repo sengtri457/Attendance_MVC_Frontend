@@ -124,7 +124,7 @@
     </div>
 
     <!-- Bottom Row: Unified Toolbar (Filters, Nav, Search, Tools) -->
-    <div class="d-flex flex-wrap align-items-center gap-2 bg-light p-1 rounded">
+    <div class="d-flex flex-wrap align-items-center gap-2 p-1 rounded">
       <!-- Filters -->
       <div class="d-flex align-items-center gap-1">
         <select class="form-select form-select-sm" style="width: 100px;" [(ngModel)]="selectedClassId"
@@ -154,7 +154,7 @@
 
       <!-- Search -->
       <div class="input-group input-group-sm" style="max-width: 250px;">
-        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+        <span class="input-group-text  border-end-0"><i class="bi bi-search"></i></span>
         <input type="text" class="form-control border-start-0" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
           [placeholder]="'SEARCH_PLACEHOLDER' | translate" [disabled]="loading || submitting">
         @if (searchQuery) {
@@ -320,7 +320,7 @@
   }
 
   <!-- Legend -->
-  <div class="legend-container mb-3 p-3 bg-light rounded">
+  <div class="legend-container mb-3 p-3  rounded">
     <div class="d-flex flex-wrap gap-3 align-items-center">
       <span class="fw-semibold text-muted me-2">{{ 'LEGEND' | translate }}:</span>
       <span class="legend-item">
@@ -373,7 +373,7 @@
       <thead class="table-light">
         <!-- Main Header Row: Dates span multiple columns -->
         <tr class="header-row">
-          <th class="col-select sticky-col text-center" rowspan="2" style="background-color: #f8f9fa;">
+          <th class="col-select sticky-col text-center" rowspan="2">
             <input type="checkbox" class="form-check-input"
               [checked]="globalSelectedStudents.size > 0 && globalSelectedStudents.size === totalStudents"
               [indeterminate]="globalSelectedStudents.size > 0 && globalSelectedStudents.size < totalStudents"
@@ -401,19 +401,19 @@
           </th>
           }
           <!-- Statistics Headers -->
-          <th class="col-stat text-center bg-light border-start text-success" title="Present" rowspan="2">
+          <th class="col-stat text-center border-start text-success" title="Present" rowspan="2">
             <i class="bi bi-check-circle-fill"></i>
           </th>
-          <th class="col-stat text-center bg-light text-danger" title="Absent" rowspan="2">
+          <th class="col-stat text-center text-danger" title="Absent" rowspan="2">
             <i class="bi bi-x-circle-fill"></i>
           </th>
-          <th class="col-stat text-center bg-light text-warning" title="Late" rowspan="2">
+          <th class="col-stat text-center text-warning" title="Late" rowspan="2">
             <i class="bi bi-clock-fill"></i>
           </th>
-          <th class="col-stat text-center bg-light text-info" title="Excused" rowspan="2">
+          <th class="col-stat text-center text-info" title="Excused" rowspan="2">
             <i class="bi bi-envelope-paper-fill"></i>
           </th>
-          <th class="col-stat text-center bg-light border-start" title="Rate" rowspan="2">
+          <th class="col-stat text-center border-start" title="Rate" rowspan="2">
             <span class="small fw-bold">%</span>
           </th>
         </tr>
@@ -523,8 +523,8 @@
           }
           <!-- Empty cell if no subjects -->
           @if (getSubjectsForDate(dateString).length === 0) {
-          <td class="attendance-cell text-center bg-light text-muted date-divider-right"
-            (click)="showNoSubjectAlert(dateString)" style="cursor: pointer;">
+          <td class="attendance-cell text-center text-muted date-divider-right" (click)="showNoSubjectAlert(dateString)"
+            style="cursor: pointer;">
             <small>-</small>
           </td>
           }

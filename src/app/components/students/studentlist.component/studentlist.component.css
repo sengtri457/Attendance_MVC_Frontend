@@ -190,13 +190,13 @@
 }
 
 .btn-outline-secondary {
-    border: 1px solid var(--border-color);
+    border: 1px solid #d1d5db;
     color: var(--text-color);
+
 }
 
 .btn-outline-secondary:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
+    background: #b6b6b6;
 }
 
 /* Badge Styles */

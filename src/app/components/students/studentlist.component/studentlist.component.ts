@@ -107,15 +107,31 @@ export class StudentlistComponent implements OnInit {
         next: (response: ApiResponse<{ students: Student[]; pagination: any }>) => { // Typed response
           if (response.success) {
             // Flexible handling if backend structure varies slightly
+            // Flexible handling if backend structure varies slightly
             const data = response.data as any; 
-            this.students = data.students || data;
+            this.students = Array.isArray(data) ? data : (data.students || []);
             
-            if (response.data && response.data.pagination) {
-              this.totalStudents = response.data.pagination.total;
-              this.totalPages = response.data.pagination.totalPages;
-            } else if (data && data.pagination) { // Fallback check
+            // Check meta for pagination (standard backend response)
+            if (response.meta && response.meta.pagination) {
+              this.totalStudents = response.meta.pagination.total;
+              this.totalPages = response.meta.pagination.totalPages;
+            }
+            // Fallback: check data for pagination
+            else if (data && data.pagination) {
                this.totalStudents = data.pagination.total;
                this.totalPages = data.pagination.totalPages;
+            }
+            
+            // Final fallback for missing pagination metadata
+            if (this.students.length > 0 && (!this.totalStudents || this.totalStudents === 0)) {
+                this.totalStudents = this.students.length;
+                this.totalPages = 1;
+            }
+            
+            // If no students found, ensure counters are zero
+            if (this.students.length === 0) {
+                this.totalStudents = 0;
+                this.totalPages = 0;
             }
           }
           this.loading = false;

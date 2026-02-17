@@ -18,7 +18,7 @@
    SIDEBAR
    ==================== */
 .sidebar {
-    width: 260px;
+    width: 230px;
     background-color: var(--card-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -502,5 +502,159 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* ====================
+   THEME TRANSITION OVERLAY
+   ==================== */
+.theme-transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    opacity: 0;
+    animation: overlayFadeIn 0.3s forwards;
+    pointer-events: none;
+    /* Prevent clicks while animating */
+    transition: background-color 0.3s ease;
+}
+
+.theme-transition-overlay.fading-out {
+    animation: overlayFadeOut 0.5s forwards;
+}
+
+.theme-transition-overlay.to-dark {
+    background-color: rgba(15, 23, 42, 0.85);
+    /* Dark slate tone */
+    color: #f8fafc;
+}
+
+.theme-transition-overlay.to-light {
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #1e293b;
+}
+
+.theme-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    animation: contentSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+.icon-transition {
+    font-size: 4rem;
+    animation: iconPulse 2s infinite ease-in-out;
+}
+
+.theme-transition-overlay.to-dark .icon-transition {
+    color: #fbbf24;
+    /* Warm yellow for moon/stars contrast or just icon color */
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.5));
+}
+
+.theme-transition-overlay.to-light .icon-transition {
+    color: #f59e0b;
+    /* Orange sun */
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+}
+
+.loading-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(128, 128, 128, 0.2);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 30%;
+    background: currentColor;
+    border-radius: 99px;
+    animation: progressIndeterminate 1.5s infinite ease-in-out;
+}
+
+.theme-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes contentSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes progressIndeterminate {
+    0% {
+        left: -30%;
+        width: 30%;
+    }
+
+    50% {
+        width: 50%;
+    }
+
+    100% {
+        left: 100%;
+        width: 30%;
+    }
+}
+
+@keyframes overlayFadeOut {
+    from {
+        opacity: 1;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+    }
+
+    to {
+        opacity: 0;
+        backdrop-filter: blur(0);
+        -webkit-backdrop-filter: blur(0);
     }
 }

@@ -433,6 +433,31 @@ body.dark-mode .today-column {
   min-width: 30px;
 }
 
+.table-secondary {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.table-secondary td {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.btn-sm {
+  color: var(--text-color);
+}
+
+.btn-outline-secondary {
+  color: var(--text-color);
+}
+
+/* .table> :not(caption)>*>* {
+  background-color: var(--card-bg);
+} */
+/* .attendance-table td {
+  background-color: var(--card-bg);
+} */
+
 /* ========================
    DATE HEADER & SUBJECTS (NEW)
    ======================== */
@@ -478,7 +503,8 @@ body.dark-mode .today-column {
 
 /* Border between dates */
 .date-divider-right {
-  border-right: 2px solid #adb5bd !important;
+  border-right: 1.5px solid #adb5bd !important;
+  border-left: 1.5px solid #adb5bd !important;
 }
 
 /* Empty subject placeholder */
@@ -691,7 +717,8 @@ body.dark-mode .today-column {
   gap: 15px;
   flex-wrap: wrap;
   padding: 8px;
-  background-color: #f8f9fa;
+  background-color: var(--card-bg);
+  color: var(--text-color);
   border-radius: 6px;
 }
 
@@ -720,6 +747,8 @@ body.dark-mode .today-column {
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
+  background-color: var(--card-bg);
+  color: var(--text-color);
 }
 
 .summary-card:hover {
@@ -804,6 +833,11 @@ body.dark-mode .today-column {
   padding: 8px;
   background-color: var(--bg-light);
   border-radius: 5px;
+}
+
+.form-control::placeholder {
+  color: var(--text-color);
+  background-color: var(--card-bg);
 }
 
 /* Search highlight */
