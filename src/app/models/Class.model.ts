@@ -5,7 +5,7 @@ import { Subject } from './Subject.model';
 export interface Class {
   class_id: number;
   class_code: string;
-  class_year: string;
+  class_year?: string;
   schedule?: string;
   created_at?: string;
   updated_at?: string;

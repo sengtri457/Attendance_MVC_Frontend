@@ -1,35 +1,82 @@
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f3f4f6;
+    background-color: var(--bg-body);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 :root {
+    /* Light Mode Variables (Default) */
     --primary-color: #2c3e50;
     --secondary-color: #7f8c8d;
     --success-color: #27ae60;
     --danger-color: #e74c3c;
     --border-color: #e1e8ed;
     --bg-light: #f8f9fa;
+    --text-color: #334155;
+    --bg-body: #f3f4f6;
+    --card-bg: #ffffff;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    /* Status Colors (Light) */
+    --bg-success-light: #f0fdf4;
+    --text-success: #16a34a;
+    --bg-danger-light: #fef2f2;
+    --text-danger: #dc2626;
+    --bg-warning-light: #fffbeb;
+    --text-warning: #f59e0b;
+    --bg-info-light: #eff6ff;
+    --text-info: #3b82f6;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --primary-color: #60a5fa;
+    /* Lighter primary for dark mode */
+    --secondary-color: #94a3b8;
+    --success-color: #4ade80;
+    --danger-color: #f87171;
+    --border-color: #334155;
+    --bg-light: #1e293b;
+    /* Darker secondary bg */
+    --text-color: #e2e8f0;
+    --bg-body: #0f172a;
+    /* Deep blue/slate dark bg */
+    --card-bg: #1e293b;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    background-color: var(--bg-body);
+    color: var(--text-color);
+
+    /* Status Colors (Dark) */
+    --bg-success-light: rgba(22, 163, 74, 0.2);
+    --text-success: #4ade80;
+    --bg-danger-light: rgba(220, 38, 38, 0.2);
+    --text-danger: #f87171;
+    --bg-warning-light: rgba(245, 158, 11, 0.2);
+    --text-warning: #fbbf24;
+    --bg-info-light: rgba(59, 130, 246, 0.2);
+    --text-info: #60a5fa;
 }
 
 .header-section {
-    background: #ffffff;
+    background: var(--card-bg);
     padding: 28px 32px;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow);
     margin-bottom: 24px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
 .header-section:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-hover);
 }
 
 .header-section h2 {
-    color: #111827;
+    color: var(--text-color);
     font-weight: 700;
     font-size: 28px;
     margin: 0;
@@ -72,12 +119,135 @@ body {
 }
 
 .btn-secondary-clean {
-    background: white;
+    background: var(--card-bg);
     color: var(--secondary-color);
     border: 1px solid var(--border-color);
 }
 
-.btn-secondary-clean:hover {
-    background: var(--bg-light);
-    border-color: var(--secondary-color);
+/* Global Dark Mode Overrides for Bootstrap Components */
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background-color: var(--bg-light);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(96, 165, 250, 0.25);
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--text-color);
+}
+
+body.dark-mode .dropdown-item:hover,
+body.dark-mode .dropdown-item:focus {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+}
+
+/* Button Clean Fix */
+.btn-clean {
+    color: var(--text-color);
+}
+
+.btn-clean:hover {
+    background-color: var(--bg-light);
+}
+
+/* Table Dark Mode Overrides */
+body.dark-mode .table {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+}
+
+body.dark-mode .table thead th {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .table tbody td,
+body.dark-mode .table tbody th {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .table-hover tbody tr:hover td {
+    background-color: var(--bg-light);
+}
+
+/* Ensure sticky columns in tables match the row background */
+body.dark-mode .table .sticky-col {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .table-hover tbody tr:hover .sticky-col {
+    background-color: var(--bg-light);
+}
+
+/* Fix for specific subject header in weekly attendance */
+body.dark-mode .subject-header-cell {
+    background-color: var(--bg-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .subject-code {
+    color: var(--text-color) !important;
+}
+
+body.dark-mode .subject-name-micro {
+    color: var(--secondary-color) !important;
+}
+
+body.dark-mode .date-header-group {
+    background-color: var(--bg-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Dark Mode Pagination Overrides */
+body.dark-mode .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .page-link:hover {
+    background-color: var(--bg-light);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+body.dark-mode .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+body.dark-mode .page-item.disabled .page-link {
+    background-color: var(--bg-body);
+    border-color: var(--border-color);
+    color: var(--secondary-color);
+}
+
+/* Global Text Overrides for Dark Mode */
+body.dark-mode .text-muted {
+    color: #cbd5e1 !important;
+    /* Lighter gray for better visibility on dark backgrounds */
+}
+
+body.dark-mode .text-secondary {
+    color: #94a3b8 !important;
 }

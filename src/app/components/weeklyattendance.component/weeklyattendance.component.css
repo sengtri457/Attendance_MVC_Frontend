@@ -31,7 +31,7 @@
 
 /* Modal Container */
 .modal-container {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
   max-width: 600px;
@@ -225,8 +225,14 @@
   justify-content: flex-end;
 }
 
+/* Dark Mode Override for Today highlighted column */
 .today-column {
   background-color: #ffeaa7 !important;
+}
+
+body.dark-mode .today-column {
+  background-color: rgba(255, 234, 167, 0.2) !important;
+  color: var(--text-color);
 }
 
 /* Responsive */
@@ -274,7 +280,7 @@
 }
 
 .grid-wrapper {
-  background: white;
+  background: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 5px;
@@ -288,6 +294,7 @@
   /* Tiny font */
   border-collapse: collapse;
   width: 100%;
+  color: var(--text-color);
 }
 
 .table {
@@ -296,24 +303,24 @@
 }
 
 .table thead th {
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   font-weight: 600;
   position: sticky;
   top: 0;
   z-index: 10;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   vertical-align: middle;
   padding: 2px;
 }
 
 .table tbody tr:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bg-light);
 }
 
 .table tbody td {
   padding: 1px;
   /* Tiny padding */
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   white-space: nowrap;
   /* Prevent wrapping */
   height: 25px;
@@ -324,9 +331,9 @@
 .sticky-col {
   position: sticky;
   left: 0;
-  background-color: #fff;
+  background-color: var(--card-bg);
   z-index: 5;
-  border-right: 2px solid #dee2e6;
+  border-right: 2px solid var(--border-color);
 }
 
 .table-light .sticky-col {
@@ -391,7 +398,7 @@
 .col-date {
   min-width: 80px;
   width: 80px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   vertical-align: top;
   padding: 2px;
 }
@@ -412,13 +419,13 @@
 }
 
 .col-stats {
-  background-color: #e7f3ff;
+  background-color: var(--bg-info-light);
   font-weight: 600;
   text-align: center;
 }
 
 .col-stat-label {
-  background-color: #e7f3ff;
+  background-color: var(--bg-info-light);
   font-weight: 600;
   text-align: center;
   font-size: 0.65rem;
@@ -430,14 +437,14 @@
    DATE HEADER & SUBJECTS (NEW)
    ======================== */
 .date-header-group {
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--border-color);
   padding: 2px;
-  background-color: #e3f2fd;
+  background-color: var(--bg-info-light);
   /* Light primary */
 }
 
 .subject-header-cell {
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   font-size: 0.65rem;
   padding: 2px;
   min-width: 50px;
@@ -446,7 +453,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--border-color);
   text-align: center;
   vertical-align: middle;
 }
@@ -461,12 +468,12 @@
 
 .subject-code {
   font-weight: 700;
-  color: #495057;
+  color: var(--text-color);
 }
 
 .subject-name-micro {
   font-size: 0.6rem;
-  color: #6c757d;
+  color: var(--secondary-color);
 }
 
 /* Border between dates */
@@ -504,9 +511,9 @@
 }
 
 .attendance-cell.pending-change {
-  background-color: #fff3cd !important;
-  border: 2px solid #ffc107;
-  box-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+  background-color: var(--bg-warning-light) !important;
+  border: 2px solid var(--text-warning);
+  box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
 }
 
 .attendance-cell.pending-change:hover {
@@ -517,7 +524,9 @@
   width: 100%;
   padding: 0;
   font-size: 0.7rem;
-  border: 2px solid #0d6efd;
+  border: 2px solid var(--primary-color);
+  background: var(--card-bg);
+  color: var(--text-color);
 }
 
 /* Status display within cells */
@@ -550,28 +559,28 @@
    STATUS COLORS
    ======================== */
 .status-present {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--bg-success-light);
+  color: var(--text-success);
 }
 
 .status-absent {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--bg-danger-light);
+  color: var(--text-danger);
 }
 
 .status-late {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: var(--bg-warning-light);
+  color: var(--text-warning);
 }
 
 .status-excused {
-  background-color: #d1ecf1;
-  color: #0c5460;
+  background-color: var(--bg-info-light);
+  color: var(--text-info);
 }
 
 .status-empty {
-  background-color: #ffffff;
-  color: #6c757d;
+  background-color: var(--card-bg);
+  color: var(--secondary-color);
 }
 
 /* ========================
@@ -645,24 +654,24 @@
    STATISTICS & FOOTER
    ======================== */
 .text-success {
-  color: #28a745 !important;
+  color: var(--text-success) !important;
   font-weight: bold;
 }
 
 .text-warning {
-  color: #ffc107 !important;
+  color: var(--text-warning) !important;
   font-weight: bold;
 }
 
 .text-danger {
-  color: #dc3545 !important;
+  color: var(--text-danger) !important;
   font-weight: bold;
 }
 
 .totals-row {
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   font-weight: 600;
-  border-top: 2px solid #dee2e6;
+  border-top: 2px solid var(--border-color);
 }
 
 .daily-total {
@@ -793,7 +802,7 @@
   align-items: center;
   justify-content: center;
   padding: 8px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-light);
   border-radius: 5px;
 }
 

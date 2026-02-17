@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { ClassService } from '../../../services/class.service';
 import { TeacherService } from '../../../services/teacherservice/teacher.service';
 import { SubjectService } from '../../../services/subjectservice/subject.service';
@@ -44,6 +44,7 @@ export class ClassListComponent implements OnInit {
     private classService: ClassService,
     private teacherService: TeacherService,
     private subjectService: SubjectService,
+    private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -52,6 +53,12 @@ export class ClassListComponent implements OnInit {
       this.loadClasses();
       this.loadTeachers();
       this.loadSubjects();
+
+      this.route.queryParams.subscribe(params => {
+        if (params['action'] === 'add') {
+          this.openAddModal();
+        }
+      });
     }
   }
 

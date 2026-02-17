@@ -30,27 +30,42 @@
 
 .dashboard-container {
   padding: 30px;
-  background: #f5f7fa;
+  background: var(--bg-body);
   /* min-height: 100vh; */
 }
 
+/* Dashboard Header Wrapper */
+.dashboard-header {
+  background: var(--card-bg);
+  padding: 24px 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
 .dashboard-header h1 {
-  color: #1a202c;
+  color: var(--text-color);
   font-weight: 700;
   font-size: 2rem;
 }
 
 .dashboard-header p {
-  color: #718096;
+  color: var(--secondary-color);
+}
+
+.dashboard-header h2 {
+  color: var(--text-color);
+  font-weight: 700;
+  font-size: 1.7rem;
 }
 
 /* Stat Cards – light entrance animation (4 cards only) */
 .stat-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -77,7 +92,7 @@
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--shadow-hover);
 }
 
 .stat-icon {
@@ -91,23 +106,23 @@
 }
 
 .present-card .stat-icon {
-  background: #f0fdf4;
-  color: #16a34a;
+  background: var(--bg-success-light);
+  color: var(--text-success);
 }
 
 .absent-card .stat-icon {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--bg-danger-light);
+  color: var(--text-danger);
 }
 
 .late-card .stat-icon {
-  background: #fffbeb;
-  color: #f59e0b;
+  background: var(--bg-warning-light);
+  color: var(--text-warning);
 }
 
 .excused-card .stat-icon {
-  background: #eff6ff;
-  color: #3b82f6;
+  background: var(--bg-info-light);
+  color: var(--text-info);
 }
 
 .stat-content {
@@ -116,7 +131,7 @@
 
 .stat-label {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--secondary-color);
   margin-bottom: 5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -126,7 +141,7 @@
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-color);
   margin: 0;
   line-height: 1;
 }
@@ -134,42 +149,42 @@
 .stat-info {
   margin-top: 5px;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--secondary-color);
 }
 
 /* Cards */
 .card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   height: 100%;
-  background: white;
+  background: var(--card-bg);
 }
 
 .card-header {
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--card-bg);
+  color: var(--text-color);
   border-radius: 12px 12px 0 0 !important;
   padding: 15px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .card-title {
   font-weight: 600;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--text-color);
 }
 
 /* Trend Items */
 .trend-item {
   padding: 15px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
 }
 
 .trend-item h3 {
-  color: #0f172a;
+  color: var(--text-color);
   font-weight: 700;
 }
 
@@ -189,7 +204,7 @@
 .progress {
   height: 10px;
   border-radius: 5px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-light);
 }
 
 .progress-bar {
@@ -216,7 +231,7 @@
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: white;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -226,7 +241,7 @@
 .donut-center h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-color);
   margin: 0;
 }
 
@@ -243,8 +258,8 @@
   gap: 10px;
   padding: 8px;
   border-radius: 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
 }
 
 .legend-color {
@@ -256,12 +271,13 @@
 .legend-label {
   flex: 1;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-color);
+  opacity: 0.8;
 }
 
 .legend-value {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-color);
 }
 
 /* Risk List */
@@ -275,12 +291,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 
 .risk-item:hover {
-  background-color: #f8fafc;
+  background-color: var(--bg-light);
 }
 
 .risk-item:last-child {
@@ -297,11 +313,11 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #e2e8f0;
+  background: var(--bg-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #475569;
+  color: var(--secondary-color);
   font-size: 20px;
   font-weight: 600;
 }
@@ -333,12 +349,12 @@
   display: flex;
   gap: 15px;
   padding: 15px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 
 .absence-item:hover {
-  background-color: #f8fafc;
+  background-color: var(--bg-light);
 }
 
 .absence-item:last-child {
@@ -369,7 +385,7 @@
 }
 
 .absence-info h6 {
-  color: #0f172a;
+  color: var(--text-color);
   margin-bottom: 2px;
 }
 
@@ -398,11 +414,11 @@
 
 /* Notification Storage Cards */
 .notification-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -428,22 +444,23 @@
 }
 
 .weekly-total-card .notification-icon {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  color: #3b82f6;
+  background: var(--bg-info-light);
+  color: var(--text-info);
 }
 
 .weekly-present-card .notification-icon {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  color: #16a34a;
+  background: var(--bg-success-light);
+  color: var(--text-success);
 }
 
 .monthly-total-card .notification-icon {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: #d97706;
+  background: var(--bg-warning-light);
+  color: var(--text-warning);
 }
 
 .monthly-present-card .notification-icon {
-  background: linear-gradient(135deg, #fae8ff 0%, #f3e8ff 100%);
+  background: var(--bg-info-light);
+  /* Or purple specific var if needed */
   color: #9333ea;
 }
 
@@ -475,10 +492,10 @@
 
 /* Small Notification Cards */
 .notification-card-small {
-  background: white;
+  background: var(--card-bg);
   border-radius: 10px;
   padding: 15px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
   height: 100%;
@@ -731,6 +748,7 @@
 
   .status-bar-item span {
     font-size: 0.8rem;
+    color: var(--text-color);
   }
 }
 

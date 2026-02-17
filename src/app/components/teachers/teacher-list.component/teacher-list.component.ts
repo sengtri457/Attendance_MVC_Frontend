@@ -1,10 +1,12 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, DestroyRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TeacherService } from '../../../services/teacherservice/teacher.service';
 import { Teacher, TeacherFormData } from '../../../models/Teacher.model';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 @Component({
   selector: 'app-teacher-list',
   standalone: true,
@@ -38,15 +40,26 @@ export class TeacherListComponent implements OnInit {
     phone: '',
   };
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private teacherService: TeacherService,
     private router: Router,
+    private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadTeachers();
+      
+      this.route.queryParams
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(params => {
+          if (params['action'] === 'add') {
+            this.openAddModal();
+          }
+        });
     }
   }
 

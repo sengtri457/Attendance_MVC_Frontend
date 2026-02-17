@@ -13,7 +13,7 @@
       <button class="btn-collapse-sidebar d-none d-md-flex" (click)="toggleSidebar()"
         [title]="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
         <i class="bi"
-        [ngClass]="isSidebarCollapsed ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar-inset-reverse'"></i>
+          [ngClass]="isSidebarCollapsed ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar-inset-reverse'"></i>
       </button>
     </div>
 
@@ -21,17 +21,17 @@
     <nav class="sidebar-nav">
       <ul>
         @for (item of navItems; track item) {
-          <li>
-            <!-- Check roles if needed -->
-            @if (hasRole(item.roles)) {
-              <a [routerLink]="item.route" routerLinkActive="active"
-                [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item"
-                [title]="isSidebarCollapsed ? (item.label | translate) : null">
-                <i class="bi" [ngClass]="item.icon"></i>
-                <span class="nav-label">{{ item.label | translate }}</span>
-              </a>
-            }
-          </li>
+        <li>
+          <!-- Check roles if needed -->
+          @if (hasRole(item.roles)) {
+          <a [routerLink]="item.route" routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item"
+            [title]="isSidebarCollapsed ? (item.label | translate) : null">
+            <i class="bi" [ngClass]="item.icon"></i>
+            <span class="nav-label">{{ item.label | translate }}</span>
+          </a>
+          }
+        </li>
         }
       </ul>
     </nav>
@@ -39,13 +39,11 @@
     <!-- Footer Profile -->
     <div class="sidebar-footer">
       <div class="user-profile-compact">
-        <div class="avatar-circle"
-          [title]="(currentUser.username || 'Admin') + ' – ' + (currentUser.role || '')">
+        <div class="avatar-circle" [title]="(currentUser.username || 'Admin') + ' – ' + (currentUser.role || '')">
           <i class="bi bi-person-fill"></i>
         </div>
         <div class="user-info">
-          <span class="user-name text-truncate" style="max-width: 120px;"
-            [title]="currentUser.username || 'Admin'">
+          <span class="user-name text-truncate" style="max-width: 120px;" [title]="currentUser.username || 'Admin'">
             {{ (currentUser.username || 'Admin') | titlecase }}
           </span>
           <span class="user-role">{{ currentUser.role | titlecase }}</span>
@@ -75,21 +73,48 @@
           {{ languageService.currentLang() === 'en' ? 'ខ្មែរ' : 'English' }}
         </button>
 
+        <!-- Theme Toggle -->
+        <button class="icon-btn" (click)="themeService.toggleTheme()"
+          [title]="themeService.darkMode() ? 'Light Mode' : 'Dark Mode'">
+          <i class="bi" [ngClass]="themeService.darkMode() ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+        </button>
+
         <button class="icon-btn" title="Notifications">
           <div class="badge-dot"></div>
           <i class="bi bi-bell"></i>
         </button>
-        <button class="icon-btn" title="Apps">
-          <i class="bi bi-grid"></i>
-        </button>
+        <div class="quick-access-wrapper" (mouseleave)="closeQuickAccess()">
+          <button class="icon-btn" title="Quick Access" (click)="toggleQuickAccess()" [class.active]="showQuickAccess">
+            <i class="bi bi-grid"></i>
+          </button>
+
+          @if (showQuickAccess) {
+          <div class="quick-access-menu p-2">
+            <div class="quick-access-header">
+              <h6 class="mb-0">Quick Access</h6>
+            </div>
+            <div class="quick-access-grid">
+              @for (item of quickAccessItems; track item) {
+              @if (hasRole(item.roles)) {
+              <div class="quick-access-item" (click)="handleQuickAccess(item)">
+                <div class="icon-circle">
+                  <i class="bi" [ngClass]="item.icon"></i>
+                </div>
+                <span class="item-label">{{ item.label | translate }}</span>
+              </div>
+              }
+              }
+            </div>
+          </div>
+          }
+        </div>
 
         <div class="user-dropdown">
           <div class="user-pill">
             <img src="assets/admin-avatar.png"
               onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" alt="User"
               class="user-avatar">
-            <span
-            class="d-none d-md-inline fw-medium text-dark small">{{ currentUser.username || 'Admin' }}</span>
+            <span class="d-none d-md-inline fw-medium text-dark small">{{ currentUser.username || 'Admin' }}</span>
             <i class="bi bi-chevron-down ms-1 text-muted" style="font-size: 0.7rem;"></i>
           </div>
         </div>

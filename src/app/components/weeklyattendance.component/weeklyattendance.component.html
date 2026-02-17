@@ -192,6 +192,11 @@
           </ul>
           }
         </div>
+        <!-- pdf Downloard -->
+        <button class="btn btn-sm btn-outline-secondary" (click)="downloadPDF()" [disabled]="!gridData"
+          title="Download PDF">
+          <i class="bi bi-file-earmark-pdf"></i>
+        </button>
         <button class="btn btn-sm btn-outline-secondary" (click)="print()" [disabled]="!gridData" title="Print">
           <i class="bi bi-printer"></i>
         </button>

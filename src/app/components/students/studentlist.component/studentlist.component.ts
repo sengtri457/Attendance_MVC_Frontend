@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID, DestroyRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { StudentService } from '../../../services/studentservice/student.service';
 import { Student, ApiResponse } from '../../../models/Student.model';
 import { Class } from '../../../models/Class.model';
@@ -51,6 +51,7 @@ export class StudentlistComponent implements OnInit {
   constructor(
     private studentService: StudentService,
     private router: Router,
+    private route: ActivatedRoute,
     private classService: ClassService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
@@ -59,6 +60,14 @@ export class StudentlistComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.loadStudents();
       this.loadClasses();
+
+      this.route.queryParams
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(params => {
+          if (params['action'] === 'add') {
+            this.openAddModal();
+          }
+        });
     }
   }
 

@@ -20,6 +20,7 @@ import { TranslatePipe } from "../../pipes/translate.pipe";
 import { LanguageService } from "../../services/language.service";
 import { WeeklyGridData, StudentRow, PendingUpdate } from '../../models/WeeklyAttendance.model';
 import { AttendanceExportService } from '../../services/attendance-export.service';
+import { ReportsService } from '../../services/reports.service';
 
 interface CountdownTime {
   hours: number;
@@ -152,6 +153,7 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     private telegramService: TelegramserviceService,
     public languageService: LanguageService,
     private exportService: AttendanceExportService,
+    protected reportsService: ReportsService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
 
@@ -1845,6 +1847,12 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
 
   print(): void {
     window.print();
+  }
+
+  downloadPDF(): void {
+    if (this.gridData) {
+      this.reportsService.generateWeeklyAttendancePDF(this.gridData);
+    }
   }
 
   previousWeek(): void {
