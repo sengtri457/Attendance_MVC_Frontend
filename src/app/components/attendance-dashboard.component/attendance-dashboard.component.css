@@ -29,7 +29,7 @@
 }
 
 .dashboard-container {
-  padding: 30px;
+  padding: 10px;
   background: var(--bg-body);
   /* min-height: 100vh; */
 }
@@ -846,7 +846,7 @@
 /* Large Devices (desktops, 993px and up) */
 @media (min-width: 993px) {
   .dashboard-container {
-    padding: 30px;
+    padding: 10px;
   }
 
   /* Ensure proper grid layout on large screens */

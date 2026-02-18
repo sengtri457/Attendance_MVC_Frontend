@@ -34,6 +34,16 @@
     width: 90px;
 }
 
+@media (max-width: 768px) {
+    .layout-wrapper.sidebar-collapsed .sidebar {
+        width: 260px;
+        margin-left: -260px;
+        position: absolute;
+        height: 100%;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+    }
+}
+
 .layout-wrapper.sidebar-collapsed .logo-text,
 .layout-wrapper.sidebar-collapsed .nav-label,
 .layout-wrapper.sidebar-collapsed .user-info {
