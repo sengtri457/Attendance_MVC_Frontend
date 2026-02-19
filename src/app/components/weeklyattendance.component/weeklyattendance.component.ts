@@ -15,7 +15,7 @@ import { RouterLink, ActivatedRoute } from "@angular/router";
 import { ClassService } from "../../services/class.service";
 import { Class } from "../../models/Class.model";
 import { HttpClient } from "@angular/common/http";
-import { TelegramserviceService } from "../../services/telegramservice/telegramservice.service";
+
 import { TranslatePipe } from "../../pipes/translate.pipe";
 import { LanguageService } from "../../services/language.service";
 import { WeeklyGridData, StudentRow, PendingUpdate } from '../../models/WeeklyAttendance.model';
@@ -150,7 +150,6 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
     private classService: ClassService,
     private route: ActivatedRoute,
     private cdRef: ChangeDetectorRef,
-    private telegramService: TelegramserviceService,
     public languageService: LanguageService,
     private exportService: AttendanceExportService,
     protected reportsService: ReportsService,
@@ -1578,132 +1577,64 @@ export class WeeklyattendanceComponent implements OnInit, OnDestroy {
   private performSubmission(): void {
     this.submitting = true;
 
-    const updates: any[] = [];
+    // Build the flat updates array for the backend
+    const updates: {
+      student_id: number;
+      teacher_id: number;
+      subject_id: number;
+      attendance_date: string;
+      status: string;
+    }[] = [];
 
     this.pendingUpdates.forEach((update) => {
       updates.push({
-        student_id: update.studentId,
-        teacher_id: 1,
-        subject_id: update.subjectId,
+        student_id:      update.studentId,
+        teacher_id:      1,
+        subject_id:      update.subjectId,
         attendance_date: update.date,
-        status: update.status,
-        force_update: true,
+        status:          update.status,
       });
     });
 
-    const updateObservables = updates.map((data) =>
-      this.attendanceService.createOrUpdateAttendance(data),
-    );
+    // Resolve the class name to send to the backend (used in Telegram message)
+    const className =
+      this.gridData?.class?.class_name ||
+      this.classes.find(c => c.class_id === this.selectedClassId)?.class_code ||
+      'Unknown Class';
 
-    forkJoin(updateObservables)
+    const totalUpdates = this.pendingUpdates.size;
+
+    // One request → backend saves all records + fires Telegram notification
+    this.attendanceService
+      .submitBatch(updates, className)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => (this.submitting = false)),
       )
       .subscribe({
         next: () => {
-          const totalUpdates = this.pendingUpdates.size;
-          
-          // Helper to format date for message
-          const formatDate = (d: string) => {
-             const dateObj = new Date(d);
-             return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-          };
-
-          // Helper to get student name
-          const getStudentName = (id: number) => {
-            return this.gridData?.students?.find(s => s.student_id === id)?.student_name_eng || 'Unknown Student';
-          };
-
-          // Helper to get subject name
-          const getSubjectName = (date: string, subjectId: number) => {
-              const subjects = this.getSubjectsForDate(date);
-              const subject = subjects.find(s => s.subject_id === subjectId);
-              if (subject) return subject.subject_name;
-              
-              // Fallback to global subject list if available
-              return this.gridData?.subjects?.find(s => s.subject_id === subjectId)?.subject_name || 'General';
-          };
-
-          // Group updates by date, subject, and status
-          // Map<Date, Map<SubjectName, Map<Status, StudentName[]>>>
-          const details = new Map<string, Map<string, Map<string, string[]>>>();
-          
-          this.pendingUpdates.forEach(u => {
-              if (!details.has(u.date)) {
-                  details.set(u.date, new Map<string, Map<string, string[]>>());
-              }
-              const subjectMap = details.get(u.date)!;
-              const subjectName = getSubjectName(u.date, u.subjectId);
-
-              if (!subjectMap.has(subjectName)) {
-                  subjectMap.set(subjectName, new Map<string, string[]>());
-              }
-              const statusMap = subjectMap.get(subjectName)!;
-
-              if (!statusMap.has(u.status)) {
-                  statusMap.set(u.status, []);
-              }
-              statusMap.get(u.status)!.push(getStudentName(u.studentId));
-          });
-
-          // Use gridData for class name if available, otherwise fallback
-          const className = this.gridData?.class?.class_name || 
-                            this.classes.find(c => c.class_id === this.selectedClassId)?.class_code || 
-                            'Unknown Class';
-
-          let message = `📢 *Attendance Submitted*\n\n🏫 Class: *${className}*\n👥 Total Attendance: *${totalUpdates}*`;
-          
-          details.forEach((subjectMap, date) => {
-              message += `\n\n📅 *${formatDate(date)}*`;
-              
-              subjectMap.forEach((statusMap, subjectName) => {
-                 message += `\n\n📚 *${subjectName}*`;
-                 
-                 const appendStatusList = (status: string, emoji: string, label: string) => {
-                    const students = statusMap.get(status);
-                    if (students && students.length > 0) {
-                        message += `\n${emoji} *${label} (${students.length}):*\n`;
-                        students.forEach(name => message += `  - ${name}\n`);
-                    }
-                 };
-
-                 appendStatusList('P', '✅', 'Present');
-                 appendStatusList('A', '❌', 'Absent');
-                 appendStatusList('L', '⏰', 'Late');
-                 appendStatusList('E', '📝', 'Excused');
-              });
-          });
-
-          this.telegramService.sendMessage(message).subscribe({
-              error: err => console.error('Telegram notification failed', err)
-          });
-
           this.pendingUpdates.clear();
           this.hasUnsavedChanges = false;
-          
-          // ... telegram logic ...
-
           this.loadWeeklyGrid();
- 
-           Swal.fire({
-             title: this.languageService.getTranslation('SUCCESS'),
-             html: `<strong>${totalUpdates}</strong> ${this.languageService.getTranslation('ATTENDANCE_UPDATED')}`,
-             icon: "success",
-             draggable: true,
-             timer: 2500,
-             showConfirmButton: false,
-           });
-         },
-         error: (err) => {
-           console.error("Failed to update attendance:", err);
-           Swal.fire({
-             title: this.languageService.getTranslation('SUBMISSION_FAILED'),
-             text: err.error?.message || this.languageService.getTranslation('FAILED_UPDATE'),
-             icon: "error",
-             draggable: true,
-           });
-         },
+
+          Swal.fire({
+            title: this.languageService.getTranslation('SUCCESS'),
+            html: `<strong>${totalUpdates}</strong> ${this.languageService.getTranslation('ATTENDANCE_UPDATED')}`,
+            icon: 'success',
+            draggable: true,
+            timer: 2500,
+            showConfirmButton: false,
+          });
+        },
+        error: (err) => {
+          console.error('Failed to submit attendance batch:', err);
+          Swal.fire({
+            title: this.languageService.getTranslation('SUBMISSION_FAILED'),
+            text: err.error?.message || this.languageService.getTranslation('FAILED_UPDATE'),
+            icon: 'error',
+            draggable: true,
+          });
+        },
       });
   }
 

@@ -152,6 +152,31 @@ export class AttendanceService {
   }
 
   /**
+   * Submit a batch of attendance records in one request.
+   * The backend saves all records (upsert) and fires the Telegram notification.
+   *
+   * @param updates    - array of attendance records
+   * @param className  - displayed in the Telegram message (e.g. "sv13")
+   */
+  submitBatch(
+    updates: {
+      student_id: number;
+      teacher_id: number;
+      subject_id: number;
+      attendance_date: string;
+      status: string;
+      session?: string;
+      notes?: string;
+    }[],
+    className: string = 'Unknown Class'
+  ): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/submit-batch`, {
+      updates,
+      class_name: className,
+    });
+  }
+
+  /**
    * Create single attendance
    */
   createAttendance(data: any): Observable<ApiResponse<any>> {
