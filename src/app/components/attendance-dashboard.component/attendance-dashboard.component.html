@@ -229,6 +229,123 @@
       </div>
     </div>
   </div>
+
+  <!-- Weekly Line Chart Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card weekly-chart-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-graph-up-arrow"></i> Weekly Attendance Trend
+          </h5>
+          <div class="d-flex align-items-center gap-2">
+            @if (!isCurrentWeek) {
+            <button class="btn btn-sm btn-outline-primary chart-nav-btn" (click)="goToCurrentWeek()"
+              title="Go to current week">
+              <i class="bi bi-calendar-check"></i> Today
+            </button>
+            }
+            <div class="week-navigator">
+              <button class="btn btn-sm btn-outline-secondary chart-nav-btn" (click)="prevWeek()" title="Previous week">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="week-range-label">{{ formatWeekRange() }}</span>
+              <button class="btn btn-sm btn-outline-secondary chart-nav-btn" (click)="nextWeek()"
+                [disabled]="isCurrentWeek" title="Next week">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Chart Legend / Toggles -->
+          <div class="chart-legend">
+            <button class="legend-toggle" [class.active]="activeLines['present']" (click)="toggleLine('present')">
+              <span class="legend-dot" style="background: #22c55e;"></span> Present
+            </button>
+            <button class="legend-toggle" [class.active]="activeLines['absent']" (click)="toggleLine('absent')">
+              <span class="legend-dot" style="background: #ef4444;"></span> Absent
+            </button>
+            <button class="legend-toggle" [class.active]="activeLines['late']" (click)="toggleLine('late')">
+              <span class="legend-dot" style="background: #f59e0b;"></span> Late
+            </button>
+            <button class="legend-toggle" [class.active]="activeLines['excused']" (click)="toggleLine('excused')">
+              <span class="legend-dot" style="background: #3b82f6;"></span> Excused
+            </button>
+          </div>
+
+          <!-- Chart Container -->
+          <div class="chart-container" (mousemove)="onChartMouseMove($event)" (mouseleave)="onChartMouseLeave()">
+            @if (chartLoading) {
+            <div class="chart-loading">
+              <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+              <span>Loading chart data...</span>
+            </div>
+            }
+            <canvas #weeklyChart></canvas>
+
+            <!-- Tooltip -->
+            @if (chartTooltip.visible) {
+            <div class="chart-tooltip" [style.left.px]="chartTooltip.x" [style.top.px]="chartTooltip.y">
+              <div class="tooltip-header">{{ chartTooltip.day }} <small>{{ chartTooltip.date }}</small></div>
+              <div class="tooltip-row"><span class="dot" style="background:#22c55e"></span> Present:
+                <strong>{{ chartTooltip.present }}</strong></div>
+              <div class="tooltip-row"><span class="dot" style="background:#ef4444"></span> Absent:
+                <strong>{{ chartTooltip.absent }}</strong></div>
+              <div class="tooltip-row"><span class="dot" style="background:#f59e0b"></span> Late:
+                <strong>{{ chartTooltip.late }}</strong></div>
+              <div class="tooltip-row"><span class="dot" style="background:#3b82f6"></span> Excused:
+                <strong>{{ chartTooltip.excused }}</strong></div>
+              <div class="tooltip-total">Total: {{ chartTooltip.total }}</div>
+            </div>
+            }
+          </div>
+
+          <!-- Week Summary -->
+          @if (weeklyChartData) {
+          <div class="chart-summary">
+            <div class="chart-summary-item">
+              <span class="summary-dot" style="background: #22c55e;"></span>
+              <div>
+                <div class="summary-label">Present</div>
+                <div class="summary-value">{{ weeklyChartData.week_totals.present }}</div>
+              </div>
+            </div>
+            <div class="chart-summary-item">
+              <span class="summary-dot" style="background: #ef4444;"></span>
+              <div>
+                <div class="summary-label">Absent</div>
+                <div class="summary-value">{{ weeklyChartData.week_totals.absent }}</div>
+              </div>
+            </div>
+            <div class="chart-summary-item">
+              <span class="summary-dot" style="background: #f59e0b;"></span>
+              <div>
+                <div class="summary-label">Late</div>
+                <div class="summary-value">{{ weeklyChartData.week_totals.late }}</div>
+              </div>
+            </div>
+            <div class="chart-summary-item">
+              <span class="summary-dot" style="background: #3b82f6;"></span>
+              <div>
+                <div class="summary-label">Excused</div>
+                <div class="summary-value">{{ weeklyChartData.week_totals.excused }}</div>
+              </div>
+            </div>
+            <div class="chart-summary-item total">
+              <i class="bi bi-bar-chart-fill"></i>
+              <div>
+                <div class="summary-label">Attendance Rate</div>
+                <div class="summary-value">{{ weeklyChartData.week_totals.attendance_rate }}</div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Storage Section -->
   <div class="row mb-4">
     <div class="col-12">

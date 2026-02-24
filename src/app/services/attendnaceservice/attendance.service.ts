@@ -64,6 +64,22 @@ export class AttendanceService {
   }
 
   /**
+   * Get weekly chart data for line chart
+   */
+  getWeeklyChartData(
+    weekOffset: number = 0,
+    classId?: number,
+  ): Observable<ApiResponse<any>> {
+    let params = new HttpParams().set("week_offset", weekOffset.toString());
+    if (classId) params = params.set("class_id", classId.toString());
+
+    return this.http.get<ApiResponse<any>>(
+      `${this.apiUrl}/reports/weekly-chart`,
+      { params },
+    );
+  }
+
+  /**
    * Get daily report
    */
   getDailyReport(date: string, classId?: number): Observable<ApiResponse<any>> {

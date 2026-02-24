@@ -38,7 +38,7 @@
 
     <!-- Footer Profile -->
     <div class="sidebar-footer">
-      <div class="user-profile-compact">
+      <a routerLink="/profile" class="user-profile-compact" style="text-decoration: none; cursor: pointer;">
         <div class="avatar-circle" [title]="(currentUser.username || 'Admin') + ' – ' + (currentUser.role || '')">
           <i class="bi bi-person-fill"></i>
         </div>
@@ -48,7 +48,7 @@
           </span>
           <span class="user-role">{{ currentUser.role | titlecase }}</span>
         </div>
-      </div>
+      </a>
       <button class="btn-logout-icon" (click)="logout()" [title]="'LOGOUT' | translate">
         <i class="bi bi-box-arrow-right"></i>
       </button>
@@ -108,7 +108,7 @@
           }
         </div>
 
-        <div class="user-dropdown">
+        <a routerLink="/profile" class="user-dropdown" style="text-decoration: none;">
           <div class="user-pill">
             <img src="assets/admin-avatar.png"
               onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'" alt="User"
@@ -116,7 +116,7 @@
             <span class="d-none d-md-inline fw-medium text-dark small">{{ currentUser.username || 'Admin' }}</span>
             <i class="bi bi-chevron-down ms-1 text-muted" style="font-size: 0.7rem;"></i>
           </div>
-        </div>
+        </a>
       </div>
     </div>
 

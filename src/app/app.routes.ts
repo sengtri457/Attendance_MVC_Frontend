@@ -68,6 +68,11 @@ export const routes: Routes = [
         path: 'classes',
         loadComponent: () => import('./components/classes/class-list.component/class-list.component').then(m => m.ClassListComponent),
         data: { roles: ['admin', 'teacher'] }
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent),
+        data: { roles: ['admin', 'teacher', 'student'] }
       }
     ]
   },

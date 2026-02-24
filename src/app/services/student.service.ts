@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../../env/enviroment';
 export interface UploadResponse {
   success: boolean;
@@ -45,8 +45,16 @@ export class StudentService {
     formData.append('file', file);
 
     return this.http
-      .post<UploadResponse>(`${this.apiUrls}/upload-excel`, formData)
-      .pipe(catchError(this.handleError));
+      .post<any>(`${this.apiUrls}/upload-excel`, formData)
+      .pipe(
+        map(response => ({
+          success: response.success,
+          message: response.message,
+          summary: response.data?.summary,
+          results: response.data?.results,
+        } as UploadResponse)),
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -57,8 +65,16 @@ export class StudentService {
     formData.append('file', file);
 
     return this.http
-      .post<UploadResponse>(`${this.apiUrls}/upload-excel-bulk`, formData)
-      .pipe(catchError(this.handleError));
+      .post<any>(`${this.apiUrls}/upload-excel-bulk`, formData)
+      .pipe(
+        map(response => ({
+          success: response.success,
+          message: response.message,
+          count: response.meta?.count,
+          data: response.data,
+        } as UploadResponse)),
+        catchError(this.handleError)
+      );
   }
 
   /**

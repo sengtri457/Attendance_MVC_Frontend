@@ -1,0 +1,418 @@
+<div class="profile-page">
+    <!-- Loading State -->
+    @if (loading) {
+    <div class="loading-skeleton">
+        <div class="skeleton-header">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-lines">
+                <div class="skeleton-line w-40"></div>
+                <div class="skeleton-line w-25"></div>
+            </div>
+        </div>
+        <div class="skeleton-body">
+            <div class="skeleton-line w-100"></div>
+            <div class="skeleton-line w-75"></div>
+            <div class="skeleton-line w-60"></div>
+        </div>
+    </div>
+    }
+
+    @if (!loading && profile) {
+    <!-- Profile Header Card -->
+    <div class="profile-hero">
+        <div class="hero-bg-pattern"></div>
+        <div class="hero-content">
+            <div class="hero-avatar">
+                <div class="avatar-large">
+                    <span class="avatar-initials">{{ getInitials() }}</span>
+                </div>
+                <div class="online-indicator"></div>
+            </div>
+            <div class="hero-info">
+                <h1 class="hero-name">{{ profile.full_name || (profile.username | titlecase) }}</h1>
+                <p class="hero-username">&#64;{{ profile.username }}</p>
+                <div class="hero-meta">
+                    <span class="role-badge" [ngClass]="getRoleBadgeClass()">
+                        <i class="bi" [ngClass]="getRoleIcon()"></i>
+                        {{ profile.role | titlecase }}
+                    </span>
+                    <span class="meta-divider">•</span>
+                    <span class="meta-item">
+                        <i class="bi bi-calendar3"></i>
+                        Joined {{ getAccountAge() }} ago
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="profile-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="switchTab('overview')">
+            <i class="bi bi-person-lines-fill"></i>
+            <span>Overview</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'edit'" (click)="switchTab('edit')">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit Profile</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'security'" (click)="switchTab('security')">
+            <i class="bi bi-shield-lock"></i>
+            <span>Security</span>
+        </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+        <!-- OVERVIEW TAB -->
+        @if (activeTab === 'overview') {
+        <div class="tab-panel animate-in">
+            <div class="overview-grid">
+                <!-- User Information Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-person-badge"></i>
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-person"></i>
+                                Username
+                            </div>
+                            <div class="info-value">{{ profile.username }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-card-text"></i>
+                                Full Name
+                            </div>
+                            <div class="info-value">{{ profile.full_name || '—' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-envelope"></i>
+                                Email
+                            </div>
+                            <div class="info-value">{{ profile.email || '—' }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-shield-check"></i>
+                                Role
+                            </div>
+                            <div class="info-value">
+                                <span class="role-badge-sm" [ngClass]="getRoleBadgeClass()">
+                                    {{ profile.role | titlecase }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Stats Card -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <h3>Account Details</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon" style="--accent: #3b82f6;">
+                                    <i class="bi bi-fingerprint"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-value">{{ profile.user_id }}</span>
+                                    <span class="stat-label">User ID</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon" style="--accent: #8b5cf6;">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-value">{{ getAccountAge() }}</span>
+                                    <span class="stat-label">Account Age</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon" style="--accent: #10b981;">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-value">Active</span>
+                                    <span class="stat-label">Status</span>
+                                </div>
+                            </div>
+                            @if (profile.profile_id) {
+                            <div class="stat-item">
+                                <div class="stat-icon" style="--accent: #f59e0b;">
+                                    <i class="bi bi-link-45deg"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-value">#{{ profile.profile_id }}</span>
+                                    <span class="stat-label">Profile Link</span>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linked Profile Card (if applicable) -->
+                @if (profile.linkedProfile) {
+                <div class="info-card linked-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-link-45deg"></i>
+                        <h3>Linked {{ profile.role | titlecase }} Profile</h3>
+                    </div>
+                    <div class="info-card-body">
+                        @if (profile.role === 'teacher') {
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-person-video3"></i>
+                                Teacher Name
+                            </div>
+                            <div class="info-value">{{ profile.linkedProfile.teacher_name_eng }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-telephone"></i>
+                                Phone
+                            </div>
+                            <div class="info-value">{{ profile.linkedProfile.phone || '—' }}</div>
+                        </div>
+                        }
+                        @if (profile.role === 'student') {
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-person"></i>
+                                Name (EN)
+                            </div>
+                            <div class="info-value">{{ profile.linkedProfile.student_name_eng }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="bi bi-translate"></i>
+                                Name (KH)
+                            </div>
+                            <div class="info-value">{{ profile.linkedProfile.student_name_kh }}</div>
+                        </div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+        }
+
+        <!-- EDIT PROFILE TAB -->
+        @if (activeTab === 'edit') {
+        <div class="tab-panel animate-in">
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-header-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h3>Edit Profile</h3>
+                        <p>Update your personal information</p>
+                    </div>
+                </div>
+
+                <!-- Alert Messages -->
+                @if (editSuccess) {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ editSuccess }}
+                </div>
+                }
+                @if (editError) {
+                <div class="alert alert-error">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {{ editError }}
+                </div>
+                }
+
+                <div class="form-body">
+                    <div class="form-group">
+                        <label for="edit-fullname">
+                            <i class="bi bi-card-text"></i>
+                            Full Name
+                        </label>
+                        <input type="text" id="edit-fullname" [(ngModel)]="editForm.full_name"
+                            placeholder="Enter your full name" class="form-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-username">
+                            <i class="bi bi-person"></i>
+                            Username
+                        </label>
+                        <div class="input-with-prefix">
+                            <span class="input-prefix">&#64;</span>
+                            <input type="text" id="edit-username" [(ngModel)]="editForm.username"
+                                placeholder="Enter username" class="form-input prefixed" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-email">
+                            <i class="bi bi-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="edit-email" [(ngModel)]="editForm.email" placeholder="you@example.com"
+                            class="form-input" />
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-save" (click)="saveProfile()" [disabled]="editLoading">
+                            @if (editLoading) {
+                            <span class="spinner-sm"></span>
+                            Saving...
+                            } @else {
+                            <i class="bi bi-check2"></i>
+                            Save Changes
+                            }
+                        </button>
+                        <button class="btn-cancel" (click)="switchTab('overview')">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- SECURITY TAB -->
+        @if (activeTab === 'security') {
+        <div class="tab-panel animate-in">
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-header-icon security-icon">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div>
+                        <h3>Change Password</h3>
+                        <p>Keep your account secure with a strong password</p>
+                    </div>
+                </div>
+
+                <!-- Alert Messages -->
+                @if (passwordSuccess) {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ passwordSuccess }}
+                </div>
+                }
+                @if (passwordError) {
+                <div class="alert alert-error">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {{ passwordError }}
+                </div>
+                }
+
+                <div class="form-body">
+                    <div class="form-group">
+                        <label for="current-password">
+                            <i class="bi bi-lock"></i>
+                            Current Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input [type]="showCurrentPassword ? 'text' : 'password'" id="current-password"
+                                [(ngModel)]="passwordForm.currentPassword" placeholder="Enter current password"
+                                class="form-input" />
+                            <button class="btn-toggle-pw" (click)="showCurrentPassword = !showCurrentPassword"
+                                type="button">
+                                <i class="bi" [ngClass]="showCurrentPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-password">
+                            <i class="bi bi-lock-fill"></i>
+                            New Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input [type]="showNewPassword ? 'text' : 'password'" id="new-password"
+                                [(ngModel)]="passwordForm.newPassword" placeholder="Enter new password"
+                                class="form-input" />
+                            <button class="btn-toggle-pw" (click)="showNewPassword = !showNewPassword" type="button">
+                                <i class="bi" [ngClass]="showNewPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                        <!-- Password Strength Indicator -->
+                        @if (passwordForm.newPassword) {
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" [style.width.%]="getPasswordStrength().percent"
+                                    [style.background-color]="getPasswordStrength().color"></div>
+                            </div>
+                            <span class="strength-label" [style.color]="getPasswordStrength().color">
+                                {{ getPasswordStrength().level }}
+                            </span>
+                        </div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">
+                            <i class="bi bi-lock-fill"></i>
+                            Confirm New Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirm-password"
+                                [(ngModel)]="passwordForm.confirmPassword" placeholder="Confirm new password"
+                                class="form-input" />
+                            <button class="btn-toggle-pw" (click)="showConfirmPassword = !showConfirmPassword"
+                                type="button">
+                                <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                        @if (passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword)
+                        {
+                        <span class="field-error">
+                            <i class="bi bi-x-circle"></i> Passwords don't match
+                        </span>
+                        }
+                        @if (passwordForm.confirmPassword && passwordForm.newPassword === passwordForm.confirmPassword)
+                        {
+                        <span class="field-success">
+                            <i class="bi bi-check-circle"></i> Passwords match
+                        </span>
+                        }
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-save security-btn" (click)="changePassword()"
+                            [disabled]="passwordLoading || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword || passwordForm.newPassword !== passwordForm.confirmPassword">
+                            @if (passwordLoading) {
+                            <span class="spinner-sm"></span>
+                            Updating...
+                            } @else {
+                            <i class="bi bi-shield-check"></i>
+                            Update Password
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Tips -->
+            <div class="security-tips">
+                <h4><i class="bi bi-lightbulb"></i> Security Tips</h4>
+                <ul>
+                    <li><i class="bi bi-check2"></i> Use at least 8 characters</li>
+                    <li><i class="bi bi-check2"></i> Include uppercase and lowercase letters</li>
+                    <li><i class="bi bi-check2"></i> Add numbers and special characters</li>
+                    <li><i class="bi bi-check2"></i> Avoid using personal information</li>
+                </ul>
+            </div>
+        </div>
+        }
+    </div>
+    }
+</div>
