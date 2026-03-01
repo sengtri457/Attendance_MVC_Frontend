@@ -740,3 +740,145 @@ html {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 }
+
+/* ═══════════════════════════════════════════
+   Subject Insights Tab
+═══════════════════════════════════════════ */
+
+/* Highlight cards */
+.insight-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: visible;
+}
+
+.insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+.insight-card.insight-present {
+    border-left: 5px solid #10b981;
+}
+
+.insight-card.insight-absent {
+    border-left: 5px solid #ef4444;
+}
+
+.insight-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.insight-icon-present {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.insight-icon-absent {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.insight-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: #9ca3af;
+}
+
+.insight-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.3px;
+}
+
+/* Subject bar table */
+.subject-table th {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: #6b7280;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.subject-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.subject-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.subject-table tbody tr:hover {
+    background: #f9fafb;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Bar chart tracks */
+.subject-bar-track {
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 99px;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.subject-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.subject-bar-present {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.subject-bar-absent {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+.bar-label {
+    font-size: 13px;
+    min-width: 22px;
+    text-align: right;
+}
+
+/* Dark mode overrides */
+:host-context([data-theme="dark"]) .insight-card {
+    background: #1f2937;
+    color: #f9fafb;
+}
+
+:host-context([data-theme="dark"]) .insight-value {
+    color: #f9fafb;
+}
+
+:host-context([data-theme="dark"]) .subject-table th,
+:host-context([data-theme="dark"]) .subject-table td {
+    color: #d1d5db;
+    background: transparent;
+    border-color: #374151;
+}
+
+:host-context([data-theme="dark"]) .subject-bar-track {
+    background: #374151;
+}

@@ -241,4 +241,23 @@ export class AttendanceService {
   getAttendanceById(id: number): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/${id}`);
   }
+
+  /**
+   * Get per-subject present / absent stats for a student.
+   * Returns most-present and most-absent subject highlights.
+   */
+  getStudentSubjectStats(
+    studentId: number,
+    startDate?: string,
+    endDate?: string,
+  ): Observable<ApiResponse<any>> {
+    let params = new HttpParams().set('student_id', studentId.toString());
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate)   params = params.set('end_date', endDate);
+
+    return this.http.get<ApiResponse<any>>(
+      `${this.apiUrl}/reports/student-subjects`,
+      { params },
+    );
+  }
 }

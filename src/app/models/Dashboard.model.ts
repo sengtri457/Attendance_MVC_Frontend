@@ -24,5 +24,9 @@ export interface DashboardData {
     student: { student_name_eng: string; student_name_kh: string };
     notes?: string;
   }>;
+  subject_insights?: {
+    most_present_subject: { subject_name: string; P: number; total: number; attendance_rate: string } | null;
+    most_absent_subject: { subject_name: string; A: number; total: number; attendance_rate: string } | null;
+  };
   generated_at: string;
 }

@@ -17,12 +17,17 @@ studentId!: number;
   loading = false;
   error: string | null = null;
 
+  // Subject stats data
+  subjectStats: any = null;
+  subjectStatsLoading = false;
+  subjectStatsError: string | null = null;
+
   // Date range for attendance
   startDate: string = '';
   endDate: string = '';
 
 // Tab state
-  activeTab: 'profile' | 'attendance' | 'performance' = 'profile';
+  activeTab: 'profile' | 'attendance' | 'subjects' = 'profile';
 
 // ... class ...
   constructor(
@@ -57,6 +62,7 @@ studentId!: number;
       }
       
       this.loadStudentDetail();
+      this.loadSubjectStats();
     });
   }
 
@@ -83,11 +89,34 @@ studentId!: number;
     });
   }
 
+  loadSubjectStats(): void {
+    this.subjectStatsLoading = true;
+    this.subjectStatsError = null;
+
+    this.attendanceService.getStudentSubjectStats(
+      this.studentId,
+      this.startDate,
+      this.endDate
+    ).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.subjectStats = response.data;
+        }
+        this.subjectStatsLoading = false;
+      },
+      error: (err: any) => {
+        this.subjectStatsError = 'Failed to load subject stats';
+        this.subjectStatsLoading = false;
+        console.error(err);
+      }
+    });
+  }
+
   goBack(): void {
     this.router.navigate(['/students']);
   }
 
-  setActiveTab(tab: 'profile' | 'attendance' | 'performance'): void {
+  setActiveTab(tab: 'profile' | 'attendance' | 'subjects'): void {
     this.activeTab = tab;
   }
 
@@ -161,6 +190,24 @@ studentId!: number;
     });
   }
 
+  /** Returns a width % string for the subject bar chart (capped at 100%) */
+  getBarWidth(value: number, max: number): string {
+    if (!max || max === 0) return '0%';
+    return Math.min((value / max) * 100, 100).toFixed(1) + '%';
+  }
+
+  /** Max P count across all subjects (for bar scaling) */
+  get maxPresentCount(): number {
+    if (!this.subjectStats?.subjects?.length) return 1;
+    return Math.max(...this.subjectStats.subjects.map((s: any) => s.P), 1);
+  }
+
+  /** Max A count across all subjects (for bar scaling) */
+  get maxAbsentCount(): number {
+    if (!this.subjectStats?.subjects?.length) return 1;
+    return Math.max(...this.subjectStats.subjects.map((s: any) => s.A), 1);
+  }
+
   printProfile(): void {
     window.print();
   }
@@ -174,3 +221,4 @@ studentId!: number;
     this.authService.logout();
   }
 }
+

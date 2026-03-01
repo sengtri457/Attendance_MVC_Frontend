@@ -289,13 +289,17 @@
             <div class="chart-tooltip" [style.left.px]="chartTooltip.x" [style.top.px]="chartTooltip.y">
               <div class="tooltip-header">{{ chartTooltip.day }} <small>{{ chartTooltip.date }}</small></div>
               <div class="tooltip-row"><span class="dot" style="background:#22c55e"></span> Present:
-                <strong>{{ chartTooltip.present }}</strong></div>
+                <strong>{{ chartTooltip.present }}</strong>
+              </div>
               <div class="tooltip-row"><span class="dot" style="background:#ef4444"></span> Absent:
-                <strong>{{ chartTooltip.absent }}</strong></div>
+                <strong>{{ chartTooltip.absent }}</strong>
+              </div>
               <div class="tooltip-row"><span class="dot" style="background:#f59e0b"></span> Late:
-                <strong>{{ chartTooltip.late }}</strong></div>
+                <strong>{{ chartTooltip.late }}</strong>
+              </div>
               <div class="tooltip-row"><span class="dot" style="background:#3b82f6"></span> Excused:
-                <strong>{{ chartTooltip.excused }}</strong></div>
+                <strong>{{ chartTooltip.excused }}</strong>
+              </div>
               <div class="tooltip-total">Total: {{ chartTooltip.total }}</div>
             </div>
             }
@@ -479,6 +483,78 @@
       </div>
     </div>
   </div>
+
+  <!-- Subject Insights Row -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-bar-chart-line"></i> Monthly Subject Insights
+            <span class="badge bg-primary ms-2">Aggregate</span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Most Present Subject -->
+            <div class="col-md-6">
+              <div class="insight-card insight-present h-100 p-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="insight-icon insight-icon-present">
+                    <i class="bi bi-trophy-fill"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <p class="insight-label mb-0">Highest Present Rate</p>
+                    @if (dashboardData.subject_insights?.most_present_subject) {
+                    <h5 class="insight-value mb-1">
+                      {{ dashboardData.subject_insights?.most_present_subject?.subject_name }}
+                    </h5>
+                    <small class="text-muted d-block">
+                      <span class="badge bg-success me-1">P:
+                        {{ dashboardData.subject_insights?.most_present_subject?.P }}</span>
+                      out of {{ dashboardData.subject_insights?.most_present_subject?.total }} sessions &nbsp;·&nbsp;
+                      <strong>{{ dashboardData.subject_insights?.most_present_subject?.attendance_rate }}</strong>
+                    </small>
+                    } @else {
+                    <p class="text-muted mb-0">No data available</p>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Most Absent Subject -->
+            <div class="col-md-6">
+              <div class="insight-card insight-absent h-100 p-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="insight-icon insight-icon-absent">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <p class="insight-label mb-0">Highest Absent Rate</p>
+                    @if (dashboardData.subject_insights?.most_absent_subject) {
+                    <h5 class="insight-value mb-1">
+                      {{ dashboardData.subject_insights?.most_absent_subject?.subject_name }}
+                    </h5>
+                    <small class="text-muted d-block">
+                      <span class="badge bg-danger me-1">A:
+                        {{ dashboardData.subject_insights?.most_absent_subject?.A }}</span>
+                      out of {{ dashboardData.subject_insights?.most_absent_subject?.total }} sessions &nbsp;·&nbsp;
+                      <strong>{{ dashboardData.subject_insights?.most_absent_subject?.attendance_rate }}</strong>
+                    </small>
+                    } @else {
+                    <p class="text-muted mb-0">No data available</p>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bottom Row -->
   <div class="row ">
     <!-- Students at Risk -->
