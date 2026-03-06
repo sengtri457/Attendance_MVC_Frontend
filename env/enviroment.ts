@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3001/api/v1',
+  apiUrl: 'https://attendance-mvc-backend-1.onrender.com/api/v1',
 };
 
 
